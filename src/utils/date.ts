@@ -1,4 +1,4 @@
-const HOURS_IN_MS = 60 * 60 * 1000;
+import { HOUR_MS, MINUTE_MS } from "../study/examSrs/intervals";
 
 export function getStudyDeadline(
   examAt: string | null,
@@ -13,7 +13,34 @@ export function getStudyDeadline(
     return null;
   }
 
-  return new Date(examTimestamp - studyBufferHours * HOURS_IN_MS).toISOString();
+  return new Date(examTimestamp - studyBufferHours * HOUR_MS).toISOString();
+}
+
+export function formatTimeRemaining(targetIso: string | null, nowMs: number): string {
+  if (targetIso === null) {
+    return "Not configured";
+  }
+
+  const remainingMs = Date.parse(targetIso) - nowMs;
+  if (!Number.isFinite(remainingMs)) {
+    return "Invalid date";
+  }
+  if (remainingMs <= 0) {
+    return "Passed";
+  }
+
+  const totalMinutes = Math.ceil(remainingMs / MINUTE_MS);
+  const days = Math.floor(totalMinutes / (24 * 60));
+  const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `${days}d ${hours}h remaining`;
+  }
+  if (hours > 0) {
+    return `${hours}h ${minutes}m remaining`;
+  }
+  return `${minutes}m remaining`;
 }
 
 export function formatLocalDateTime(

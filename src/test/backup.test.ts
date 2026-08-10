@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { cardIds } from "../data/deck";
+import { cardIds, cards } from "../data/deck";
 import {
   createProgressBackup,
   parseProgressBackupText,
   serializeProgressBackup,
 } from "../domain/backup";
 import { ProgressRepository } from "../db/progressRepository";
+import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
 
 describe("progress backups", () => {
   it("round-trips export, reset, and import with exact mutable state", async () => {
@@ -160,5 +161,65 @@ describe("progress backups", () => {
     ).toThrow(/unknown card ID/);
 
     expect(await repository.load()).toEqual(before);
+  });
+
+  it("recreates Exam-SRS state from a version-one backup without scheduler fields", async () => {
+    const repository = new ProgressRepository(cardIds);
+    await repository.resetAll();
+    const backup = createProgressBackup({
+      settings: {
+        examAt: "2026-08-20T10:00:00.000Z",
+        studyBufferHours: 24,
+      },
+      cardStates: {},
+      reviewEvents: [
+        {
+          id: "derived-a",
+          cardId: "ch01-001",
+          reviewedAt: "2026-08-10T00:00:00.000Z",
+          mode: "recall",
+          correct: true,
+          rating: "got_it",
+          responseTimeMs: null,
+          selectedChoice: null,
+        },
+        {
+          id: "derived-b",
+          cardId: "ch01-001",
+          reviewedAt: "2026-08-10T01:00:00.000Z",
+          mode: "recall",
+          correct: true,
+          rating: "got_it",
+          responseTimeMs: null,
+          selectedChoice: null,
+        },
+      ],
+    });
+    const backupText = serializeProgressBackup(
+      {
+        settings: backup.settings,
+        cardStates: {},
+        reviewEvents: backup.reviews,
+      },
+      "2026-08-10T02:00:00.000Z",
+    );
+    expect(backupText).not.toContain("dueAt");
+    expect(backupText).not.toContain("strength");
+
+    await repository.replaceAll(parseProgressBackupText(backupText, cardIds));
+    const loaded = await repository.load();
+    const derived = deriveExamSrsSnapshot(
+      cards,
+      loaded.reviews,
+      loaded.settings,
+      Date.parse("2026-08-10T02:00:00.000Z"),
+    );
+
+    expect(derived.stateByCardId["ch01-001"]).toMatchObject({
+      learningState: "learned",
+      strength: 2,
+      reviewCount: 2,
+    });
+    expect(derived.stateByCardId["ch01-002"].learningState).toBe("unseen");
   });
 });

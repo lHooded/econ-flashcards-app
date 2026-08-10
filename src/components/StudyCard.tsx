@@ -101,9 +101,8 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
       return;
     }
 
-    // Self-ratings are deliberately conservative for this baseline: both
-    // "struggled" and "got_it" count as correct, while the rating remains
-    // available to the future Exam-SRS scheduler.
+    // Recall self-ratings remain separate from objective correctness so Exam-SRS
+    // can distinguish a weak success from a clean retrieval.
     void submit({
       mode: modeForCard(card),
       correct: rating === "forgot" ? false : true,
