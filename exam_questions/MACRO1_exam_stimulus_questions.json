@@ -1,0 +1,2025 @@
+[
+  {
+    "id": "auth-stim-ch01-001",
+    "chapter": 1,
+    "topic": "Inflation from a price index",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "The price-index line shows a value of 102 in 2022 and 105 in 2023. What is approximately the inflation rate from 2022 to 2023?",
+    "choices": ["-2.9%", "2.9%", "5.0%", "7.0%"],
+    "correctChoice": 1,
+    "explanation": "Inflation is the percentage change in the price index: (105 - 102) / 102 × 100 ≈ 2.94%, which rounds to 2.9%.",
+    "choiceRationales": [
+      "This reverses the direction of the price-index change; the index rose rather than fell.",
+      "The graph gives (105 - 102) / 102 × 100 ≈ 2.94%, so 2.9% is the appropriate rounded rate.",
+      "Five is the index-point change, not the percentage change using the earlier index as the denominator.",
+      "This overstates the change and does not follow from the two displayed index values."
+    ],
+    "reviewCardId": "ch01-019",
+    "sourceCardIds": ["ch01-019"],
+    "tags": ["exam-bank", "stimulus", "graph", "inflation", "price-index"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Price index over three years",
+      "description": "A line labelled P connects price-index values of 100 in 2021, 102 in 2022 and 105 in 2023.",
+      "xAxis": {
+        "label": "Year",
+        "domain": [0, 2],
+        "ticks": [
+          { "value": 0, "label": "2021" },
+          { "value": 1, "label": "2022" },
+          { "value": 2, "label": "2023" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Price index",
+        "domain": [98, 108],
+        "ticks": [
+          { "value": 100, "label": "100" },
+          { "value": 102, "label": "102" },
+          { "value": 105, "label": "105" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "P",
+          "label": "P",
+          "points": [
+            { "x": 0, "y": 100 },
+            { "x": 1, "y": 102 },
+            { "x": 2, "y": 105 }
+          ],
+          "interpolation": "linear",
+          "lineStyle": "solid",
+          "labelAt": { "x": 1.7, "y": 104.4 }
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch01-002",
+    "chapter": 1,
+    "topic": "Business-cycle position",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "Which marked observation is below the displayed potential-output line while output is falling relative to the previous year?",
+    "choices": [
+      "The observation labelled E",
+      "The observation labelled B",
+      "The observation labelled A",
+      "Neither marked observation"
+    ],
+    "correctChoice": 2,
+    "explanation": "A is below the horizontal Y* line and follows a higher output observation, so it is the marked observation with both properties.",
+    "choiceRationales": [
+      "E is not one of the marked observations in the graph.",
+      "B is above Y*, so it does not meet the below-potential condition.",
+      "A is below Y* and the output line falls from the preceding observation into A.",
+      "The graph does show one observation satisfying both conditions."
+    ],
+    "reviewCardId": "ch01-025",
+    "sourceCardIds": ["ch01-025"],
+    "tags": ["exam-bank", "stimulus", "graph", "business-cycle", "potential-output"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Output relative to potential",
+      "description": "A line labelled Y records output from 2019 to 2024. A horizontal reference line labelled Y* is at 100. Points A and B are marked on the output line.",
+      "xAxis": {
+        "label": "Year",
+        "domain": [0, 5],
+        "ticks": [
+          { "value": 0, "label": "2019" },
+          { "value": 1, "label": "2020" },
+          { "value": 2, "label": "2021" },
+          { "value": 3, "label": "2022" },
+          { "value": 4, "label": "2023" },
+          { "value": 5, "label": "2024" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Output index",
+        "domain": [90, 110],
+        "ticks": [
+          { "value": 90, "label": "90" },
+          { "value": 100, "label": "100" },
+          { "value": 110, "label": "110" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "Y",
+          "label": "Y",
+          "points": [
+            { "x": 0, "y": 100 },
+            { "x": 1, "y": 101 },
+            { "x": 2, "y": 99 },
+            { "x": 3, "y": 97 },
+            { "x": 4, "y": 99 },
+            { "x": 5, "y": 103 }
+          ],
+          "interpolation": "linear",
+          "lineStyle": "solid"
+        }
+      ],
+      "points": [
+        { "id": "A", "label": "A", "x": 2, "y": 99 },
+        { "id": "B", "label": "B", "x": 5, "y": 103 }
+      ],
+      "referenceLines": [
+        {
+          "id": "potential-output",
+          "orientation": "horizontal",
+          "value": 100,
+          "label": "Y*",
+          "lineStyle": "dashed"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch01-003",
+    "chapter": 1,
+    "topic": "GDP deflator",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Using GDP deflator = nominal GDP / real GDP × 100, what is the 2024 GDP deflator in the table?",
+    "choices": ["108.0", "112.0", "118.0", "114.4"],
+    "correctChoice": 3,
+    "explanation": "The 2024 deflator is 286 / 250 × 100 = 114.4.",
+    "choiceRationales": [
+      "This does not use the 2024 nominal and real GDP values in the table.",
+      "This is too low because it understates the nominal-to-real ratio.",
+      "This is too high and is not the result of 286 divided by 250 times 100.",
+      "Dividing 286 by 250 and multiplying by 100 gives the displayed 2024 deflator of 114.4."
+    ],
+    "reviewCardId": "ch01-017",
+    "sourceCardIds": ["ch01-017"],
+    "tags": ["exam-bank", "stimulus", "table", "GDP-deflator", "nominal-real"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Nominal and real GDP",
+      "columns": [
+        { "key": "year", "label": "Year", "align": "left" },
+        { "key": "nominal", "label": "Nominal GDP ($bn)", "align": "right" },
+        { "key": "real", "label": "Real GDP (base-year $bn)", "align": "right" }
+      ],
+      "rows": [
+        { "id": "2023", "cells": ["2023", "264", "240"] },
+        { "id": "2024", "cells": ["2024", "286", "250"] }
+      ],
+      "note": "Use the table values directly; the real-GDP measure uses the stated base year."
+    }
+  },
+  {
+    "id": "auth-stim-ch02-001",
+    "chapter": 2,
+    "topic": "Labour-market wage floor",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "At the wage floor shown in the labour-market graph, which conclusion follows?",
+    "choices": [
+      "The floor is binding: labour supplied exceeds labour demanded, creating involuntary unemployment.",
+      "The floor is non-binding: the market remains at the unregulated equilibrium with no labour-market gap.",
+      "The labour-demand curve shifts right, so both employment and the real wage rise.",
+      "The labour-supply curve shifts left, so the equilibrium wage falls."
+    ],
+    "correctChoice": 0,
+    "explanation": "The wage floor is above the intersection of labour supply and demand. At that wage, workers want to supply more labour than firms want to hire.",
+    "choiceRationales": [
+      "The floor lies above the equilibrium wage, so quantity supplied is greater than quantity demanded and the difference is involuntary unemployment.",
+      "A floor above equilibrium is binding; the market does not remain at the unregulated intersection.",
+      "The graph shows a horizontal wage floor, not a rightward shift of labour demand.",
+      "The graph does not show a leftward supply shift, and that would not describe the displayed intervention."
+    ],
+    "reviewCardId": "ch02-023",
+    "sourceCardIds": ["ch02-023", "ch02-025"],
+    "tags": ["exam-bank", "stimulus", "graph", "labour-market", "wage-floor"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Labour market with a wage floor",
+      "description": "An upward-sloping labour-supply curve S and a downward-sloping labour-demand curve D intersect at E. A dashed horizontal line labelled w_f lies above E, with its intersections with the two curves marked L_D and L_S.",
+      "xAxis": {
+        "label": "Quantity of labour",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Real wage",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "S",
+          "label": "S",
+          "points": [
+            { "x": 10, "y": 20 },
+            { "x": 90, "y": 80 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 75, "y": 69 }
+        },
+        {
+          "id": "D",
+          "label": "D",
+          "points": [
+            { "x": 10, "y": 90 },
+            { "x": 90, "y": 10 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 75, "y": 25 }
+        }
+      ],
+      "points": [
+        { "id": "E", "label": "E", "x": 50, "y": 50 },
+        { "id": "LD", "label": "L_D", "x": 40, "y": 60, "guideLines": ["x"] },
+        { "id": "LS", "label": "L_S", "x": 63.33, "y": 60, "guideLines": ["x"] }
+      ],
+      "referenceLines": [
+        {
+          "id": "w-floor",
+          "orientation": "horizontal",
+          "value": 60,
+          "label": "w_f",
+          "lineStyle": "dashed"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch02-002",
+    "chapter": 2,
+    "topic": "Labour-demand shift",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "The graph shows the labour-demand curve moving from D1 to D2 while labour supply is unchanged. Which interpretation is consistent with a permanent rise in worker productivity?",
+    "choices": [
+      "A leftward shift of labour demand, lowering both the real wage and employment.",
+      "A rightward shift of labour demand, raising the equilibrium real wage and employment.",
+      "A movement down the unchanged labour-supply curve caused by a lower wage.",
+      "A rightward shift of labour supply, lowering the real wage while employment rises."
+    ],
+    "correctChoice": 1,
+    "explanation": "Higher productivity raises the value of marginal product of labour, shifting labour demand right. The displayed equilibria show higher employment and a higher real wage.",
+    "choiceRationales": [
+      "The graph shows D2 to the right of D1, not a leftward shift.",
+      "A productivity increase raises labour demand; with supply fixed, the new equilibrium has higher employment and wage.",
+      "The movement is between two demand curves, so it is not a movement down the supply curve.",
+      "Labour supply is the unchanged curve in the graph, so it has not shifted right."
+    ],
+    "reviewCardId": "ch02-025",
+    "sourceCardIds": ["ch02-025", "ch02-021"],
+    "tags": ["exam-bank", "stimulus", "graph", "labour-demand", "productivity"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "A labour-demand shift",
+      "description": "An upward-sloping supply curve S is shown with two downward-sloping demand curves D1 and D2. D2 lies to the right of D1. Equilibria E1 and E2 are marked at the intersections of S with D1 and D2.",
+      "xAxis": {
+        "label": "Employment",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Real wage",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "S",
+          "label": "S",
+          "points": [
+            { "x": 10, "y": 30 },
+            { "x": 90, "y": 70 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 75, "y": 62.5 }
+        },
+        {
+          "id": "D1",
+          "label": "D1",
+          "points": [
+            { "x": 10, "y": 80 },
+            { "x": 90, "y": 20 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 24, "y": 69.5 }
+        },
+        {
+          "id": "D2",
+          "label": "D2",
+          "points": [
+            { "x": 10, "y": 90 },
+            { "x": 90, "y": 30 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 77, "y": 47 }
+        }
+      ],
+      "points": [
+        { "id": "E1", "label": "E1", "x": 50, "y": 50 },
+        { "id": "E2", "label": "E2", "x": 58, "y": 54 }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch02-003",
+    "chapter": 2,
+    "topic": "Unemployment rate from labour-force data",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "Using unemployment rate = unemployed / labour force × 100, what is the unemployment rate in 2025?",
+    "choices": ["10%", "12%", "8%", "20%"],
+    "correctChoice": 2,
+    "explanation": "The 2025 labour force is 920 + 80 = 1,000, so the unemployment rate is 80 / 1,000 × 100 = 8%.",
+    "choiceRationales": [
+      "Ten percent is the 2024 rate, not the rate calculated from the 2025 row.",
+      "This uses an incorrect denominator or numerator for the 2025 labour force.",
+      "The 2025 labour force is 1,000 and 80 / 1,000 = 8%.",
+      "This incorrectly divides unemployment by employment rather than by the labour force."
+    ],
+    "reviewCardId": "ch02-004",
+    "sourceCardIds": ["ch02-004"],
+    "tags": ["exam-bank", "stimulus", "table", "unemployment", "labour-force"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Labour-market counts",
+      "columns": [
+        { "key": "year", "label": "Year", "align": "left" },
+        { "key": "employed", "label": "Employed", "align": "right" },
+        { "key": "unemployed", "label": "Unemployed", "align": "right" }
+      ],
+      "rows": [
+        { "id": "2024", "cells": ["2024", "900", "100"] },
+        { "id": "2025", "cells": ["2025", "920", "80"] }
+      ],
+      "note": "Counts are in thousands of people. The labour force is employed plus unemployed."
+    }
+  },
+  {
+    "id": "auth-stim-ch03-001",
+    "chapter": 3,
+    "topic": "Closed-economy saving-investment equilibrium",
+    "style": "concept",
+    "difficulty": 3,
+    "stem": "Compared with E1, what happens at E2 when the saving curve shifts from S1 to S2 as shown?",
+    "choices": [
+      "The real interest rate falls and equilibrium saving-investment quantity rises.",
+      "The real interest rate and equilibrium quantity both rise.",
+      "The real interest rate and equilibrium quantity are unchanged because investment is fixed.",
+      "The real interest rate rises while equilibrium saving-investment quantity falls."
+    ],
+    "correctChoice": 3,
+    "explanation": "The left/upward saving shift intersects the unchanged downward investment curve at a higher real interest rate and a lower quantity of saving and investment.",
+    "choiceRationales": [
+      "The graph shows the new intersection at a higher, not lower, real interest rate and a lower quantity.",
+      "The real rate rises, but the horizontal coordinate moves left rather than right.",
+      "The saving shift changes the intersection even though the investment curve itself is unchanged.",
+      "At E2 the vertical coordinate is higher and the horizontal coordinate is lower, which is the crowding-out comparative static."
+    ],
+    "reviewCardId": "ch03-028",
+    "sourceCardIds": ["ch03-028", "ch03-029"],
+    "tags": ["exam-bank", "stimulus", "graph", "saving-investment", "crowding-out"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Saving and investment equilibrium",
+      "description": "The graph has real interest rate on the vertical axis and saving or investment quantity on the horizontal axis. A downward-sloping investment curve I intersects two upward-sloping saving curves S1 and S2. S2 lies above and to the left of S1. Intersections E1 and E2 are marked.",
+      "xAxis": {
+        "label": "Saving and investment, S or I",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Real interest rate, r (%)",
+        "domain": [0, 10],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 5, "label": "5" },
+          { "value": 10, "label": "10" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "I",
+          "label": "I",
+          "points": [
+            { "x": 0, "y": 10 },
+            { "x": 100, "y": 0 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 75, "y": 2.5 }
+        },
+        {
+          "id": "S1",
+          "label": "S1",
+          "points": [
+            { "x": 10, "y": 1 },
+            { "x": 90, "y": 7 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 78, "y": 6.1 }
+        },
+        {
+          "id": "S2",
+          "label": "S2",
+          "points": [
+            { "x": 0, "y": 2 },
+            { "x": 80, "y": 8 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 19, "y": 3.4 }
+        }
+      ],
+      "points": [
+        { "id": "E1", "label": "E1", "x": 55.6, "y": 4.4 },
+        { "id": "E2", "label": "E2", "x": 45.7, "y": 5.4 }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch03-002",
+    "chapter": 3,
+    "topic": "Investment demand and the real interest rate",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "The horizontal line holds the real interest rate at r0 while investment demand moves from I1 to I2. What change is represented?",
+    "choices": [
+      "Expected profitability has fallen or the user cost has risen, so planned investment is lower at the same r.",
+      "Household saving has shifted right, causing a movement along the unchanged investment curve.",
+      "The real interest rate has risen, causing a movement upward along I1.",
+      "Investment has risen because I2 lies below I1 at every quantity."
+    ],
+    "correctChoice": 0,
+    "explanation": "At the same real interest rate r0, the new investment curve gives a smaller planned investment quantity. That is a shift in investment demand, not a movement caused by a changed r.",
+    "choiceRationales": [
+      "A lower demand curve means lower planned investment at the same real rate, consistent with lower expected returns or a higher user cost.",
+      "The graph contains two investment-demand curves and does not show a saving-curve shift.",
+      "The reference line fixes r at r0, so the change is not a movement caused by a higher real interest rate.",
+      "At the marked rate, I2 is to the left of I1, so the quantity of investment is lower, not higher."
+    ],
+    "reviewCardId": "ch03-019",
+    "sourceCardIds": ["ch03-019"],
+    "tags": ["exam-bank", "stimulus", "graph", "investment", "user-cost"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Investment-demand shift at a fixed real rate",
+      "description": "Two downward-sloping investment-demand curves I1 and I2 are shown, with I2 below and to the left of I1. A horizontal dashed reference line labelled r0 crosses both curves at points A and B.",
+      "xAxis": {
+        "label": "Planned investment",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Real interest rate, r (%)",
+        "domain": [0, 10],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 5, "label": "5" },
+          { "value": 10, "label": "10" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "I1",
+          "label": "I1",
+          "points": [
+            { "x": 10, "y": 9 },
+            { "x": 90, "y": 1 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 72, "y": 2.8 }
+        },
+        {
+          "id": "I2",
+          "label": "I2",
+          "points": [
+            { "x": 10, "y": 7 },
+            { "x": 90, "y": 0.5 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 73, "y": 1.7 }
+        }
+      ],
+      "points": [
+        { "id": "A", "label": "A", "x": 50, "y": 5 },
+        { "id": "B", "label": "B", "x": 34.62, "y": 5 }
+      ],
+      "referenceLines": [
+        {
+          "id": "r0",
+          "orientation": "horizontal",
+          "value": 5,
+          "label": "r0",
+          "lineStyle": "dashed"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch03-003",
+    "chapter": 3,
+    "topic": "Expected real interest rate",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Using the approximation expected real rate = nominal rate − expected inflation, what is the expected real interest rate in 2026?",
+    "choices": ["1%", "2%", "3%", "8%"],
+    "correctChoice": 1,
+    "explanation": "For 2026, the table gives a 5% nominal rate and 3% expected inflation, so the expected real rate is approximately 5% − 3% = 2%.",
+    "choiceRationales": [
+      "One percent uses the realised inflation entry rather than expected inflation and also gives the wrong subtraction.",
+      "Subtracting the 3% expected inflation rate from the 5% nominal rate gives 2%.",
+      "Three percent is the expected inflation rate, not the expected real rate.",
+      "Eight percent adds the nominal rate and expected inflation rather than subtracting them."
+    ],
+    "reviewCardId": "ch03-005",
+    "sourceCardIds": ["ch03-005"],
+    "tags": [
+      "exam-bank",
+      "stimulus",
+      "table",
+      "real-interest-rate",
+      "inflation-expectations"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Nominal rates and inflation",
+      "columns": [
+        { "key": "period", "label": "Period", "align": "left" },
+        { "key": "nominal", "label": "Nominal rate i", "align": "right" },
+        { "key": "expected", "label": "Expected inflation", "align": "right" },
+        { "key": "realised", "label": "Realised inflation", "align": "right" }
+      ],
+      "rows": [
+        { "id": "2025", "cells": ["2025", "6%", "2%", "4%"] },
+        { "id": "2026", "cells": ["2026", "5%", "3%", "1%"] }
+      ],
+      "note": "All rates are annual percentages. Use expected inflation for the ex-ante calculation."
+    }
+  },
+  {
+    "id": "auth-stim-ch04-001",
+    "chapter": 4,
+    "topic": "PAE equilibrium",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "The PAE curve shifts from PAE1 to PAE2. What happens to short-run equilibrium output?",
+    "choices": [
+      "It rises from approximately 60 to approximately 80.",
+      "It falls from approximately 80 to approximately 60.",
+      "It stays at 45 because the 45-degree line determines autonomous spending.",
+      "It cannot be identified because the graph does not show a vertical price axis."
+    ],
+    "correctChoice": 0,
+    "explanation": "Equilibrium is where PAE intersects the 45-degree line. PAE1 intersects at about Y=60 and PAE2 at about Y=80.",
+    "choiceRationales": [
+      "The two intersections with the 45-degree line are approximately (60,60) and (80,80), so equilibrium output rises.",
+      "This reverses the direction of the displayed PAE shift.",
+      "The 45-degree line represents Y=PAE; it does not fix autonomous spending at 45.",
+      "The income-expenditure diagram uses output and planned expenditure axes, so a price axis is not needed for this inference."
+    ],
+    "reviewCardId": "ch04-015",
+    "sourceCardIds": ["ch04-015", "ch04-016"],
+    "tags": ["exam-bank", "stimulus", "graph", "PAE", "45-degree-line"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "PAE and the 45-degree line",
+      "description": "The graph shows a 45-degree line from the origin and two upward-sloping planned aggregate expenditure curves PAE1 and PAE2. PAE2 lies above PAE1. Equilibrium points E1 and E2 are marked at the two intersections with the 45-degree line.",
+      "xAxis": {
+        "label": "Output, Y",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Planned aggregate expenditure, PAE",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "45",
+          "label": "45°",
+          "points": [
+            { "x": 0, "y": 0 },
+            { "x": 100, "y": 100 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 86, "y": 86 }
+        },
+        {
+          "id": "PAE1",
+          "label": "PAE1",
+          "points": [
+            { "x": 0, "y": 24 },
+            { "x": 100, "y": 84 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 76, "y": 60.4 }
+        },
+        {
+          "id": "PAE2",
+          "label": "PAE2",
+          "points": [
+            { "x": 0, "y": 32 },
+            { "x": 100, "y": 92 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 76, "y": 70.4 }
+        }
+      ],
+      "points": [
+        { "id": "E1", "label": "E1", "x": 60, "y": 60 },
+        { "id": "E2", "label": "E2", "x": 80, "y": 80 }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch04-002",
+    "chapter": 4,
+    "topic": "Inventories and PAE disequilibrium",
+    "style": "scenario",
+    "difficulty": 1,
+    "stem": "At the marked point A, what inventory movement and production response should occur?",
+    "choices": [
+      "PAE is below Y, so unplanned inventories accumulate and firms reduce production.",
+      "PAE equals Y, so inventories and production are both unchanged.",
+      "PAE is above Y, so unplanned inventories fall and firms raise production.",
+      "PAE is above Y, so unplanned inventories rise and firms reduce production."
+    ],
+    "correctChoice": 2,
+    "explanation": "Point A lies above the 45-degree line, so planned expenditure exceeds current output. Firms sell more than they produce, inventories fall unexpectedly, and they respond by increasing production.",
+    "choiceRationales": [
+      "A point below the 45-degree line would have PAE<Y, but A is above it.",
+      "A is not on the 45-degree line, so the income-expenditure equilibrium condition is not met.",
+      "The point is above the line, which means PAE>Y and the stated inventory and production responses follow.",
+      "When PAE>Y, inventories fall rather than rise; firms respond by raising production."
+    ],
+    "reviewCardId": "ch04-006",
+    "sourceCardIds": ["ch04-006"],
+    "tags": ["exam-bank", "stimulus", "graph", "PAE", "inventories"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "PAE above the 45-degree line",
+      "description": "A 45-degree line and an upward-sloping PAE curve are shown. The marked point A lies on the PAE curve at an output coordinate of 70 and a planned-expenditure coordinate of 82, above the 45-degree line.",
+      "xAxis": {
+        "label": "Output, Y",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "PAE",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "45",
+          "label": "45°",
+          "points": [
+            { "x": 0, "y": 0 },
+            { "x": 100, "y": 100 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 84, "y": 84 }
+        },
+        {
+          "id": "PAE",
+          "label": "PAE",
+          "points": [
+            { "x": 0, "y": 40 },
+            { "x": 100, "y": 100 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 80, "y": 88 }
+        }
+      ],
+      "points": [{ "id": "A", "label": "A", "x": 70, "y": 82 }]
+    }
+  },
+  {
+    "id": "auth-stim-ch04-003",
+    "chapter": 4,
+    "topic": "Open-economy multiplier",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "For scenario B, use k = 1 / (1 − c + m) to calculate the change in equilibrium output caused by the displayed autonomous-expenditure increase.",
+    "choices": ["80", "100", "120", "160"],
+    "correctChoice": 1,
+    "explanation": "For B, k = 1/(1−0.8+0.2) = 2.5. Multiplying by the autonomous increase of 40 gives ΔY = 100.",
+    "choiceRationales": [
+      "This does not apply the displayed multiplier parameters correctly.",
+      "The multiplier is 2.5 and 2.5 × 40 = 100.",
+      "This overstates the result relative to the 2.5 multiplier.",
+      "This treats the multiplier as four instead of 2.5."
+    ],
+    "reviewCardId": "ch04-022",
+    "sourceCardIds": ["ch04-022"],
+    "tags": ["exam-bank", "stimulus", "table", "multiplier", "open-economy"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Open-economy multiplier scenarios",
+      "columns": [
+        { "key": "scenario", "label": "Scenario", "align": "left" },
+        { "key": "c", "label": "MPC c", "align": "right" },
+        { "key": "m", "label": "MPI m", "align": "right" },
+        { "key": "change", "label": "Autonomous increase", "align": "right" }
+      ],
+      "rows": [
+        { "id": "A", "cells": ["A", "0.6", "0.2", "20"] },
+        { "id": "B", "cells": ["B", "0.8", "0.2", "40"] },
+        { "id": "C", "cells": ["C", "0.7", "0.1", "25"] }
+      ],
+      "note": "The multiplier is k = 1 / (1 − c + m)."
+    }
+  },
+  {
+    "id": "auth-stim-ch05-001",
+    "chapter": 5,
+    "topic": "Fiscal expansion in the PAE model",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "The graph shows a rise in government purchases shifting PAE0 to PAE1. Which statement best describes the new equilibrium?",
+    "choices": [
+      "The 45-degree line shifts upward by the amount of the government-purchases change.",
+      "Output rises exactly one-for-one with government purchases in every three-sector model.",
+      "PAE shifts down and the equilibrium output falls because taxes must rise immediately.",
+      "PAE shifts up and equilibrium output rises by a multiplier effect, so the output change need not equal the initial spending change."
+    ],
+    "correctChoice": 3,
+    "explanation": "Government purchases are an autonomous component of PAE. Their increase shifts PAE upward and raises equilibrium output by the relevant fiscal multiplier rather than necessarily one-for-one.",
+    "choiceRationales": [
+      "The 45-degree line represents the identity Y=PAE and does not shift when fiscal spending changes.",
+      "The multiplier generally makes the output response differ from the initial government-purchases change.",
+      "The displayed PAE shift is upward, and the question does not impose an immediate offsetting tax increase.",
+      "This matches the upward PAE shift and the multiplier mechanism in the three-sector model."
+    ],
+    "reviewCardId": "ch05-016",
+    "sourceCardIds": ["ch05-016", "ch05-005"],
+    "tags": ["exam-bank", "stimulus", "graph", "fiscal-policy", "PAE", "multiplier"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Government purchases and PAE",
+      "description": "A 45-degree line and two upward-sloping planned aggregate expenditure curves PAE0 and PAE1 are shown. PAE1 lies above PAE0. Equilibrium points E0 and E1 are marked at the corresponding intersections with the 45-degree line.",
+      "xAxis": {
+        "label": "Output, Y",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "PAE",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "45",
+          "label": "45°",
+          "points": [
+            { "x": 0, "y": 0 },
+            { "x": 100, "y": 100 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 86, "y": 86 }
+        },
+        {
+          "id": "PAE0",
+          "label": "PAE0",
+          "points": [
+            { "x": 0, "y": 25 },
+            { "x": 100, "y": 75 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 77, "y": 63.5 }
+        },
+        {
+          "id": "PAE1",
+          "label": "PAE1",
+          "points": [
+            { "x": 0, "y": 33.33 },
+            { "x": 100, "y": 83.33 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 77, "y": 73.5 }
+        }
+      ],
+      "points": [
+        { "id": "E0", "label": "E0", "x": 50, "y": 50 },
+        { "id": "E1", "label": "E1", "x": 66.67, "y": 66.67 }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch05-002",
+    "chapter": 5,
+    "topic": "Debt-to-GDP dynamics",
+    "style": "sequence",
+    "difficulty": 3,
+    "stem": "The graph shows a zero-primary-balance path with r greater than g. What does the displayed trajectory imply about the debt-to-GDP ratio?",
+    "choices": [
+      "It is stable because the primary balance is zero.",
+      "It falls because GDP growth automatically cancels interest accumulation.",
+      "It rises over time because the interest-rate effect exceeds the growth effect.",
+      "It first falls and then becomes exactly zero."
+    ],
+    "correctChoice": 2,
+    "explanation": "When r>g, a zero primary balance is not enough to stabilise the debt ratio. The interest-rate effect causes the ratio to rise along the displayed path.",
+    "choiceRationales": [
+      "A zero primary balance stabilises debt only under particular interest-growth conditions; r>g does not provide that condition.",
+      "The graph rises, and with r>g growth does not offset the interest effect.",
+      "The upward path is consistent with r>g and zero primary balance: the debt ratio increases.",
+      "Nothing in the graph shows a fall to zero; the displayed ratio increases throughout."
+    ],
+    "reviewCardId": "ch05-026",
+    "sourceCardIds": ["ch05-026"],
+    "tags": ["exam-bank", "stimulus", "graph", "public-debt", "debt-to-GDP"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Debt-to-GDP path when r exceeds g",
+      "description": "A line labelled b records the debt-to-GDP ratio over five periods. It starts at 60 and rises through 63, 66, 70 and 74. A dashed horizontal reference line labelled b0 is at 60. The text r > g appears near the upper-right of the graph.",
+      "xAxis": {
+        "label": "Period",
+        "domain": [0, 4],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 1, "label": "1" },
+          { "value": 2, "label": "2" },
+          { "value": 3, "label": "3" },
+          { "value": 4, "label": "4" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Debt-to-GDP ratio (%)",
+        "domain": [50, 80],
+        "ticks": [
+          { "value": 50, "label": "50" },
+          { "value": 60, "label": "60" },
+          { "value": 70, "label": "70" },
+          { "value": 80, "label": "80" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "b",
+          "label": "b",
+          "points": [
+            { "x": 0, "y": 60 },
+            { "x": 1, "y": 63 },
+            { "x": 2, "y": 66 },
+            { "x": 3, "y": 70 },
+            { "x": 4, "y": 74 }
+          ],
+          "lineStyle": "solid"
+        }
+      ],
+      "referenceLines": [
+        {
+          "id": "b0",
+          "orientation": "horizontal",
+          "value": 60,
+          "label": "b0",
+          "lineStyle": "dashed"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "interest-growth",
+          "text": "r > g",
+          "x": 3.2,
+          "y": 77,
+          "anchor": "middle"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch05-003",
+    "chapter": 5,
+    "topic": "Debt-to-GDP calculation",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "What is the 2025 debt-to-GDP ratio shown by the table?",
+    "choices": ["40%", "45%", "50%", "60%"],
+    "correctChoice": 0,
+    "explanation": "The 2025 ratio is nominal government debt divided by nominal GDP: 900 / 2,250 × 100 = 40%.",
+    "choiceRationales": [
+      "Dividing 900 by 2,250 and multiplying by 100 gives 40%.",
+      "This uses an incorrect denominator or does not apply the percentage conversion correctly.",
+      "This overstates the ratio relative to the table’s debt and GDP values.",
+      "This is not the result of the 2025 debt divided by 2025 GDP."
+    ],
+    "reviewCardId": "ch05-024",
+    "sourceCardIds": ["ch05-024"],
+    "tags": ["exam-bank", "stimulus", "table", "public-debt", "debt-to-GDP"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Government debt and GDP",
+      "columns": [
+        { "key": "year", "label": "Year", "align": "left" },
+        { "key": "debt", "label": "Government debt ($bn)", "align": "right" },
+        { "key": "gdp", "label": "Nominal GDP ($bn)", "align": "right" }
+      ],
+      "rows": [
+        { "id": "2024", "cells": ["2024", "800", "2,000"] },
+        { "id": "2025", "cells": ["2025", "900", "2,250"] }
+      ],
+      "note": "Calculate the ratio using debt divided by nominal GDP."
+    }
+  },
+  {
+    "id": "auth-stim-ch06-001",
+    "chapter": 6,
+    "topic": "Bond price and interest rate",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "Moving rightward along the bond-price curve from a low market yield to a high market yield, what happens to the price of the existing one-period bond?",
+    "choices": [
+      "It rises because the bond’s fixed payment becomes more valuable.",
+      "It falls because the fixed payment is discounted at a higher yield.",
+      "It is unchanged because the face value is fixed.",
+      "It becomes equal to the market yield."
+    ],
+    "correctChoice": 1,
+    "explanation": "The present value of the fixed payment is lower when the market yield is higher, so the existing bond’s market price falls.",
+    "choiceRationales": [
+      "A higher discount rate reduces rather than increases the present value of the fixed payment.",
+      "The curve slopes downward: a higher market yield corresponds to a lower price for the existing bond.",
+      "A fixed face value does not make the market price fixed before maturity.",
+      "Price and yield are distinct quantities with different units and are not equal."
+    ],
+    "reviewCardId": "ch06-004",
+    "sourceCardIds": ["ch06-004"],
+    "tags": ["exam-bank", "stimulus", "graph", "bonds", "interest-rate"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Existing bond price and market yield",
+      "description": "A downward-sloping curve labelled Pb relates the price of an existing one-period bond with a 100-dollar face payment to its market yield.",
+      "xAxis": {
+        "label": "Market yield, i (%)",
+        "domain": [0, 10],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 5, "label": "5" },
+          { "value": 10, "label": "10" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Bond price ($)",
+        "domain": [88, 102],
+        "ticks": [
+          { "value": 90, "label": "90" },
+          { "value": 95, "label": "95" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "Pb",
+          "label": "Pb",
+          "points": [
+            { "x": 0, "y": 100 },
+            { "x": 5, "y": 95.2 },
+            { "x": 10, "y": 90.9 }
+          ],
+          "interpolation": "smooth",
+          "lineStyle": "solid"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch06-002",
+    "chapter": 6,
+    "topic": "Money-demand movement",
+    "style": "concept",
+    "difficulty": 3,
+    "stem": "With Y and P fixed, what does the arrow from A to B on the money-demand graph represent?",
+    "choices": [
+      "A rightward shift of money demand caused by higher income.",
+      "A movement to higher real balances caused by a lower nominal interest rate.",
+      "A leftward shift of money demand caused by a lower price level.",
+      "A movement up and left along the same money-demand curve as the nominal interest rate rises, reducing real money demanded."
+    ],
+    "correctChoice": 3,
+    "explanation": "A to B moves along the same downward-sloping money-demand curve toward a higher interest rate and a lower real money balance. Y and P are held fixed, so this is not a curve shift.",
+    "choiceRationales": [
+      "Income is held fixed and the graph shows movement along one curve rather than a rightward shift.",
+      "The arrow moves toward a higher interest rate and lower, not higher, real balances.",
+      "The price level is held fixed, and a price-level change would not be the displayed movement along the curve.",
+      "This matches the arrow and the inverse relationship between nominal interest rates and real money demanded at fixed Y and P."
+    ],
+    "reviewCardId": "ch06-012",
+    "sourceCardIds": ["ch06-012"],
+    "tags": ["exam-bank", "stimulus", "graph", "money-demand", "movement-vs-shift"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Money demand at fixed income and prices",
+      "description": "A downward-sloping curve labelled Md relates real money balances to the nominal interest rate. Points A and B lie on the curve, and an arrow points from A at (50,5) to B at approximately (35,7).",
+      "xAxis": {
+        "label": "Real money balances, M/P",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Nominal interest rate, i (%)",
+        "domain": [0, 10],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 5, "label": "5" },
+          { "value": 10, "label": "10" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "Md",
+          "label": "Md",
+          "points": [
+            { "x": 10, "y": 9 },
+            { "x": 50, "y": 5 },
+            { "x": 90, "y": 1 }
+          ],
+          "lineStyle": "solid"
+        }
+      ],
+      "points": [
+        { "id": "A", "label": "A", "x": 50, "y": 5 },
+        { "id": "B", "label": "B", "x": 35, "y": 6.5 }
+      ],
+      "arrows": [
+        {
+          "id": "A-to-B",
+          "from": { "x": 50, "y": 5 },
+          "to": { "x": 35, "y": 6.5 }
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch06-003",
+    "chapter": 6,
+    "topic": "Reserve-deposit ratio",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "What is Bank B’s reserve-deposit ratio using the balance-sheet data?",
+    "choices": ["5%", "8%", "10%", "15%"],
+    "correctChoice": 2,
+    "explanation": "Bank B holds 75 million in reserves against 750 million in deposits, so the reserve-deposit ratio is 75/750 × 100 = 10%.",
+    "choiceRationales": [
+      "This is below the ratio implied by 75 divided by 750.",
+      "This does not match the displayed reserves and deposits.",
+      "75 / 750 = 0.10, so the ratio is 10%.",
+      "This overstates the reserve share of Bank B’s deposits."
+    ],
+    "reviewCardId": "ch06-020",
+    "sourceCardIds": ["ch06-020", "ch06-016"],
+    "tags": ["exam-bank", "stimulus", "table", "banking", "reserves"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Selected commercial-bank balance-sheet data",
+      "columns": [
+        { "key": "bank", "label": "Bank", "align": "left" },
+        { "key": "reserves", "label": "Reserves ($m)", "align": "right" },
+        { "key": "deposits", "label": "Deposits ($m)", "align": "right" },
+        { "key": "loans", "label": "Loans ($m)", "align": "right" }
+      ],
+      "rows": [
+        { "id": "A", "cells": ["A", "50", "1,000", "900"] },
+        { "id": "B", "cells": ["B", "75", "750", "700"] }
+      ],
+      "note": "The reserve-deposit ratio is reserves divided by deposits."
+    }
+  },
+  {
+    "id": "auth-stim-ch07-001",
+    "chapter": 7,
+    "topic": "ES-balance demand and the cash rate",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "The arrow moves along reserve demand from E1 to E2 as total ES balances increase. What happens to the overnight cash rate?",
+    "choices": [
+      "It rises toward the lending ceiling.",
+      "It falls toward the deposit floor.",
+      "Reserve demand shifts right because the cash rate falls.",
+      "ES balances fall while the cash rate remains fixed at E1."
+    ],
+    "correctChoice": 1,
+    "explanation": "The reserve-demand curve slopes downward. Moving right to a larger quantity of ES balances corresponds to a lower overnight cash rate, closer to the floor.",
+    "choiceRationales": [
+      "Moving right along the downward-sloping demand curve lowers rather than raises the rate.",
+      "E2 has more ES balances and a lower rate, toward the lower corridor boundary.",
+      "The arrow is a movement along reserve demand, not a rightward curve shift.",
+      "The arrow shows ES balances increasing from E1 to E2, not falling."
+    ],
+    "reviewCardId": "ch07-009",
+    "sourceCardIds": ["ch07-009", "ch07-007"],
+    "tags": ["exam-bank", "stimulus", "graph", "ES-balances", "cash-rate-corridor"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Reserve demand inside the cash-rate corridor",
+      "description": "A downward-sloping reserve-demand curve Rd is shown between a dashed upper line labelled ceiling and a dashed lower line labelled floor. Points E1 and E2 lie on Rd, and an arrow points from E1 at (50,4) to E2 at (80,1.75).",
+      "xAxis": {
+        "label": "ES balances",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Overnight cash rate (%)",
+        "domain": [0, 8],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 4, "label": "4" },
+          { "value": 8, "label": "8" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "Rd",
+          "label": "Rd",
+          "points": [
+            { "x": 10, "y": 7 },
+            { "x": 50, "y": 4 },
+            { "x": 90, "y": 1 }
+          ],
+          "lineStyle": "solid"
+        }
+      ],
+      "points": [
+        { "id": "E1", "label": "E1", "x": 50, "y": 4 },
+        { "id": "E2", "label": "E2", "x": 80, "y": 1.75 }
+      ],
+      "referenceLines": [
+        {
+          "id": "ceiling",
+          "orientation": "horizontal",
+          "value": 7,
+          "label": "ceiling",
+          "lineStyle": "dashed"
+        },
+        {
+          "id": "floor",
+          "orientation": "horizontal",
+          "value": 1,
+          "label": "floor",
+          "lineStyle": "dashed"
+        }
+      ],
+      "arrows": [
+        {
+          "id": "E1-to-E2",
+          "from": { "x": 50, "y": 4 },
+          "to": { "x": 80, "y": 1.75 }
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch07-002",
+    "chapter": 7,
+    "topic": "Policy reaction function shift",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "The policy reaction function shifts upward from PRF0 to PRF1. What does this mean at a fixed inflation rate?",
+    "choices": [
+      "The central bank chooses a lower nominal policy rate.",
+      "The inflation rate must fall before the central bank changes its rate.",
+      "The economy moves along PRF0 because the inflation rate is unchanged.",
+      "The central bank chooses a higher nominal policy rate at every displayed inflation rate."
+    ],
+    "correctChoice": 3,
+    "explanation": "An upward exogenous shift of the policy reaction function raises the policy rate selected at any given inflation rate.",
+    "choiceRationales": [
+      "An upward shift means a higher, not lower, selected nominal rate at the same inflation rate.",
+      "The graph describes a change in the rule, not a required prior movement in inflation.",
+      "The shift from PRF0 to PRF1 is not a movement along PRF0.",
+      "The vertical comparison at a common inflation rate shows a higher policy rate under PRF1."
+    ],
+    "reviewCardId": "ch07-027",
+    "sourceCardIds": ["ch07-027", "ch07-022"],
+    "tags": ["exam-bank", "stimulus", "graph", "PRF", "monetary-policy"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "An upward policy-reaction-function shift",
+      "description": "Two upward-sloping policy reaction functions PRF0 and PRF1 relate inflation to the nominal policy rate. PRF1 lies above PRF0. A dashed vertical line marks inflation of 4% and intersects both functions.",
+      "xAxis": {
+        "label": "Inflation, π (%)",
+        "domain": [0, 8],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 4, "label": "4" },
+          { "value": 8, "label": "8" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Nominal policy rate, i (%)",
+        "domain": [0, 14],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 6, "label": "6" },
+          { "value": 12, "label": "12" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "PRF0",
+          "label": "PRF0",
+          "points": [
+            { "x": 0, "y": 3 },
+            { "x": 8, "y": 11 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 6, "y": 9 }
+        },
+        {
+          "id": "PRF1",
+          "label": "PRF1",
+          "points": [
+            { "x": 0, "y": 5 },
+            { "x": 8, "y": 13 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 5, "y": 10 }
+        }
+      ],
+      "referenceLines": [
+        {
+          "id": "inflation-four",
+          "orientation": "vertical",
+          "value": 4,
+          "label": "π = 4%",
+          "lineStyle": "dashed"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch07-003",
+    "chapter": 7,
+    "topic": "Government payments and ES balances",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "According to the pension-payment row, what happens when the government pays households from its RBA account?",
+    "choices": [
+      "Government-account balances fall, commercial-bank ES balances rise, and household deposits rise.",
+      "Government-account balances rise, ES balances fall, and household deposits fall.",
+      "Only household deposits change; total ES balances are unchanged.",
+      "ES balances fall because every government payment withdraws reserves from commercial banks."
+    ],
+    "correctChoice": 0,
+    "explanation": "A payment from the government’s RBA account transfers balances to commercial banks, increasing their ES balances and the recipients’ deposits while reducing the government account.",
+    "choiceRationales": [
+      "This is the transaction shown: the government account is debited while the commercial-bank reserve account and household deposits are credited.",
+      "Those directions describe a tax payment rather than the pension payment row.",
+      "The table explicitly shows ES balances changing by +50 for the pension payment.",
+      "A payment from the government account adds, rather than withdraws, ES balances from commercial banks."
+    ],
+    "reviewCardId": "ch07-013",
+    "sourceCardIds": ["ch07-013"],
+    "tags": ["exam-bank", "stimulus", "table", "ES-balances", "government-payments"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Stylised settlement effects of transactions",
+      "columns": [
+        { "key": "transaction", "label": "Transaction", "align": "left" },
+        { "key": "government", "label": "Government account", "align": "right" },
+        { "key": "es", "label": "Bank ES balances", "align": "right" },
+        { "key": "deposits", "label": "Household deposits", "align": "right" }
+      ],
+      "rows": [
+        { "id": "pension", "cells": ["Pension payment", "−50", "+50", "+50"] },
+        { "id": "tax", "cells": ["Tax payment", "+30", "−30", "−30"] },
+        { "id": "sale", "cells": ["RBA securities sale to banks", "0", "−20", "0"] }
+      ],
+      "note": "Entries are changes in millions of dollars; a plus sign denotes an increase."
+    }
+  },
+  {
+    "id": "auth-stim-ch08-001",
+    "chapter": 8,
+    "topic": "AD shift versus movement",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "The graph shows AD moving from AD0 to AD1. Which interpretation is consistent with a fall in autonomous exports?",
+    "choices": [
+      "A movement up AD0 caused by higher inflation, with no change in autonomous spending.",
+      "A rightward shift of AD caused by stronger foreign demand for Australian output.",
+      "A leftward shift of AD, giving lower output at a given inflation rate.",
+      "A vertical shift of the potential-output line, leaving AD unchanged."
+    ],
+    "correctChoice": 2,
+    "explanation": "Lower autonomous exports reduce planned spending at each inflation rate, so the AD curve shifts left. At a common inflation rate, the displayed AD1 gives lower output than AD0.",
+    "choiceRationales": [
+      "A movement along AD0 is associated with a change in inflation, not a change in autonomous exports.",
+      "A fall in exports reduces rather than increases autonomous demand; the graph shows AD1 to the left.",
+      "This matches the leftward shift and the lower output read at a common inflation rate.",
+      "The graph concerns the AD schedule; the potential-output line is not the shifted object."
+    ],
+    "reviewCardId": "ch08-008",
+    "sourceCardIds": ["ch08-008", "ch08-010"],
+    "tags": ["exam-bank", "stimulus", "graph", "AD", "exports", "shift-vs-movement"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "A leftward AD shift",
+      "description": "Two downward-sloping aggregate-demand curves AD0 and AD1 are shown, with AD1 to the left and below AD0. A horizontal dashed line marks a common inflation rate and intersects AD0 at A and AD1 at B.",
+      "xAxis": {
+        "label": "Output, Y",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Inflation, π (%)",
+        "domain": [0, 10],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 5, "label": "5" },
+          { "value": 10, "label": "10" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "AD0",
+          "label": "AD0",
+          "points": [
+            { "x": 10, "y": 9 },
+            { "x": 90, "y": 1 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 72, "y": 2.8 }
+        },
+        {
+          "id": "AD1",
+          "label": "AD1",
+          "points": [
+            { "x": 10, "y": 7.5 },
+            { "x": 90, "y": 0.5 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 72, "y": 1.8 }
+        }
+      ],
+      "points": [
+        { "id": "A", "label": "A", "x": 50, "y": 5 },
+        { "id": "B", "label": "B", "x": 38.57, "y": 5 }
+      ],
+      "referenceLines": [
+        {
+          "id": "common-inflation",
+          "orientation": "horizontal",
+          "value": 5,
+          "label": "common π",
+          "lineStyle": "dashed"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch08-002",
+    "chapter": 8,
+    "topic": "Favourable supply shock",
+    "style": "concept",
+    "difficulty": 3,
+    "stem": "What economic change is represented by the shift from SRAS0 to SRAS1 in the graph?",
+    "choices": [
+      "A favourable supply shock: inflation falls and output rises at the new short-run intersection.",
+      "A negative demand shock: inflation and output both fall along an unchanged SRAS curve.",
+      "A permanent fall in potential output, shown by a leftward movement of the AD curve.",
+      "An inflation-target increase that shifts the 45-degree line upward."
+    ],
+    "correctChoice": 0,
+    "explanation": "SRAS1 is below/right of SRAS0. With AD unchanged, the new intersection has lower inflation and slightly higher output, which is the displayed favourable supply shock.",
+    "choiceRationales": [
+      "The supply curve shifts down/right while AD is unchanged, producing the displayed lower inflation and higher output.",
+      "A demand shock would shift AD, not SRAS; the graph shows two supply curves.",
+      "Potential output is shown by a vertical reference line and is not the curve that shifts here.",
+      "Neither an inflation-target change nor a 45-degree line belongs to this AD-AS graph."
+    ],
+    "reviewCardId": "ch08-023",
+    "sourceCardIds": ["ch08-023", "ch08-017"],
+    "tags": ["exam-bank", "stimulus", "graph", "AD-AS", "supply-shock"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "AD-AS response to a favourable supply shock",
+      "description": "The graph has output on the horizontal axis and inflation on the vertical axis. A downward-sloping AD curve intersects two upward-sloping short-run aggregate-supply curves SRAS0 and SRAS1. SRAS1 lies below SRAS0. Equilibria E0 and E1 are marked, and a vertical dashed line labelled Y* is shown at output 50.",
+      "xAxis": {
+        "label": "Output, Y",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Inflation, π (%)",
+        "domain": [0, 10],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 5, "label": "5" },
+          { "value": 10, "label": "10" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "AD",
+          "label": "AD",
+          "points": [
+            { "x": 10, "y": 9 },
+            { "x": 90, "y": 1 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 72, "y": 2.8 }
+        },
+        {
+          "id": "SRAS0",
+          "label": "SRAS0",
+          "points": [
+            { "x": 10, "y": 1 },
+            { "x": 90, "y": 9 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 73, "y": 7.3 }
+        },
+        {
+          "id": "SRAS1",
+          "label": "SRAS1",
+          "points": [
+            { "x": 10, "y": 0 },
+            { "x": 90, "y": 8 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 73, "y": 6.3 }
+        }
+      ],
+      "points": [
+        { "id": "E0", "label": "E0", "x": 50, "y": 5 },
+        { "id": "E1", "label": "E1", "x": 55, "y": 4.5 }
+      ],
+      "referenceLines": [
+        {
+          "id": "potential",
+          "orientation": "vertical",
+          "value": 50,
+          "label": "Y*",
+          "lineStyle": "dashed"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch08-003",
+    "chapter": 8,
+    "topic": "Output gap and inflation pressure",
+    "style": "scenario",
+    "difficulty": 1,
+    "stem": "Which row shows a negative output gap and therefore downward pressure on inflation when no adverse supply shock is present?",
+    "choices": ["Row B", "Both rows", "Neither row", "Row A"],
+    "correctChoice": 3,
+    "explanation": "Row A has Y below Y*: 98 compared with 100, giving a negative output gap. In the course’s short-run supply relation, that creates downward pressure on inflation absent an adverse supply shock.",
+    "choiceRationales": [
+      "Row B has output above potential, so its output gap is positive rather than negative.",
+      "Only row A has Y below Y*; row B has Y above Y*.",
+      "The table contains one negative and one positive output gap, so at least one row qualifies.",
+      "Row A has (98−100)/100 = −2%, so it is the row with a negative gap."
+    ],
+    "reviewCardId": "ch08-012",
+    "sourceCardIds": ["ch08-012", "ch08-016"],
+    "tags": ["exam-bank", "stimulus", "table", "output-gap", "inflation"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Output relative to potential",
+      "columns": [
+        { "key": "period", "label": "Period", "align": "left" },
+        { "key": "output", "label": "Output Y", "align": "right" },
+        { "key": "potential", "label": "Potential output Y*", "align": "right" },
+        { "key": "inflation", "label": "Inflation π", "align": "right" }
+      ],
+      "rows": [
+        { "id": "A", "cells": ["A", "98", "100", "3.0%"] },
+        { "id": "B", "cells": ["B", "103", "100", "3.0%"] }
+      ],
+      "note": "The output gap is (Y − Y*) / Y*."
+    }
+  },
+  {
+    "id": "auth-stim-ch09-001",
+    "chapter": 9,
+    "topic": "Foreign-exchange market shift",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "The graph shifts AUD demand from D0 to D1 while AUD supply is unchanged. Under the course convention e = USD/AUD, what happens?",
+    "choices": [
+      "The AUD depreciates and e falls.",
+      "The AUD appreciates and e rises.",
+      "The exchange rate is unchanged because the graph is a flexible-rate market.",
+      "AUD supply shifts right, causing e to rise without a demand change."
+    ],
+    "correctChoice": 1,
+    "explanation": "The rightward AUD-demand shift raises the equilibrium price of an AUD in USD. With e measured in USD/AUD, a higher e is an AUD appreciation.",
+    "choiceRationales": [
+      "A higher demand for AUD raises rather than lowers the USD price of an AUD.",
+      "The new equilibrium has a higher e, and under USD/AUD that is an appreciation of the AUD.",
+      "A flexible rate changes in response to the displayed demand shift.",
+      "The supply curve is unchanged; the graph explicitly shifts demand from D0 to D1."
+    ],
+    "reviewCardId": "ch09-031",
+    "sourceCardIds": ["ch09-031", "ch09-016", "ch09-017"],
+    "tags": [
+      "exam-bank",
+      "stimulus",
+      "graph",
+      "FX-market",
+      "appreciation",
+      "exchange-rate"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "AUD demand and the exchange rate",
+      "description": "The vertical axis measures e in USD per AUD and the horizontal axis measures AUD quantity. An upward-sloping supply curve S intersects two downward-sloping demand curves D0 and D1. D1 lies to the right of D0. Equilibria E0 and E1 are marked.",
+      "xAxis": {
+        "label": "Quantity of AUD",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Exchange rate e (USD/AUD)",
+        "domain": [0.4, 1],
+        "ticks": [
+          { "value": 0.4, "label": "0.40" },
+          { "value": 0.7, "label": "0.70" },
+          { "value": 1, "label": "1.00" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "S",
+          "label": "S",
+          "points": [
+            { "x": 10, "y": 0.5 },
+            { "x": 90, "y": 0.9 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 75, "y": 0.825 }
+        },
+        {
+          "id": "D0",
+          "label": "D0",
+          "points": [
+            { "x": 10, "y": 0.9 },
+            { "x": 90, "y": 0.5 }
+          ],
+          "lineStyle": "dashed",
+          "labelAt": { "x": 25, "y": 0.825 }
+        },
+        {
+          "id": "D1",
+          "label": "D1",
+          "points": [
+            { "x": 10, "y": 1 },
+            { "x": 90, "y": 0.6 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 75, "y": 0.675 }
+        }
+      ],
+      "points": [
+        { "id": "E0", "label": "E0", "x": 50, "y": 0.7 },
+        { "id": "E1", "label": "E1", "x": 60, "y": 0.75 }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch09-002",
+    "chapter": 9,
+    "topic": "Defending an overvalued fixed exchange rate",
+    "style": "model_discrimination",
+    "difficulty": 3,
+    "stem": "At the fixed rate shown, what imbalance exists and what intervention is required to defend the peg?",
+    "choices": [
+      "Excess demand for AUD; the central bank sells AUD and accumulates foreign reserves.",
+      "Excess supply of AUD; the central bank sells AUD and accumulates foreign reserves.",
+      "Excess demand for AUD; the central bank buys AUD and runs down foreign reserves.",
+      "Excess supply of AUD; the central bank buys AUD and sells foreign reserves."
+    ],
+    "correctChoice": 3,
+    "explanation": "The fixed rate is above the flexible-market intersection, so AUD supplied exceeds AUD demanded. The central bank must buy the excess AUD, paying with foreign reserves.",
+    "choiceRationales": [
+      "At a rate above equilibrium, the graph shows excess supply rather than excess demand for AUD.",
+      "The imbalance is correctly identified as excess supply, but selling AUD would add to that excess rather than absorb it.",
+      "Buying AUD is the correct intervention for excess supply, but it uses foreign reserves rather than describing excess demand.",
+      "The high peg creates excess AUD supply; buying AUD with foreign reserves is the displayed defence."
+    ],
+    "reviewCardId": "ch09-036",
+    "sourceCardIds": ["ch09-036", "ch09-035"],
+    "tags": [
+      "exam-bank",
+      "stimulus",
+      "graph",
+      "fixed-exchange-rate",
+      "reserves",
+      "peg"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "An overvalued AUD peg",
+      "description": "The vertical axis measures e in USD per AUD. A downward-sloping AUD-demand curve D and an upward-sloping AUD-supply curve S intersect at e=0.60. A horizontal dashed fixed-rate line labelled e_bar is above the intersection at e=0.75.",
+      "xAxis": {
+        "label": "Quantity of AUD",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Exchange rate e (USD/AUD)",
+        "domain": [0.4, 1],
+        "ticks": [
+          { "value": 0.4, "label": "0.40" },
+          { "value": 0.6, "label": "0.60" },
+          { "value": 0.75, "label": "0.75" },
+          { "value": 1, "label": "1.00" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "S",
+          "label": "S",
+          "points": [
+            { "x": 10, "y": 0.4 },
+            { "x": 90, "y": 0.8 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 76, "y": 0.73 }
+        },
+        {
+          "id": "D",
+          "label": "D",
+          "points": [
+            { "x": 10, "y": 0.8 },
+            { "x": 90, "y": 0.4 }
+          ],
+          "lineStyle": "solid",
+          "labelAt": { "x": 76, "y": 0.47 }
+        }
+      ],
+      "points": [{ "id": "E", "label": "E", "x": 50, "y": 0.6 }],
+      "referenceLines": [
+        {
+          "id": "fixed-rate",
+          "orientation": "horizontal",
+          "value": 0.75,
+          "label": "e_bar",
+          "lineStyle": "dashed"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch09-003",
+    "chapter": 9,
+    "topic": "Exchange-rate cross-rate calculation",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "Using the two quotes in the table, approximately how many euros is one Australian dollar worth?",
+    "choices": ["€0.42 per AUD", "€0.65 per AUD", "€0.60 per AUD", "€1.57 per AUD"],
+    "correctChoice": 2,
+    "explanation": "One AUD is worth 0.65 USD, and each USD is worth 0.92 EUR. The cross-rate is 0.65 × 0.92 = 0.598 EUR/AUD, approximately €0.60 per AUD.",
+    "choiceRationales": [
+      "This does not multiply the two displayed exchange rates and is too low for the cross-rate.",
+      "0.65 is USD per AUD, not euros per AUD; the USD-to-euro quote must also be applied.",
+      "Multiplying 0.65 USD/AUD by 0.92 EUR/USD gives approximately 0.60 EUR/AUD.",
+      "This is close to an inversion and does not use the quote directions as displayed."
+    ],
+    "reviewCardId": "ch09-020",
+    "sourceCardIds": ["ch09-020"],
+    "tags": ["exam-bank", "stimulus", "table", "exchange-rate", "cross-rate"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Exchange-rate quotes",
+      "columns": [
+        { "key": "quote", "label": "Quote", "align": "left" },
+        { "key": "rate", "label": "Rate", "align": "right" }
+      ],
+      "rows": [
+        { "id": "usd-aud", "cells": ["USD/AUD", "0.65"] },
+        { "id": "eur-usd", "cells": ["EUR/USD", "0.92"] }
+      ],
+      "note": "Read each quote as units of the numerator currency per one unit of the denominator currency."
+    }
+  },
+  {
+    "id": "auth-stim-ch10-001",
+    "chapter": 10,
+    "topic": "Diminishing marginal product of capital",
+    "style": "model_discrimination",
+    "difficulty": 1,
+    "stem": "Which statement is supported by the shape of the production function in the graph?",
+    "choices": [
+      "The marginal product of capital diminishes as K rises, because the curve’s slope falls.",
+      "The marginal product of capital rises as K rises, because the curve is concave.",
+      "Output falls whenever capital rises, because the curve flattens.",
+      "Constant returns to scale require a straight production function in K alone."
+    ],
+    "correctChoice": 0,
+    "explanation": "The curve is increasing but concave: additional capital raises output while each additional unit adds less than the previous one. That is diminishing MPK.",
+    "choiceRationales": [
+      "An increasing concave curve has a positive but declining slope, which is diminishing marginal product of capital.",
+      "Concavity means the slope falls, not rises, as capital increases.",
+      "The curve remains increasing, so output rises even though the increments become smaller.",
+      "Constant returns to scale is a joint property of scaling all inputs; this one-input graph does not require a straight line."
+    ],
+    "reviewCardId": "ch10-011",
+    "sourceCardIds": ["ch10-011"],
+    "tags": [
+      "exam-bank",
+      "stimulus",
+      "graph",
+      "production-function",
+      "diminishing-returns"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Output and capital",
+      "description": "An increasing, concave curve labelled Y relates output to capital K. The curve passes through the displayed points (0,0), (20,45), (50,75) and (100,95).",
+      "xAxis": {
+        "label": "Capital, K",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Output, Y",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "Y",
+          "label": "Y",
+          "points": [
+            { "x": 0, "y": 0 },
+            { "x": 20, "y": 45 },
+            { "x": 50, "y": 75 },
+            { "x": 100, "y": 95 }
+          ],
+          "interpolation": "smooth",
+          "lineStyle": "solid"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch10-002",
+    "chapter": 10,
+    "topic": "Capital deepening and output per worker",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "Moving from A to B along the output-per-worker curve as capital per worker rises, what happens?",
+    "choices": [
+      "Output per worker falls and the marginal gain becomes larger.",
+      "Output per worker is unchanged because only total capital matters.",
+      "Output per worker rises, but each additional unit of capital per worker adds less than the previous one.",
+      "Output per worker rises one-for-one with capital per worker because the production function has constant returns."
+    ],
+    "correctChoice": 2,
+    "explanation": "The curve rises from A to B but becomes flatter. Capital deepening raises output per worker while diminishing marginal returns make the additional gain smaller.",
+    "choiceRationales": [
+      "The curve is upward sloping, so output per worker rises; its flattening means the marginal gain becomes smaller.",
+      "The graph directly relates output per worker to capital per worker, and the marked movement changes the former.",
+      "This describes the upward but concave curve and the movement from A to B.",
+      "Constant returns to scale does not imply a one-for-one relationship when capital per worker changes with other inputs held per worker."
+    ],
+    "reviewCardId": "ch10-015",
+    "sourceCardIds": ["ch10-015", "ch10-016"],
+    "tags": [
+      "exam-bank",
+      "stimulus",
+      "graph",
+      "capital-deepening",
+      "output-per-worker"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "econ_graph",
+      "title": "Output per worker and capital per worker",
+      "description": "An increasing, concave curve labelled y relates output per worker to capital per worker. Points A and B are marked at (25,40) and (60,65), with an arrow from A to B.",
+      "xAxis": {
+        "label": "Capital per worker, k",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "yAxis": {
+        "label": "Output per worker, y",
+        "domain": [0, 100],
+        "ticks": [
+          { "value": 0, "label": "0" },
+          { "value": 50, "label": "50" },
+          { "value": 100, "label": "100" }
+        ],
+        "showTickLabels": true
+      },
+      "curves": [
+        {
+          "id": "y",
+          "label": "y",
+          "points": [
+            { "x": 0, "y": 0 },
+            { "x": 25, "y": 40 },
+            { "x": 60, "y": 65 },
+            { "x": 100, "y": 82 }
+          ],
+          "interpolation": "smooth",
+          "lineStyle": "solid"
+        }
+      ],
+      "points": [
+        { "id": "A", "label": "A", "x": 25, "y": 40 },
+        { "id": "B", "label": "B", "x": 60, "y": 65 }
+      ],
+      "arrows": [
+        {
+          "id": "A-to-B",
+          "from": { "x": 25, "y": 40 },
+          "to": { "x": 60, "y": 65 }
+        }
+      ]
+    }
+  },
+  {
+    "id": "auth-stim-ch10-003",
+    "chapter": 10,
+    "topic": "Growth-accounting calculation",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "For economy B, use ΔY/Y = ΔA/A + αΔK/K + (1−α)ΔL/L to calculate predicted output growth from the table.",
+    "choices": ["3.2%", "4.5%", "5.0%", "6.5%"],
+    "correctChoice": 1,
+    "explanation": "For B, output growth is 2% + 0.3×6% + 0.7×1% = 2% + 1.8% + 0.7% = 4.5%.",
+    "choiceRationales": [
+      "This underweights the capital contribution or omits part of the displayed calculation.",
+      "The TFP, capital and labour contributions sum to 2% + 1.8% + 0.7% = 4.5%.",
+      "This does not apply the α and 1−α weights to the two factor-growth rates correctly.",
+      "This overstates the weighted contributions and does not follow the growth-accounting identity."
+    ],
+    "reviewCardId": "ch10-025",
+    "sourceCardIds": ["ch10-025", "ch10-027"],
+    "tags": ["exam-bank", "stimulus", "table", "growth-accounting", "TFP"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Growth-accounting inputs",
+      "columns": [
+        { "key": "economy", "label": "Economy", "align": "left" },
+        { "key": "capital", "label": "Capital growth", "align": "right" },
+        { "key": "labour", "label": "Labour growth", "align": "right" },
+        { "key": "alpha", "label": "α", "align": "right" },
+        { "key": "tfp", "label": "TFP growth", "align": "right" }
+      ],
+      "rows": [
+        { "id": "A", "cells": ["A", "4%", "2%", "0.25", "1%"] },
+        { "id": "B", "cells": ["B", "6%", "1%", "0.30", "2%"] }
+      ],
+      "note": "All growth rates are percentages. The labour exponent is 1−α."
+    }
+  }
+]

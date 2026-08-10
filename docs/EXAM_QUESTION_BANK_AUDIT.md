@@ -1,8 +1,8 @@
 # Exam Question Bank Audit
 
-This document records the content and validation audit for the static exam-question
-bank. The JSON file is the source of truth; this report deliberately does not repeat
-all question text.
+This document records the content, stimulus, accessibility and validation audit for
+the static exam-question bank. The JSON collections are the source of truth; this
+report deliberately does not repeat all question text or graph specifications.
 
 ## Authoring principles
 
@@ -10,15 +10,28 @@ all question text.
   remains unchanged.
 - Every question has exactly four directly comparable choices, one best answer, a
   general explanation, and a specific rationale for every choice.
-- New questions are authored from the supplied course deck and use the course’s
-  notation and model closures. Stems specify assumptions when the answer depends on
-  them, especially for closed versus small-open economies, PAE versus AE, the PRF AD
-  model, and the USD/AUD exchange-rate convention.
+- New questions use the supplied course deck, its notation and its model closures.
+  Stems specify assumptions when the answer depends on closed versus small-open
+  economies, PAE versus AE, the PRF AD model, or the USD/AUD exchange-rate convention.
 - Distractors are based on source-card traps, sign errors, model confusion,
   stock/flow confusion, nominal/real confusion, numerator/denominator errors,
-  multiplier omissions, and realistic arithmetic mistakes.
-- There is no runtime LLM generation, API call, random distractor synthesis, or
-  network dependency in the question-bank loader.
+  multiplier omissions and realistic arithmetic mistakes.
+- Stimuli are declarative data. No question stores SVG/HTML strings, calls a network
+  chart service, generates distractors or invokes an LLM at runtime.
+
+## Stimulus domain
+
+`ExamQuestion.stimulus` is optional and is a discriminated union of `econ_graph` and
+`table` specifications. `src/stimulus/model.ts` contains the explicit graph axes,
+curves, points, reference lines, arrows, annotations and semantic table types.
+`src/stimulus/validateStimulus.ts` fails loudly for malformed domains, coordinates,
+curves, primitives, table dimensions, IDs and accessibility text.
+
+Graphs render through ordinary React and responsive SVG in `EconGraph.tsx`; they use a
+`viewBox`, direct labels, solid/dashed styles and labelled points so meaning does not
+depend on colour. Every graph includes a figure caption, SVG title, description and
+explicit accessible label. Tables render as native semantic HTML with captions,
+column headers, bounded rows and an optional note.
 
 ## Provenance and review mapping
 
@@ -27,9 +40,10 @@ content directly from the canonical deck. It preserves the canonical front, choi
 correct index, explanation, topic, difficulty and tags. A small static map supplies
 the style and four choice rationales without modifying the canonical JSON.
 
-The 100 new questions are stored in
-`exam_questions/MACRO1_exam_questions.json` with
-`provenance: "authored_from_flashcards"`. Each question has one globally unique
+The 100 original authored questions remain in
+`exam_questions/MACRO1_exam_questions.json`. The 30 additional stimulus questions are
+in `exam_questions/MACRO1_exam_stimulus_questions.json`. All 130 authored questions
+have `provenance: "authored_from_flashcards"`; each has one globally unique
 `reviewCardId`, and that ID is included in `sourceCardIds`. The combined bank has no
 review-card mapping exceptions.
 
@@ -78,70 +92,76 @@ The 31 valid authored MCQs are the 30 existing mixed Chapter 0 cards plus
 
 | Measure | Result |
 | --- | ---: |
-| Total questions | 131 |
+| Total questions | 161 |
 | Canonical MCQs | 31 |
-| New authored questions | 100 |
+| New authored questions | 130 |
+| Additional stimulus questions | 30 |
 | Mixed questions (Chapter 0) | 30 |
-| Unique `reviewCardId` values | 131 |
-| Calculation-style questions | 28 |
+| Unique `reviewCardId` values | 161 |
+| Calculation-style questions | 37 |
+| Graph stimuli | 20 |
+| Table stimuli | 10 |
 
-### Chapter and topic matrix
+### Chapter and topic/stimulus matrix
 
-| Chapter | Chapter-specific exam questions | Main concepts represented in the new authored set |
-| ---: | ---: | --- |
-| 1 | 11 total / 10 new | GDP and imports, value added, inventories, GDP/GNI, real GDP, CPI/deflator, growth and inflation/deflation |
-| 2 | 10 | Labour statistics, steady-state unemployment, output gaps, MPL/VMPL, labour-demand and supply shifts, wage floors, tax wedges |
-| 3 | 10 | Exact and expected real rates, zero lower bound, stocks/flows, capital accumulation, user cost, investment demand, public saving, closed-economy adjustment, housing |
-| 4 | 10 | AE versus PAE, inventories, MPC, equilibrium, multiplier comparative statics, open-economy PAE, paradox of thrift, leakages/injections |
-| 5 | 10 | Taxes, four-sector PAE, tax leakage, automatic stabilisers, policy lags, debt stocks/flows, debt sustainability, four-sector multiplier |
-| 6 | 10 | Asset returns, bond pricing, money functions/demand, bank balance sheets and lending, liquidity/solvency, quantity identity versus theory |
-| 7 | 10 | RBA target, cash rate, ES balances, corridor arithmetic, open-market operations, interbank settlement, transmission, expectations, Taylor rule, PRF |
-| 8 | 10 | PAE/output/AD derivation, AD movements and shifts, supply shocks, inflation dynamics, self-correction, potential output and financial crises |
-| 9 | 10 | Current account/BOP, small-open-economy financing, PPP limitations, currency conversion/cross rates, real exchange rates, FX transmission |
-| 10 | 10 | GDP per capita, compounding, rule of 70, TFP, diminishing MPK, output per worker, ideas, institutions, catch-up growth |
-| 0 | 30 mixed | Existing canonical cross-model and cross-chapter discrimination questions retained unchanged through the adapter |
+| Chapter | Exam questions | Stimuli | Representative coverage |
+| ---: | ---: | ---: | --- |
+| 1 | 14 total / 13 new | 2 graphs, 1 table | Price-index inflation, business-cycle position, GDP deflator |
+| 2 | 13 | 2 graphs, 1 table | Wage floor, labour-demand shift, unemployment rate |
+| 3 | 13 | 2 graphs, 1 table | Saving-investment equilibrium, investment demand, expected real rate |
+| 4 | 13 | 2 graphs, 1 table | PAE/45-degree equilibrium, inventory pressure, open-economy multiplier |
+| 5 | 13 | 2 graphs, 1 table | Fiscal PAE shift, debt-to-GDP dynamics, debt ratio |
+| 6 | 13 | 2 graphs, 1 table | Bond price/yield, money demand, bank reserves |
+| 7 | 13 | 2 graphs, 1 table | ES-balance demand/corridor, PRF shift, government settlement |
+| 8 | 13 | 2 graphs, 1 table | AD shift, favourable supply shock, output gap |
+| 9 | 13 | 2 graphs, 1 table | AUD FX demand, overvalued peg, cross-rate conversion |
+| 10 | 13 | 2 graphs, 1 table | Production function, capital deepening, growth accounting |
+| 0 | 30 | 0 | Existing canonical cross-model and cross-chapter questions retained unchanged |
+
+The additional questions use previously unused canonical review cards. Every Chapter
+1–10 has three stimulus questions, exceeding the minimum of two per chapter. The
+graphs demonstrate labour supply/demand, saving/investment, PAE, bond and money
+markets, ES balances, PRF, AD-AS, foreign exchange and production functions. Tables
+cover GDP deflators, labour statistics, Fisher calculations, multipliers, debt,
+bank reserves, ES transactions, output gaps, cross rates and growth accounting.
 
 ## Style distribution
 
-The unified distribution is:
-
 | Style | Unified | New authored | Unified share |
 | --- | ---: | ---: | ---: |
-| concept | 31 | 25 | 23.7% |
-| scenario | 35 | 27 | 26.7% |
-| calculation | 28 | 21 | 21.4% |
-| model discrimination | 28 | 22 | 21.4% |
-| sequence | 9 | 5 | 6.9% |
-| **Total** | **131** | **100** | **100%** |
+| concept | 41 | 35 | 25.5% |
+| scenario | 43 | 35 | 26.7% |
+| calculation | 37 | 30 | 23.0% |
+| model discrimination | 30 | 24 | 18.6% |
+| sequence | 10 | 6 | 6.2% |
+| **Total** | **161** | **130** | **100%** |
 
-The 101 chapter-specific questions (including the canonical Chapter 1 MCQ) are
-spread across concepts, applications, calculations, model discrimination and
-mechanism sequences rather than concentrating ten items on one formula. The
-canonical deck’s 26 calculation-kind cards are inventory context; the exam bank
-contains 21 new calculation-style questions plus seven canonical MCQs classified as
-calculation-style, for a final calculation-style count of 28.
+The chapter-specific pool therefore stays close to the intended concept/scenario/
+calculation/model mix. The sequence remainder is used for mechanism and debt-path
+questions where ordering is the examinable skill.
 
 ## Difficulty and answer positions
 
 | Difficulty | Count | Share |
 | ---: | ---: | ---: |
-| 1 | 43 | 32.8% |
-| 2 | 66 | 50.4% |
-| 3 | 22 | 16.8% |
-| **Total** | **131** | **100%** |
+| 1 | 53 | 32.9% |
+| 2 | 81 | 50.3% |
+| 3 | 27 | 16.8% |
+| **Total** | **161** | **100%** |
 
-The authored subset is 25 / 53 / 22 at difficulties 1 / 2 / 3. The unified shares
-are inside the configured 25–35%, 45–55% and 15–25% target ranges.
+The unified shares remain inside the configured 25–35%, 45–55% and 15–25% target
+ranges. The 30 stimulus questions contribute 10 / 15 / 5 at difficulties 1 / 2 / 3;
+graph reading is not automatically treated as advanced.
 
-| Correct position | Unified | New authored |
+| Correct position | Unified | Additional stimuli |
 | --- | ---: | ---: |
-| A | 34 | 31 |
-| B | 32 | 21 |
-| C | 33 | 21 |
-| D | 32 | 27 |
+| A | 41 | 7 |
+| B | 40 | 8 |
+| C | 41 | 8 |
+| D | 39 | 7 |
 
-The unified maximum-minus-minimum position count is 2; answer positions are static
-and are not randomised at runtime.
+The unified maximum-minus-minimum position count is 2. Positions remain static and
+are not randomised at runtime.
 
 ## Validation infrastructure
 
@@ -149,17 +169,30 @@ and are not randomised at runtime.
 invariants. It fails loudly for malformed IDs, chapters, styles, difficulty values,
 stems, choices, rationales, correct indexes, tags, provenance, unknown canonical
 cards, missing review mappings, duplicate question IDs, duplicate review-card IDs,
-duplicate normalised choices, duplicate normalised stems, and duplicate authored
+duplicate normalised choices, duplicate normalised stems and duplicate authored
 choice sets.
+
+The stimulus validator additionally enforces:
+
+- finite, strictly increasing axis domains and in-domain ticks;
+- nonempty graph titles/descriptions and at least one meaningful primitive;
+- unique curve IDs, at least two curve points, in-domain finite coordinates and
+  increasing curve x-coordinates;
+- valid interpolation and line styles;
+- unique point/reference-line/arrow/annotation IDs and in-domain primitive positions;
+- two to six unique table columns with nonempty labels;
+- two to twelve uniquely identified rows with exactly the declared cell count;
+- nonempty table cells, captions and optional notes.
 
 The bank-level validator enforces:
 
-- at least 130 questions;
-- at least 10 chapter-specific questions in every Chapter 1–10;
-- at least 30 mixed questions;
+- at least 160 questions;
+- at least 20 graph stimuli and 10 table stimuli;
+- at least two stimulus questions in every Chapter 1–10;
+- at least 10 chapter-specific questions in every Chapter 1–10 and at least 30 mixed;
 - unique question IDs and globally unique review-card mappings;
 - answer-position imbalance no greater than 3;
-- the configured difficulty ranges;
+- the configured difficulty ranges; and
 - deterministic lexical-overlap warnings for high stem similarity.
 
 The content command is:
@@ -172,75 +205,95 @@ The final validator output is:
 
 ```text
 Exam question bank valid
-Total: 131
+Total: 161
 Canonical MCQ: 31
-New authored: 100
+New authored: 130
 Mixed: 30
-Chapter 1: 11
-Chapter 2: 10
-Chapter 3: 10
-Chapter 4: 10
-Chapter 5: 10
-Chapter 6: 10
-Chapter 7: 10
-Chapter 8: 10
-Chapter 9: 10
-Chapter 10: 10
-Styles: concept 31 / scenario 35 / calculation 28 / model 28 / sequence 9
-Difficulty: 1 43 / 2 66 / 3 22
-Correct positions: A 34 / B 32 / C 33 / D 32
-Calculation questions: 28
-Unique reviewCardId: 131
+Chapter 1: 14
+Chapter 2: 13
+Chapter 3: 13
+Chapter 4: 13
+Chapter 5: 13
+Chapter 6: 13
+Chapter 7: 13
+Chapter 8: 13
+Chapter 9: 13
+Chapter 10: 13
+Stimuli: 30 (graphs 20 / tables 10)
+Chapter 1 stimuli: 3
+Chapter 2 stimuli: 3
+Chapter 3 stimuli: 3
+Chapter 4 stimuli: 3
+Chapter 5 stimuli: 3
+Chapter 6 stimuli: 3
+Chapter 7 stimuli: 3
+Chapter 8 stimuli: 3
+Chapter 9 stimuli: 3
+Chapter 10 stimuli: 3
+Styles: concept 41 / scenario 43 / calculation 37 / model 30 / sequence 10
+Difficulty: 1 53 / 2 81 / 3 27
+Correct positions: A 41 / B 40 / C 41 / D 39
+Calculation questions: 37
+Unique reviewCardId: 161
 Warnings: none
 ```
 
-## Content review pass
+## Content and stimulus review pass
 
-I performed a separate manual second pass over all 100 new questions. The review
-checked economic correctness, one-best-answer quality, distractor plausibility,
-source-card consistency, model closure, signs and units, arithmetic, wording cues,
-and semantic duplication. Particular scrutiny was given to:
+I performed a separate second pass over the 30 new stimulus questions in addition to
+the original 100-question audit. It checked economic correctness, one-best-answer
+quality, distractor plausibility, source-card consistency, model closure, signs and
+units, arithmetic, wording cues, semantic duplication, graph scale and table units.
+Particular scrutiny was given to:
 
-- PAE versus the ex-post AE identity and the different Chapter 3 closed-economy
-  versus Chapter 9 small-open-economy interest-rate closures;
-- the course’s USD/AUD convention, real exchange-rate formula, PPP direction and
-  foreign-exchange transmission;
-- RBA cash-rate and Exchange Settlement terminology;
-- nominal versus real rates, exact versus approximate Fisher calculations, and
-  stock-versus-flow distinctions;
-- tax leakage, public saving, debt-to-GDP signs, multipliers and percentage-point
-  arithmetic;
-- potential output, AD movements versus shifts, supply shocks and long-run
-  self-correction; and
-- TFP, diminishing returns, institutions and catch-up growth.
+- whether marked PAE, saving-investment, FX and AD-AS equilibria lie on the displayed
+  curves;
+- USD/AUD quotation direction, fixed-peg intervention, cross-rate units and ES-balance
+  transaction signs;
+- 45-degree geometry, curve-shift versus movement wording, wage-floor quantities,
+  bond-price/yield direction and money-demand direction; and
+- production-function concavity, capital-deepening interpretation and growth-accounting
+  weights.
 
-I also performed a blind-answer pass over all 100 authored questions by reviewing
-each stem and its four choices without displaying the stored `correctChoice` key,
-then comparing the independently selected best answer with the key. No disagreement
-remained after the review.
+A blind-answer pass was performed for the 30 new questions using stem plus stimulus
+description/table/graph labels and choices without consulting the stored key. The
+independently selected answers matched all 30 keys. The earlier PR #4 blind pass over
+the original 100 authored questions also remains documented in this audit history.
+
+For visual QA, a temporary local gallery rendered all 20 graphs and 10 tables. I
+inspected the graph set in the desktop preview and checked every stimulus at a
+constrained approximately 360px content width for label clipping, curve/point
+alignment, table wrapping and horizontal overflow. The preview’s direct viewport
+resize control timed out in this environment, so the mobile check used an exact 360px
+content-width constraint rather than claiming a different browser viewport. The audit
+found and fixed long corridor labels, small mobile SVG typography and table header
+wrapping; the final constrained gallery had zero stimulus-container overflow.
 
 ## Source-card issues and limitations
 
-No canonical content files were edited. The canonical deck itself flags two items
-for independent review:
+No canonical content files were edited. The canonical deck itself flags two items for
+independent review:
 
 1. `ch03-011` notes an extracted-course-text plus/minus typo in the capital
    accumulation equation; the lectures and economic logic use depreciation with a
    minus sign. That disputed card is not used as a review mapping in the new bank.
 2. `ch05-004` notes a likely typo in a bracketed source answer for consumption with
-   proportional taxes. The new bank does not map a question to that card; the
-   four-sector PAE item instead uses the independent `ch05-031` source.
+   proportional taxes. The stimulus bank does not map a question to that card.
 
 The validator uses lightweight lexical similarity rather than an embedding model, so
 semantic near-duplicates still require human review. The bank is content-audited but
-not psychometrically calibrated against student response data. Mock selection,
-timing, results, persistence and Exam-SRS feedback are intentionally not part of this
-PR.
+not psychometrically calibrated against student response data. Mock selection, timing,
+results, persistence, Study integration and Exam-SRS feedback are intentionally not
+part of this PR.
 
 ## Automated tests
 
-The exam-bank test file covers loading and determinism, malformed four-choice data,
-invalid answer indexes, duplicate choices, unknown review/source cards, missing
-review mappings, duplicate question IDs, duplicate review-card mappings, chapter and
-mixed quotas, answer-position imbalance, and canonical-adapter fidelity. The full
-suite at this audit point is 14 test files and 91 tests.
+The exam-bank tests cover loading and determinism, malformed four-choice data, invalid
+answer indexes, duplicate choices, unknown review/source cards, missing review
+mappings, duplicate question IDs, duplicate review-card mappings, chapter/mixed
+quotas, graph/table/per-chapter stimulus quotas, answer-position imbalance,
+canonical-adapter fidelity, malformed graph/table structures and representative
+economics geometry. Renderer tests cover graph SVG primitives, labels, styles,
+accessibility, annotations, semantic table structure and the no-stimulus case.
+
+The final local suite is 15 test files and 109 tests.

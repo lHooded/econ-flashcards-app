@@ -1,3 +1,5 @@
+import type { QuestionStimulusSpec } from "../stimulus/model";
+
 export const EXAM_QUESTION_STYLES = [
   "concept",
   "scenario",
@@ -34,4 +36,5 @@ export interface ExamQuestion {
   readonly sourceCardIds: readonly string[];
   readonly tags: readonly string[];
   readonly provenance: ExamQuestionProvenance;
+  readonly stimulus?: QuestionStimulusSpec;
 }

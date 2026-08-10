@@ -3,7 +3,8 @@ import {
   examQuestionValidationWarnings,
 } from "../src/exam/questionBank";
 
-const { byChapter, byDifficulty, byPosition, byStyle } = examQuestionStats;
+const { byChapter, byChapterStimulus, byDifficulty, byPosition, byStyle } =
+  examQuestionStats;
 
 console.log("Exam question bank valid");
 console.log(`Total: ${examQuestionStats.total}`);
@@ -12,6 +13,12 @@ console.log(`New authored: ${examQuestionStats.authored}`);
 for (let chapter = 0; chapter <= 10; chapter += 1) {
   const label = chapter === 0 ? "Mixed" : `Chapter ${chapter}`;
   console.log(`${label}: ${byChapter[String(chapter)]}`);
+}
+console.log(
+  `Stimuli: ${examQuestionStats.stimulusCount} (graphs ${examQuestionStats.graphCount} / tables ${examQuestionStats.tableCount})`,
+);
+for (let chapter = 1; chapter <= 10; chapter += 1) {
+  console.log(`Chapter ${chapter} stimuli: ${byChapterStimulus[String(chapter)]}`);
 }
 console.log(
   `Styles: concept ${byStyle.concept} / scenario ${byStyle.scenario} / calculation ${byStyle.calculation} / model ${byStyle.model_discrimination} / sequence ${byStyle.sequence}`,

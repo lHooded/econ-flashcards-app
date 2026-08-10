@@ -619,6 +619,138 @@ h3 {
   font-weight: 800;
 }
 
+.question-stimulus {
+  width: 100%;
+  max-width: 48rem;
+  margin: 1rem auto 1.25rem;
+  min-width: 0;
+}
+
+.question-stimulus figcaption {
+  margin-bottom: 0.65rem;
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.econ-graph-svg {
+  display: block;
+  width: 100%;
+  max-width: 45rem;
+  height: auto;
+  overflow: visible;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: #fff;
+}
+
+.econ-graph-axis line:first-child {
+  stroke: #243b53;
+  stroke-width: 2;
+}
+
+.econ-graph-tick {
+  stroke: #627d98;
+  stroke-width: 1.4;
+}
+
+.econ-graph-tick-label,
+.econ-graph-axis-label,
+.econ-graph-curve-label,
+.econ-graph-point-label,
+.econ-graph-reference-line text,
+.econ-graph-arrow text,
+.econ-graph-annotation {
+  fill: #243b53;
+  font-size: 22px;
+}
+
+.econ-graph-axis-label {
+  font-size: 24px;
+  font-weight: 750;
+}
+
+.econ-graph-curve path {
+  stroke-width: 3.5;
+}
+
+.econ-graph-curve-label,
+.econ-graph-point-label,
+.econ-graph-reference-line text,
+.econ-graph-arrow text,
+.econ-graph-annotation {
+  font-weight: 800;
+}
+
+.econ-graph-guide {
+  stroke: #9fb3c8;
+  stroke-dasharray: 4 4;
+  stroke-width: 1.25;
+}
+
+.econ-graph-point circle {
+  fill: #102a43;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.econ-graph-reference-line line {
+  stroke: #627d98;
+  stroke-width: 2;
+}
+
+.econ-graph-arrow line {
+  stroke: #243b53;
+  stroke-width: 2.5;
+}
+
+.stimulus-table-container {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: #fff;
+}
+
+.stimulus-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.35;
+  table-layout: fixed;
+}
+
+.stimulus-table-container caption {
+  padding: 0.8rem;
+  color: var(--navy);
+  font-weight: 800;
+  text-align: left;
+}
+
+.stimulus-table-container th,
+.stimulus-table-container td {
+  max-width: 16rem;
+  padding: 0.65rem 0.7rem;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+.stimulus-table-container th {
+  color: var(--navy);
+  background: #f7fafc;
+  font-weight: 800;
+}
+
+.stimulus-table-note {
+  margin: 0.55rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 .result-correct {
   color: var(--green);
   background: var(--green-soft);

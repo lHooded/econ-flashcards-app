@@ -8,6 +8,8 @@ import {
   type ExamQuestionStyle,
   type FourChoices,
 } from "./model";
+import type { QuestionStimulusSpec } from "../stimulus/model";
+import { parseQuestionStimulus } from "../stimulus/validateStimulus";
 
 const CHAPTERS = new Set(Array.from({ length: 11 }, (_, index) => index));
 const DIFFICULTIES = new Set<ExamDifficulty>([1, 2, 3]);
@@ -20,6 +22,10 @@ export interface QuestionBankValidationOptions {
   readonly minimumChapterSpecific?: number;
   readonly minimumMixed?: number;
   readonly maximumPositionImbalance?: number;
+  readonly minimumStimulus?: number;
+  readonly minimumGraphs?: number;
+  readonly minimumTables?: number;
+  readonly minimumChapterStimulus?: number;
 }
 
 export interface ExamQuestionBankStats {
@@ -30,7 +36,11 @@ export interface ExamQuestionBankStats {
   readonly byStyle: Readonly<Record<ExamQuestionStyle, number>>;
   readonly byDifficulty: Readonly<Record<ExamDifficulty, number>>;
   readonly byPosition: Readonly<Record<"A" | "B" | "C" | "D", number>>;
+  readonly byChapterStimulus: Readonly<Record<string, number>>;
   readonly calculationCount: number;
+  readonly stimulusCount: number;
+  readonly graphCount: number;
+  readonly tableCount: number;
   readonly uniqueReviewCardIds: number;
 }
 
@@ -85,10 +95,16 @@ export function getExamQuestionBankStats(
     "A" | "B" | "C" | "D",
     number
   >;
+  const byChapterStimulus: Record<string, number> = Object.fromEntries(
+    Array.from({ length: 11 }, (_, chapter) => [String(chapter), 0]),
+  );
 
   let canonical = 0;
   let authored = 0;
   let calculationCount = 0;
+  let stimulusCount = 0;
+  let graphCount = 0;
+  let tableCount = 0;
 
   for (const question of questions) {
     byChapter[String(question.chapter)] += 1;
@@ -96,6 +112,12 @@ export function getExamQuestionBankStats(
     byDifficulty[question.difficulty] += 1;
     byPosition[positionLabel(question.correctChoice)] += 1;
     if (question.style === "calculation") calculationCount += 1;
+    if (question.stimulus !== undefined) {
+      stimulusCount += 1;
+      byChapterStimulus[String(question.chapter)] += 1;
+      if (question.stimulus.type === "econ_graph") graphCount += 1;
+      else tableCount += 1;
+    }
     if (question.provenance === "canonical_mcq") canonical += 1;
     else authored += 1;
   }
@@ -108,7 +130,11 @@ export function getExamQuestionBankStats(
     byStyle,
     byDifficulty,
     byPosition,
+    byChapterStimulus,
     calculationCount,
+    stimulusCount,
+    graphCount,
+    tableCount,
     uniqueReviewCardIds: new Set(questions.map((question) => question.reviewCardId))
       .size,
   };
@@ -142,6 +168,10 @@ function parseExamQuestion(
     question.choiceRationales,
     `${path}.choiceRationales`,
   );
+  const stimulus: QuestionStimulusSpec | undefined =
+    question.stimulus === undefined
+      ? undefined
+      : parseQuestionStimulus(question.stimulus, `${path}.stimulus`);
   const correctChoice = requireInteger(question.correctChoice, `${path}.correctChoice`);
   if (correctChoice < 0 || correctChoice > 3) {
     throw new Error(`${path}.correctChoice must be an integer from 0 through 3.`);
@@ -189,6 +219,7 @@ function parseExamQuestion(
     sourceCardIds,
     tags: parseStringArray(question.tags, `${path}.tags`),
     provenance: provenance as ExamQuestionProvenance,
+    ...(stimulus === undefined ? {} : { stimulus }),
   };
 }
 
@@ -238,10 +269,14 @@ function validateBankRecords(
 
   if (!options.enforceBankInvariants) return;
 
-  const minimumTotal = options.minimumTotal ?? 130;
+  const minimumTotal = options.minimumTotal ?? 160;
   const minimumChapterSpecific = options.minimumChapterSpecific ?? 10;
   const minimumMixed = options.minimumMixed ?? 30;
   const maximumPositionImbalance = options.maximumPositionImbalance ?? 3;
+  const minimumStimulus = options.minimumStimulus ?? 30;
+  const minimumGraphs = options.minimumGraphs ?? 20;
+  const minimumTables = options.minimumTables ?? 10;
+  const minimumChapterStimulus = options.minimumChapterStimulus ?? 2;
   const stats = getExamQuestionBankStats(questions);
 
   if (stats.total < minimumTotal) {
@@ -261,6 +296,29 @@ function validateBankRecords(
     throw new Error(
       `Exam question bank validation failed: mixed question count ${stats.byChapter["0"]} is below minimum ${minimumMixed}.`,
     );
+  }
+  if (stats.stimulusCount < minimumStimulus) {
+    throw new Error(
+      `Exam question bank validation failed: stimulus count ${stats.stimulusCount} is below minimum ${minimumStimulus}.`,
+    );
+  }
+  if (stats.graphCount < minimumGraphs) {
+    throw new Error(
+      `Exam question bank validation failed: graph count ${stats.graphCount} is below minimum ${minimumGraphs}.`,
+    );
+  }
+  if (stats.tableCount < minimumTables) {
+    throw new Error(
+      `Exam question bank validation failed: table count ${stats.tableCount} is below minimum ${minimumTables}.`,
+    );
+  }
+  for (const chapter of CHAPTER_SPECIFIC) {
+    const count = stats.byChapterStimulus[String(chapter)];
+    if (count < minimumChapterStimulus) {
+      throw new Error(
+        `Exam question bank validation failed: Chapter ${chapter} has ${count} stimulus questions; minimum is ${minimumChapterStimulus}.`,
+      );
+    }
   }
 
   const positions = Object.values(stats.byPosition);
