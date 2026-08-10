@@ -4,3 +4,8 @@ exam_details.txt
 homework/
 lectures/
 worksheets/
+
+# Application dependencies and generated output
+node_modules/
+dist/
+coverage/
