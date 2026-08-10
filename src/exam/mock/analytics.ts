@@ -1,4 +1,3 @@
-import type { ExamQuestion } from "../model";
 import type { MockAttempt } from "./model";
 
 export interface AnalyticsBucket {
@@ -16,26 +15,23 @@ export interface MockAnalytics {
   readonly calculations: AnalyticsBucket;
 }
 
-export function analyseMockAttempt(
-  attempt: MockAttempt,
-  questionsById: ReadonlyMap<string, ExamQuestion>,
-): MockAnalytics {
+export function analyseMockAttempt(attempt: MockAttempt): MockAnalytics {
   const states = new Map(
     attempt.questionStates.map((state) => [state.questionId, state]),
   );
   const bucket = (
     label: string,
-    questions: readonly ExamQuestion[],
+    questions: readonly MockAttempt["manifest"][number][],
   ): AnalyticsBucket => ({
     label,
     total: questions.length,
     correct: questions.filter(
-      (question) => states.get(question.id)?.selectedChoice === question.correctChoice,
+      (question) =>
+        states.get(question.questionId)?.selectedChoice !== null &&
+        states.get(question.questionId)?.selectedChoice === question.correctChoice,
     ).length,
   });
-  const questions = attempt.questionOrder
-    .map((id) => questionsById.get(id))
-    .filter((q): q is ExamQuestion => q !== undefined);
+  const questions = attempt.manifest;
   return {
     chapters: [0, ...Array.from({ length: 10 }, (_, i) => i + 1)].map((chapter) =>
       bucket(
@@ -63,11 +59,11 @@ export function analyseMockAttempt(
     ),
     graphs: bucket(
       "Graphs",
-      questions.filter((q) => q.stimulus?.type === "econ_graph"),
+      questions.filter((q) => q.stimulusType === "econ_graph"),
     ),
     tables: bucket(
       "Tables",
-      questions.filter((q) => q.stimulus?.type === "table"),
+      questions.filter((q) => q.stimulusType === "table"),
     ),
     calculations: bucket(
       "Calculations",

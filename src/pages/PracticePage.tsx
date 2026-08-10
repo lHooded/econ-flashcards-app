@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProgress } from "../app/progressContext";
 import { cards } from "../data/deck";
 import { examQuestions } from "../exam/questionBank";
 import type { ExamQuestion } from "../exam/model";
 import { buildPracticeSet } from "../practice/selector";
-import type { ReviewRating } from "../domain/progress";
+import type { NewReviewEvent, ReviewRating } from "../domain/progress";
 import { QuestionStimulus } from "../components/stimulus/QuestionStimulus";
 
 type PracticeMode = "mcq" | "stimulus" | "written" | "calculations";
 type StimulusFilter = "all" | "econ_graph" | "table" | "text";
+type PracticeSavePhase = "answering" | "revealed" | "pending_save" | "completed";
 
 export function PracticePage({
   initialMode,
@@ -18,12 +19,13 @@ export function PracticePage({
   const [mode, setMode] = useState<PracticeMode | null>(initialMode);
   const [chapter, setChapter] = useState<number | null>(null);
   const [style, setStyle] = useState<ExamQuestion["style"] | "all">("all");
-  const [stimulus, setStimulus] = useState<StimulusFilter>(
-    initialMode === "stimulus" ? "all" : "all",
-  );
+  const [stimulus, setStimulus] = useState<StimulusFilter>("all");
   const [size, setSize] = useState<5 | 10 | 20>(10);
   const [seed, setSeed] = useState(() => Date.now());
   useEffect(() => setMode(initialMode), [initialMode]);
+  useEffect(() => {
+    if (mode === "stimulus" && stimulus === "text") setStimulus("all");
+  }, [mode, stimulus]);
 
   if (mode === null)
     return (
@@ -163,13 +165,13 @@ function PracticeSession({
   const { recordReview } = useProgress();
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [mcqSaving, setMcqSaving] = useState(false);
+  const [mcqPhase, setMcqPhase] = useState<PracticeSavePhase>("answering");
+  const pendingMcqPayload = useRef<NewReviewEvent | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [writtenText, setWrittenText] = useState("");
   const [writtenRevealed, setWrittenRevealed] = useState(false);
-  const [writtenSaving, setWrittenSaving] = useState(false);
-  const [writtenSaved, setWrittenSaved] = useState(false);
+  const [writtenPhase, setWrittenPhase] = useState<PracticeSavePhase>("answering");
+  const pendingWrittenPayload = useRef<NewReviewEvent | null>(null);
 
   const questions = useMemo(
     () =>
@@ -177,7 +179,8 @@ function PracticeSession({
         chapter,
         style:
           mode === "calculations" ? "calculation" : mode === "stimulus" ? "all" : style,
-        stimulus: mode === "stimulus" ? stimulus : "all",
+        stimulus,
+        stimuliOnly: mode === "stimulus",
         size,
         seed,
       }),
@@ -197,103 +200,140 @@ function PracticeSession({
   useEffect(() => {
     setIndex(0);
     setSelected(null);
-    setSaved(false);
-    setMcqSaving(false);
+    setMcqPhase("answering");
+    pendingMcqPayload.current = null;
     setSaveError(null);
     setWrittenText("");
     setWrittenRevealed(false);
-    setWrittenSaved(false);
+    setWrittenPhase("answering");
+    pendingWrittenPayload.current = null;
   }, [mode, seed, chapter, style, stimulus, size]);
 
   const submitMcq = useCallback(async () => {
-    if (question === undefined || selected === null || saved || mcqSaving) return;
+    if (question === undefined || selected === null || mcqPhase !== "answering") return;
+    const payload: NewReviewEvent = {
+      cardId: question.reviewCardId,
+      mode: "mcq",
+      rating: null,
+      correct: selected === question.correctChoice,
+      selectedChoice: selected,
+      responseTimeMs: null,
+    };
+    pendingMcqPayload.current = payload;
     setSaveError(null);
-    setMcqSaving(true);
+    setMcqPhase("pending_save");
     try {
-      await recordReview({
-        cardId: question.reviewCardId,
-        mode: "mcq",
-        rating: null,
-        correct: selected === question.correctChoice,
-        selectedChoice: selected,
-        responseTimeMs: null,
-      });
-      setSaved(true);
+      await recordReview(payload);
+      setMcqPhase("completed");
     } catch (error: unknown) {
       setSaveError(
         error instanceof Error ? error.message : "Practice review could not be saved.",
       );
-    } finally {
-      setMcqSaving(false);
     }
-  }, [mcqSaving, question, recordReview, saved, selected]);
-  const retry = useCallback(() => {
-    void submitMcq();
-  }, [submitMcq]);
+  }, [mcqPhase, question, recordReview, selected]);
+  const retryMcq = useCallback(async () => {
+    const payload = pendingMcqPayload.current;
+    if (payload === null || mcqPhase !== "pending_save") return;
+    setSaveError(null);
+    try {
+      await recordReview(payload);
+      setMcqPhase("completed");
+    } catch (error: unknown) {
+      setSaveError(
+        error instanceof Error ? error.message : "Practice review could not be saved.",
+      );
+    }
+  }, [mcqPhase, recordReview]);
   const nextMcq = useCallback(() => {
-    if (!saved) return;
+    if (mcqPhase !== "completed") return;
     setIndex((current) => (current + 1 >= questions.length ? 0 : current + 1));
     setSelected(null);
-    setSaved(false);
-    setMcqSaving(false);
+    setMcqPhase("answering");
+    pendingMcqPayload.current = null;
     setSaveError(null);
-  }, [questions.length, saved]);
+  }, [mcqPhase, questions.length]);
   const rateWritten = useCallback(
     async (rating: ReviewRating) => {
-      if (writtenCard === undefined || writtenSaving || writtenSaved) return;
-      setWrittenSaving(true);
+      if (writtenCard === undefined || writtenPhase !== "revealed") return;
+      const payload: NewReviewEvent = {
+        cardId: writtenCard.id,
+        mode: writtenCard.kind === "calculation" ? "calculation" : "recall",
+        rating,
+        correct: rating === "forgot" ? false : true,
+        selectedChoice: null,
+        responseTimeMs: null,
+      };
+      pendingWrittenPayload.current = payload;
+      setWrittenPhase("pending_save");
+      setSaveError(null);
       try {
-        await recordReview({
-          cardId: writtenCard.id,
-          mode: writtenCard.kind === "calculation" ? "calculation" : "recall",
-          rating,
-          correct: rating === "forgot" ? false : true,
-          selectedChoice: null,
-          responseTimeMs: null,
-        });
-        setWrittenSaved(true);
+        await recordReview(payload);
+        setWrittenPhase("completed");
       } catch (error: unknown) {
         setSaveError(
           error instanceof Error
             ? error.message
             : "Written-response review could not be saved.",
         );
-      } finally {
-        setWrittenSaving(false);
       }
     },
-    [recordReview, writtenCard, writtenSaved, writtenSaving],
+    [recordReview, writtenCard, writtenPhase],
   );
+  const retryWritten = useCallback(async () => {
+    const payload = pendingWrittenPayload.current;
+    if (payload === null || writtenPhase !== "pending_save") return;
+    setSaveError(null);
+    try {
+      await recordReview(payload);
+      setWrittenPhase("completed");
+    } catch (error: unknown) {
+      setSaveError(
+        error instanceof Error
+          ? error.message
+          : "Written-response review could not be saved.",
+      );
+    }
+  }, [recordReview, writtenPhase]);
   const nextWritten = useCallback(() => {
-    if (!writtenSaved) return;
+    if (writtenPhase !== "completed") return;
     setIndex((current) => (current + 1) % Math.max(1, writtenCards.length));
     setWrittenText("");
     setWrittenRevealed(false);
-    setWrittenSaved(false);
+    setWrittenPhase("answering");
+    pendingWrittenPayload.current = null;
     setSaveError(null);
-  }, [writtenCards.length, writtenSaved]);
+  }, [writtenCards.length, writtenPhase]);
+  const revealWritten = useCallback((revealed: boolean) => {
+    setWrittenRevealed(revealed);
+    if (revealed) setWrittenPhase("revealed");
+  }, []);
+
+  const mcqSaved = mcqPhase === "completed";
+  const mcqSaving = mcqPhase === "pending_save";
+  const writtenSaving = writtenPhase === "pending_save";
+  const writtenSaved = writtenPhase === "completed";
+  const controlsLocked = mcqSaving || writtenSaving;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (isEditablePracticeTarget(event.target)) return;
       if (mode !== "written") {
-        if (/^[1-4]$/.test(event.key) && !saved && !mcqSaving) {
+        if (/^[1-4]$/.test(event.key) && mcqPhase === "answering") {
           event.preventDefault();
           setSelected(Number(event.key) - 1);
         } else if (event.key === "Enter") {
           event.preventDefault();
-          if (saved) nextMcq();
-          else void submitMcq();
+          if (mcqSaved) nextMcq();
+          else if (mcqPhase === "answering") void submitMcq();
         }
       } else if (event.key === "Enter") {
         event.preventDefault();
         if (writtenSaved) nextWritten();
-        else if (!writtenRevealed) setWrittenRevealed(true);
+        else if (writtenPhase === "answering" && !writtenRevealed) revealWritten(true);
       } else if (
         writtenRevealed &&
         /^[1-3]$/.test(event.key) &&
-        !writtenSaving &&
-        !writtenSaved
+        writtenPhase === "revealed"
       ) {
         event.preventDefault();
         void rateWritten(
@@ -304,16 +344,17 @@ function PracticeSession({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [
-    mcqSaving,
+    mcqPhase,
+    mcqSaved,
     mode,
     nextMcq,
     nextWritten,
     rateWritten,
-    saved,
+    revealWritten,
     submitMcq,
     writtenRevealed,
+    writtenPhase,
     writtenSaved,
-    writtenSaving,
   ]);
 
   return (
@@ -335,6 +376,7 @@ function PracticeSession({
         <button
           className="secondary-button heading-action"
           type="button"
+          disabled={controlsLocked}
           onClick={onBack}
         >
           Change format
@@ -350,6 +392,7 @@ function PracticeSession({
                 event.target.value === "all" ? null : Number(event.target.value),
               )
             }
+            disabled={controlsLocked}
           >
             <option value="all">All chapters</option>
             {Array.from({ length: 11 }, (_, i) => (
@@ -359,12 +402,13 @@ function PracticeSession({
             ))}
           </select>
         </label>
-        {mode !== "written" && (
+        {mode === "mcq" && (
           <label className="field-label">
             Style
             <select
               value={style}
               onChange={(event) => setStyle(event.target.value as typeof style)}
+              disabled={controlsLocked}
             >
               <option value="all">All styles</option>
               <option value="concept">Concept</option>
@@ -381,11 +425,14 @@ function PracticeSession({
             <select
               value={stimulus}
               onChange={(event) => setStimulus(event.target.value as StimulusFilter)}
+              disabled={controlsLocked}
             >
-              <option value="all">All</option>
+              <option value="all">
+                {mode === "stimulus" ? "All graphs & tables" : "All questions"}
+              </option>
               <option value="econ_graph">Graphs only</option>
               <option value="table">Tables only</option>
-              <option value="text">Text only</option>
+              {mode !== "stimulus" && <option value="text">Text only</option>}
             </select>
           </label>
         )}
@@ -395,6 +442,7 @@ function PracticeSession({
             <select
               value={size}
               onChange={(event) => setSize(Number(event.target.value) as 5 | 10 | 20)}
+              disabled={controlsLocked}
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -402,7 +450,12 @@ function PracticeSession({
             </select>
           </label>
         )}
-        <button className="secondary-button" type="button" onClick={onNewSet}>
+        <button
+          className="secondary-button"
+          type="button"
+          onClick={onNewSet}
+          disabled={controlsLocked}
+        >
           New set
         </button>
       </section>
@@ -412,10 +465,11 @@ function PracticeSession({
           text={writtenText}
           setText={setWrittenText}
           revealed={writtenRevealed}
-          setRevealed={setWrittenRevealed}
+          setRevealed={revealWritten}
           saving={writtenSaving}
           saved={writtenSaved}
           onRate={rateWritten}
+          onRetry={retryWritten}
           onNext={nextWritten}
           error={saveError}
         />
@@ -430,12 +484,13 @@ function PracticeSession({
           index={index}
           total={questions.length}
           selected={selected}
-          saved={saved}
+          saved={mcqSaved}
           saving={mcqSaving}
+          pending={mcqPhase === "pending_save"}
           error={saveError}
           onSelect={setSelected}
           onSubmit={submitMcq}
-          onRetry={retry}
+          onRetry={() => void retryMcq()}
           onNext={nextMcq}
         />
       )}
@@ -458,6 +513,7 @@ function PracticeMcq({
   selected,
   saved,
   saving,
+  pending,
   error,
   onSelect,
   onSubmit,
@@ -470,6 +526,7 @@ function PracticeMcq({
   readonly selected: number | null;
   readonly saved: boolean;
   readonly saving: boolean;
+  readonly pending: boolean;
   readonly error: string | null;
   readonly onSelect: (value: number) => void;
   readonly onSubmit: () => void;
@@ -500,7 +557,7 @@ function PracticeMcq({
               type="radio"
               name={`practice-${question.id}`}
               checked={selected === choiceIndex}
-              disabled={saved || saving}
+              disabled={saved || saving || pending}
               onChange={() => onSelect(choiceIndex)}
             />
             <span>{choice}</span>
@@ -511,10 +568,10 @@ function PracticeMcq({
         <button
           className="primary-button"
           type="button"
-          disabled={selected === null || saving}
+          disabled={selected === null || saving || pending}
           onClick={onSubmit}
         >
-          Submit answer
+          {pending && !error ? "Saving review…" : "Submit answer"}
         </button>
       ) : (
         <div className="reveal-panel" aria-live="polite">
@@ -546,7 +603,7 @@ function PracticeMcq({
       {error && (
         <div className="save-warning" role="alert">
           <strong>Not saved.</strong> {error}
-          {!saved && (
+          {pending && (
             <button className="secondary-button" type="button" onClick={onRetry}>
               Retry save
             </button>
@@ -566,6 +623,7 @@ function WrittenResponse({
   saving,
   saved,
   onRate,
+  onRetry,
   onNext,
   error,
 }: {
@@ -577,6 +635,7 @@ function WrittenResponse({
   readonly saving: boolean;
   readonly saved: boolean;
   readonly onRate: (rating: ReviewRating) => Promise<void>;
+  readonly onRetry: () => void;
   readonly onNext: () => void;
   readonly error: string | null;
 }) {
@@ -600,6 +659,7 @@ function WrittenResponse({
           rows={8}
           value={text}
           onChange={(event) => setText(event.target.value)}
+          disabled={saving || saved}
           placeholder="Write the explanation or calculation in your own words…"
         />
       </label>
@@ -655,6 +715,12 @@ function WrittenResponse({
           {saved && (
             <button className="primary-button" type="button" onClick={onNext}>
               Next response
+            </button>
+          )}
+          {saving && !error && <p role="status">Saving review…</p>}
+          {saving && error && (
+            <button className="secondary-button" type="button" onClick={onRetry}>
+              Retry save
             </button>
           )}
         </div>

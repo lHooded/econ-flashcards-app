@@ -20,11 +20,20 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
   );
   const [localAttempt, setLocalAttempt] = useState<MockAttempt | undefined>(stored);
   const attemptRef = useRef<MockAttempt | undefined>(stored);
-  const saveChain = useRef(Promise.resolve());
+  const saveChain = useRef<Promise<void>>(Promise.resolve());
+  const localRevision = useRef(0);
+  const persistedRevision = useRef(0);
+  const pendingSaveCount = useRef(0);
+  const saveFailed = useRef(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [finalizeError, setFinalizeError] = useState<string | null>(null);
-  const finalizing = useRef(false);
+  const [isFinalizing, setIsFinalizing] = useState(false);
+  const finalizingRef = useRef(false);
+  const expiryFinalizationBlocked = useRef(false);
+  const documentVisible = useRef(
+    typeof document === "undefined" || document.visibilityState === "visible",
+  );
   const segmentStartedAt = useRef(performance.now());
   const nowMs = useNow(1000);
 
@@ -42,19 +51,33 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
     () => new Map(examQuestions.map((question) => [question.id, question])),
     [],
   );
+  const refreshDirty = useCallback(() => {
+    setDirty(
+      localRevision.current !== persistedRevision.current ||
+        pendingSaveCount.current > 0,
+    );
+  }, []);
   const enqueueSave = useCallback(
-    (next: MockAttempt): Promise<void> => {
-      if (update === undefined)
-        return Promise.reject(new Error("Mock persistence is unavailable."));
-      setDirty(true);
+    (next: MockAttempt, revision: number): Promise<void> => {
+      pendingSaveCount.current += 1;
+      refreshDirty();
       const run = saveChain.current
         .catch(() => undefined)
         .then(async () => {
+          if (update === undefined) throw new Error("Mock persistence is unavailable.");
           await update(next.id, next.questionStates, next.currentQuestionIndex);
-          setDirty(false);
-          setSaveError(null);
+          if (revision === localRevision.current) {
+            persistedRevision.current = revision;
+            saveFailed.current = false;
+            setSaveError(null);
+          }
+        })
+        .finally(() => {
+          pendingSaveCount.current = Math.max(0, pendingSaveCount.current - 1);
+          refreshDirty();
         });
       saveChain.current = run.catch((error: unknown) => {
+        saveFailed.current = true;
         setSaveError(
           error instanceof Error ? error.message : "Mock progress could not be saved.",
         );
@@ -62,7 +85,7 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
       });
       return saveChain.current;
     },
-    [update],
+    [refreshDirty, update],
   );
 
   const apply = useCallback(
@@ -72,17 +95,25 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
       const next = change(current);
       attemptRef.current = next;
       setLocalAttempt(next);
-      if (persist) void enqueueSave(next);
+      if (persist) {
+        localRevision.current += 1;
+        void enqueueSave(next, localRevision.current).catch(() => undefined);
+        refreshDirty();
+      }
       return next;
     },
-    [enqueueSave],
+    [enqueueSave, refreshDirty],
   );
 
   const checkpoint = useCallback(() => {
     const current = attemptRef.current;
     if (current === undefined || current.status !== "active") return current;
-    const elapsed = Math.max(0, performance.now() - segmentStartedAt.current);
-    segmentStartedAt.current = performance.now();
+    if (finalizingRef.current) return current;
+    if (deriveMockClock(current, Date.now()).phase === "expired") return current;
+    if (!documentVisible.current) return current;
+    const checkpointedAt = performance.now();
+    const elapsed = Math.max(0, checkpointedAt - segmentStartedAt.current);
+    segmentStartedAt.current = checkpointedAt;
     if (elapsed < 1) return current;
     return apply((attempt) => {
       const index = attempt.currentQuestionIndex;
@@ -95,9 +126,88 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
     });
   }, [apply]);
 
+  const flushLatestAttempt = useCallback(
+    async (checkpointSegment = true): Promise<MockAttempt> => {
+      const checkpointed = checkpointSegment ? checkpoint() : attemptRef.current;
+      const latest = checkpointed ?? attemptRef.current;
+      if (latest === undefined || latest.status !== "active") {
+        throw new Error("This mock attempt is no longer active.");
+      }
+      while (true) {
+        if (pendingSaveCount.current > 0) {
+          // Await the exact tail, including every queued revision. A rejected
+          // save is deliberately propagated instead of being ignored.
+          await saveChain.current;
+        } else if (
+          localRevision.current !== persistedRevision.current ||
+          saveFailed.current
+        ) {
+          saveFailed.current = false;
+          await enqueueSave(latest, localRevision.current);
+        } else {
+          break;
+        }
+      }
+      if (
+        localRevision.current !== persistedRevision.current ||
+        pendingSaveCount.current > 0
+      ) {
+        throw new Error("The latest mock state is not durably saved yet.");
+      }
+      return attemptRef.current ?? latest;
+    },
+    [checkpoint, enqueueSave],
+  );
+
+  const runFinalization = useCallback(
+    async (expiryTriggered: boolean) => {
+      if (
+        finalizingRef.current ||
+        finalize === undefined ||
+        (expiryTriggered && expiryFinalizationBlocked.current)
+      )
+        return;
+      checkpoint();
+      finalizingRef.current = true;
+      setIsFinalizing(true);
+      setFinalizeError(null);
+      try {
+        const current = await flushLatestAttempt(false);
+        const noticedAt = new Date().toISOString();
+        const expired =
+          expiryTriggered || Date.parse(current.writingEndsAt) <= Date.now();
+        const submittedAt = expired ? current.writingEndsAt : noticedAt;
+        const result = await finalize(current.id, submittedAt, noticedAt);
+        attemptRef.current = result.attempt;
+        setLocalAttempt(result.attempt);
+        persistedRevision.current = localRevision.current;
+        saveFailed.current = false;
+        refreshDirty();
+        segmentStartedAt.current = performance.now();
+      } catch (error: unknown) {
+        if (expiryTriggered) expiryFinalizationBlocked.current = true;
+        setFinalizeError(
+          error instanceof Error
+            ? error.message
+            : "Submission could not be saved. Retry without closing this page.",
+        );
+      } finally {
+        finalizingRef.current = false;
+        setIsFinalizing(false);
+      }
+    },
+    [checkpoint, finalize, flushLatestAttempt, refreshDirty],
+  );
+
   const finish = useCallback(async () => {
-    const current = checkpoint() ?? attemptRef.current;
-    if (current === undefined || current.status !== "active" || finalize === undefined)
+    if (finalizingRef.current) return;
+    const current = attemptRef.current;
+    if (
+      current === undefined ||
+      current.status !== "active" ||
+      finalize === undefined ||
+      deriveMockClock(current, Date.now()).phase !== "writing"
+    )
       return;
     if (
       !window.confirm(
@@ -105,58 +215,41 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
       )
     )
       return;
-    setFinalizeError(null);
-    try {
-      await saveChain.current.catch(() => undefined);
-      const result = await finalize(current.id, new Date().toISOString());
-      attemptRef.current = result.attempt;
-      setLocalAttempt(result.attempt);
-      setDirty(false);
-    } catch (error: unknown) {
-      setFinalizeError(
-        error instanceof Error
-          ? error.message
-          : "Submission could not be saved. Retry without closing this page.",
-      );
-    }
-  }, [checkpoint, finalize]);
+    await runFinalization(false);
+  }, [finalize, runFinalization]);
+  const retryFinalization = useCallback(() => {
+    const current = attemptRef.current;
+    if (current === undefined || current.status !== "active") return;
+    if (deriveMockClock(current, Date.now()).phase === "expired") {
+      expiryFinalizationBlocked.current = false;
+      void runFinalization(true);
+    } else void finish();
+  }, [finish, runFinalization]);
 
   useEffect(() => {
     if (localAttempt?.status !== "active") return;
     const clock = deriveMockClock(localAttempt, nowMs);
-    if (clock.phase === "expired" && !finalizing.current) {
-      finalizing.current = true;
-      void (async () => {
-        try {
-          const current = checkpoint() ?? attemptRef.current;
-          if (current !== undefined && finalize !== undefined) {
-            await saveChain.current.catch(() => undefined);
-            const result = await finalize(current.id, new Date().toISOString());
-            attemptRef.current = result.attempt;
-            setLocalAttempt(result.attempt);
-            setDirty(false);
-          }
-        } catch (error: unknown) {
-          finalizing.current = false;
-          setFinalizeError(
-            error instanceof Error
-              ? error.message
-              : "Expired mock could not be finalised. Retry.",
-          );
-        }
-      })();
+    if (clock.phase === "expired" && !finalizingRef.current) {
+      void runFinalization(true);
     }
-  }, [checkpoint, finalize, localAttempt, nowMs]);
+  }, [localAttempt, nowMs, runFinalization]);
 
   useEffect(() => {
     if (localAttempt?.status !== "active") return;
-    const interval = window.setInterval(checkpoint, 10_000);
+    const interval = window.setInterval(() => {
+      if (documentVisible.current) checkpoint();
+    }, 10_000);
     const onVisibility = () => {
       if (document.visibilityState === "hidden") checkpoint();
-      else segmentStartedAt.current = performance.now();
+      documentVisible.current = document.visibilityState === "visible";
+      if (documentVisible.current) segmentStartedAt.current = performance.now();
     };
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (dirty || saveError !== null) {
+      const hasUnsavedRevision =
+        localRevision.current !== persistedRevision.current ||
+        pendingSaveCount.current > 0 ||
+        saveError !== null;
+      if (hasUnsavedRevision) {
         event.preventDefault();
         event.returnValue = "";
       }
@@ -172,7 +265,12 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (isEditable(event.target) || localAttempt?.status !== "active") return;
+      if (
+        isEditable(event.target) ||
+        localAttempt?.status !== "active" ||
+        finalizingRef.current
+      )
+        return;
       const current = attemptRef.current;
       if (current === undefined) return;
       if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
@@ -231,18 +329,33 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
   const states = questionStateById(localAttempt);
   if (currentQuestion === undefined)
     return (
-      <p role="alert">
-        The historical question content is unavailable in this app version.
-      </p>
+      <section className="callout" role="alert">
+        <div>
+          <h1>Question content unavailable</h1>
+          <p>
+            This active attempt cannot be resumed in this app version because one of its
+            stored display questions is missing. Its selected manifest will not be
+            regenerated or silently replaced.
+          </p>
+        </div>
+        <a className="secondary-button" href="#/mock">
+          Back to mocks
+        </a>
+      </section>
     );
   const currentState = states.get(currentQuestion.id);
   if (currentState === undefined) return null;
   const activeAttempt: MockAttempt = localAttempt;
   const currentQuestionId = currentQuestion.id;
   const selected = currentState.selectedChoice;
+  const interactionLocked = isFinalizing || clock.phase === "expired";
 
   function selectChoice(choice: 0 | 1 | 2 | 3) {
-    if (deriveMockClock(attemptRef.current ?? activeAttempt, nowMs).phase !== "writing")
+    if (
+      finalizingRef.current ||
+      interactionLocked ||
+      deriveMockClock(attemptRef.current ?? activeAttempt, nowMs).phase !== "writing"
+    )
       return;
     apply((attempt) => ({
       ...attempt,
@@ -259,6 +372,7 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
     }));
   }
   function toggleFlag() {
+    if (finalizingRef.current || interactionLocked) return;
     apply((attempt) => ({
       ...attempt,
       questionStates: attempt.questionStates.map((state) =>
@@ -273,6 +387,7 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
     }));
   }
   function goTo(index: number) {
+    if (finalizingRef.current || interactionLocked) return;
     const nextIndex = Math.max(0, Math.min(59, index));
     checkpoint();
     apply((attempt) => ({
@@ -287,14 +402,12 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
     segmentStartedAt.current = performance.now();
   }
   function nextFlagged() {
-    const next = activeAttempt.questionStates.findIndex(
-      (state, index) => index > activeAttempt.currentQuestionIndex && state.flagged,
+    if (finalizingRef.current || interactionLocked) return;
+    const current = attemptRef.current ?? activeAttempt;
+    const next = current.questionStates.findIndex(
+      (state, index) => index > current.currentQuestionIndex && state.flagged,
     );
-    goTo(
-      next >= 0
-        ? next
-        : activeAttempt.questionStates.findIndex((state) => state.flagged),
-    );
+    goTo(next >= 0 ? next : current.questionStates.findIndex((state) => state.flagged));
   }
 
   return (
@@ -303,13 +416,19 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
         <div>
           <p className="eyebrow">
             Full mock exam ·{" "}
-            {clock.phase === "reading" ? "Reading time" : "Writing time"}
+            {clock.phase === "reading"
+              ? "Reading time"
+              : clock.phase === "writing"
+                ? "Writing time"
+                : "Time expired"}
           </p>
           <h1>Question {localAttempt.currentQuestionIndex + 1} of 60</h1>
           <p className="muted-text">
             {clock.phase === "reading"
               ? "Read, inspect stimuli, and flag. Answer choices unlock when reading time ends."
-              : "Choose and change answers until you submit."}
+              : clock.phase === "writing"
+                ? "Choose and change answers until you submit."
+                : "The mock has expired and is being finalised with the stored deadline."}
           </p>
         </div>
         <MockTimer clock={clock} />
@@ -320,18 +439,27 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
             question={currentQuestion}
             questionNumber={localAttempt.currentQuestionIndex + 1}
             selectedChoice={selected}
-            reading={clock.phase === "reading"}
+            reading={clock.phase !== "writing"}
+            disabled={interactionLocked}
             onSelect={selectChoice}
           />
           <div className="mock-actions">
-            <button className="secondary-button" type="button" onClick={toggleFlag}>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={toggleFlag}
+              disabled={interactionLocked}
+            >
               {currentState.flagged ? "Unflag question" : "Flag for review"}
             </button>
             <button
               className="secondary-button"
               type="button"
               onClick={nextFlagged}
-              disabled={!localAttempt.questionStates.some((state) => state.flagged)}
+              disabled={
+                interactionLocked ||
+                !localAttempt.questionStates.some((state) => state.flagged)
+              }
             >
               Next flagged
             </button>
@@ -344,7 +472,7 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
               className="secondary-button"
               type="button"
               onClick={() => goTo(localAttempt.currentQuestionIndex - 1)}
-              disabled={localAttempt.currentQuestionIndex === 0}
+              disabled={interactionLocked || localAttempt.currentQuestionIndex === 0}
             >
               Previous
             </button>
@@ -352,7 +480,7 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
               className="secondary-button"
               type="button"
               onClick={() => goTo(localAttempt.currentQuestionIndex + 1)}
-              disabled={localAttempt.currentQuestionIndex === 59}
+              disabled={interactionLocked || localAttempt.currentQuestionIndex === 59}
             >
               Next
             </button>
@@ -360,14 +488,25 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
               className="danger-button"
               type="button"
               onClick={() => void finish()}
+              disabled={
+                interactionLocked || clock.phase !== "writing" || finalizingRef.current
+              }
             >
-              Submit mock
+              {isFinalizing ? "Saving and submitting…" : "Submit mock"}
             </button>
           </div>
           {saveError && (
             <div className="save-warning" role="alert">
               <strong>Not saved.</strong> {saveError} Keep this page open and retry your
               action.
+              <button
+                className="secondary-button"
+                type="button"
+                disabled={isFinalizing}
+                onClick={() => void flushLatestAttempt().catch(() => undefined)}
+              >
+                Retry save
+              </button>
             </div>
           )}
           {finalizeError && (
@@ -376,7 +515,8 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
               <button
                 className="secondary-button"
                 type="button"
-                onClick={() => void finish()}
+                disabled={isFinalizing}
+                onClick={retryFinalization}
               >
                 Retry submission
               </button>
@@ -387,6 +527,7 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
           <MockNavigator
             states={localAttempt.questionStates}
             currentIndex={localAttempt.currentQuestionIndex}
+            disabled={interactionLocked}
             onSelect={goTo}
           />
           <p className="mock-progress-note">
@@ -402,7 +543,11 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
         </div>
       </div>
       <p className="sr-only" aria-live="polite">
-        {clock.phase === "reading" ? "Reading phase" : "Writing phase"}
+        {clock.phase === "reading"
+          ? "Reading phase"
+          : clock.phase === "writing"
+            ? "Writing phase"
+            : "Mock time has expired; finalisation is in progress."}
       </p>
     </div>
   );

@@ -5,10 +5,16 @@ interface MockNavigatorProps {
     readonly flagged: boolean;
   }[];
   readonly currentIndex: number;
+  readonly disabled?: boolean;
   readonly onSelect: (index: number) => void;
 }
 
-export function MockNavigator({ states, currentIndex, onSelect }: MockNavigatorProps) {
+export function MockNavigator({
+  states,
+  currentIndex,
+  disabled = false,
+  onSelect,
+}: MockNavigatorProps) {
   return (
     <aside className="mock-navigator panel" aria-label="Mock question navigator">
       <div className="panel-heading">
@@ -40,6 +46,7 @@ export function MockNavigator({ states, currentIndex, onSelect }: MockNavigatorP
               className={`navigator-button navigator-${status} ${index === currentIndex ? "navigator-current" : ""}`}
               aria-label={`Question ${index + 1}: ${status}${index === currentIndex ? ", current" : ""}`}
               aria-current={index === currentIndex ? "step" : undefined}
+              disabled={disabled}
               onClick={() => onSelect(index)}
             >
               {index + 1}

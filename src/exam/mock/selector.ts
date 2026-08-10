@@ -92,7 +92,7 @@ export function buildMockExam(input: MockSelectionInput): MockExamBuild {
     const mixed = chooseMany(byChapter.get(0) ?? [], 10, usage, rng, usedCards);
     if (mixed.length !== 10) continue;
     selected.push(...mixed);
-    if (selected.length !== 60 || !passesQuality(selected)) continue;
+    if (!passesSelectionInvariants(selected)) continue;
     const ordered = shuffle(selected, rng);
     return {
       questionOrder: ordered.map((q) => q.id),
@@ -102,6 +102,37 @@ export function buildMockExam(input: MockSelectionInput): MockExamBuild {
   throw new MockSelectionError(
     "the configured quotas and quality bounds could not be satisfied after 2,500 deterministic attempts.",
   );
+}
+
+function passesSelectionInvariants(questions: readonly ExamQuestion[]): boolean {
+  if (questions.length !== MOCK_BLUEPRINT.total) return false;
+  if (new Set(questions.map((question) => question.id)).size !== questions.length)
+    return false;
+  if (
+    new Set(questions.map((question) => question.reviewCardId)).size !==
+    questions.length
+  )
+    return false;
+  if (questions.filter((question) => question.chapter === 0).length !== 10)
+    return false;
+  for (let chapter = 1; chapter <= 10; chapter++) {
+    if (questions.filter((question) => question.chapter === chapter).length !== 5)
+      return false;
+    if (
+      questions.filter(
+        (question) =>
+          question.chapter === chapter && question.stimulus?.type === "econ_graph",
+      ).length < 1
+    )
+      return false;
+  }
+  const tableChapters = new Set(
+    questions
+      .filter((question) => question.chapter > 0 && question.stimulus?.type === "table")
+      .map((question) => question.chapter),
+  );
+  if (tableChapters.size !== 5) return false;
+  return passesQuality(questions);
 }
 
 function passesQuality(questions: readonly ExamQuestion[]): boolean {
@@ -171,12 +202,23 @@ function chooseMany(
   already: readonly ExamQuestion[] = [],
 ): ExamQuestion[] {
   const blocked = new Set([...usedCards, ...already.map((q) => q.reviewCardId)]);
-  return candidates
-    .filter((q) => !blocked.has(q.reviewCardId))
-    .map((question) => ({ question, used: usage.get(question.id) ?? 0, tie: rng() }))
-    .sort((a, b) => a.used - b.used || a.tie - b.tie)
-    .slice(0, count)
-    .map((entry) => entry.question);
+  const ranked = candidates
+    .filter((question) => !blocked.has(question.reviewCardId))
+    .map((question) => ({
+      question,
+      used: usage.get(question.id) ?? 0,
+      tie: rng(),
+    }))
+    .sort((a, b) => a.used - b.used || a.tie - b.tie);
+  const selected: ExamQuestion[] = [];
+  const selectedCards = new Set(blocked);
+  for (const entry of ranked) {
+    if (selectedCards.has(entry.question.reviewCardId)) continue;
+    selected.push(entry.question);
+    selectedCards.add(entry.question.reviewCardId);
+    if (selected.length === count) break;
+  }
+  return selected;
 }
 
 function normaliseUsage(

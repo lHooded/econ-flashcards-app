@@ -27,6 +27,13 @@ describe("full mock selector", () => {
         build.manifest.filter((entry) => entry.stimulusType === "table"),
       ).toHaveLength(5);
       expect(
+        new Set(
+          build.manifest
+            .filter((entry) => entry.stimulusType === "table")
+            .map((entry) => entry.chapter),
+        ).size,
+      ).toBe(5);
+      expect(
         build.manifest.filter((entry) => entry.difficulty === 1).length,
       ).toBeGreaterThanOrEqual(15);
       expect(
@@ -41,6 +48,31 @@ describe("full mock selector", () => {
       expect(
         build.manifest.filter((entry) => entry.difficulty === 3).length,
       ).toBeGreaterThanOrEqual(9);
+      expect(
+        build.manifest.filter((entry) => entry.difficulty === 3).length,
+      ).toBeLessThanOrEqual(15);
+      expect(
+        build.manifest.filter((entry) => entry.style === "calculation").length,
+      ).toBeGreaterThanOrEqual(10);
+      expect(
+        build.manifest.filter(
+          (entry) =>
+            entry.style === "scenario" || entry.style === "model_discrimination",
+        ).length,
+      ).toBeGreaterThanOrEqual(20);
+      expect(
+        build.manifest.filter((entry) => entry.style === "sequence").length,
+      ).toBeGreaterThanOrEqual(2);
+      for (const correctChoice of [0, 1, 2, 3]) {
+        expect(
+          build.manifest.filter((entry) => entry.correctChoice === correctChoice)
+            .length,
+        ).toBeGreaterThanOrEqual(12);
+        expect(
+          build.manifest.filter((entry) => entry.correctChoice === correctChoice)
+            .length,
+        ).toBeLessThanOrEqual(18);
+      }
     }
   });
 
@@ -66,5 +98,14 @@ describe("full mock selector", () => {
     expect(
       fresh.questionOrder.filter((id) => first.questionOrder.includes(id)).length,
     ).toBeLessThan(60);
+  });
+
+  it("fails clearly for an unsatisfiable synthetic bank", () => {
+    const synthetic = examQuestions.map((question, index) =>
+      index === 0 ? { ...question, reviewCardId: "same-concept" } : question,
+    );
+    expect(() =>
+      buildMockExam({ bank: synthetic.slice(0, 59), seed: "impossible" }),
+    ).toThrow(/Unable to build a valid 60-question mock/);
   });
 });

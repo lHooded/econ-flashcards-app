@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { cardIds } from "../data/deck";
+import { cardIds, cards } from "../data/deck";
 import { examQuestions } from "../exam/questionBank";
 import { buildMockExam } from "../exam/mock/selector";
 import { createMockAttempt } from "../exam/mock/model";
 import { MockExamRepository } from "../db/mockExamRepository";
 import { ProgressRepository } from "../db/progressRepository";
 import { createProgressBackup, parseProgressBackupText } from "../domain/backup";
-import { deriveReviewEvidence } from "../study/examSrs/deriveState";
+import {
+  deriveExamSrsSnapshot,
+  deriveReviewEvidence,
+} from "../study/examSrs/deriveState";
 
 const questionIds = new Set(examQuestions.map((question) => question.id));
 
@@ -29,6 +32,12 @@ describe("mock exam repository", () => {
     );
     expect(submitted.reviewEvents).toHaveLength(60);
     expect(submitted.attempt.status).toBe("submitted");
+    expect(submitted.attempt.submittedAt).toBe(attempt.writingEndsAt);
+    expect(
+      submitted.reviewEvents.every(
+        (event) => event.reviewedAt === attempt.writingEndsAt,
+      ),
+    ).toBe(true);
     const loaded = await progress.load();
     expect(loaded.reviews).toHaveLength(60);
     expect(
@@ -134,5 +143,107 @@ describe("mock exam repository", () => {
       strengthDelta: 0,
     });
     expect(thirdEvent?.correct).toBe(false);
+  });
+
+  it("rebuilds affected CardState chronologically when a mock is finalised late", async () => {
+    const progress = new ProgressRepository(cardIds);
+    await progress.resetAll();
+    const repository = new MockExamRepository(cardIds, questionIds);
+    const build = buildMockExam({ bank: examQuestions, seed: "out-of-order" });
+    const attempt = createMockAttempt({
+      ...build,
+      id: "out-of-order-attempt",
+      seed: "out-of-order",
+      createdAt: "2026-08-11T06:40:00.000Z",
+    });
+    const first = attempt.manifest[0];
+    const states = attempt.questionStates.map((state) =>
+      state.questionId === first.questionId
+        ? { ...state, lastAnsweredAt: "2026-08-11T08:30:00.000Z" }
+        : state,
+    );
+    await repository.createAttempt(attempt);
+    await repository.updateAttemptProgress(attempt.id, states, 0);
+    await progress.recordReview({
+      id: "later-study-review",
+      cardId: first.reviewCardId,
+      reviewedAt: "2026-08-11T09:30:00.000Z",
+      mode: "mcq",
+      rating: null,
+      correct: true,
+      responseTimeMs: null,
+      selectedChoice: first.correctChoice,
+    });
+
+    await repository.finalizeAttempt(attempt.id, "2026-08-11T15:00:00.000Z");
+    const loaded = await progress.load();
+    const cardState = loaded.cardStates.find(
+      (state) => state.cardId === first.reviewCardId,
+    );
+    const relevant = loaded.reviews.filter(
+      (review) => review.cardId === first.reviewCardId,
+    );
+
+    expect(relevant.map((review) => review.reviewedAt)).toEqual([
+      "2026-08-11T08:30:00.000Z",
+      "2026-08-11T09:30:00.000Z",
+    ]);
+    expect(cardState).toMatchObject({
+      firstSeenAt: "2026-08-11T08:30:00.000Z",
+      lastSeenAt: "2026-08-11T09:30:00.000Z",
+      totalReviews: 2,
+      correctReviews: 1,
+      consecutiveCorrect: 1,
+    });
+
+    const srsState = deriveExamSrsSnapshot(
+      cards,
+      relevant,
+      { examAt: null, studyBufferHours: 24 },
+      Date.parse("2026-08-11T10:00:00.000Z"),
+    ).stateByCardId[first.reviewCardId];
+    expect(srsState).toMatchObject({
+      reviewCount: 2,
+      lastReviewedAt: "2026-08-11T09:30:00.000Z",
+      strength: 0.75,
+      lastOutcome: "strong_success",
+    });
+  });
+
+  it("aborts on a normal application exception before any mock review commits", async () => {
+    const progress = new ProgressRepository(cardIds);
+    await progress.resetAll();
+    const build = buildMockExam({ bank: examQuestions, seed: "application-error" });
+    const attempt = createMockAttempt({
+      ...build,
+      id: "application-error-attempt",
+      seed: "application-error",
+      createdAt: "2026-08-11T00:00:00.000Z",
+    });
+    const invalidCardRepository = new MockExamRepository(new Set(), questionIds);
+    await invalidCardRepository.createAttempt(attempt);
+
+    await expect(
+      invalidCardRepository.finalizeAttempt(attempt.id, "2026-08-11T02:00:00.000Z"),
+    ).rejects.toThrow(/Unknown review card/);
+    expect((await progress.load()).reviews).toHaveLength(0);
+    expect((await invalidCardRepository.getAttempt(attempt.id))?.status).toBe("active");
+  });
+
+  it("rejects abandoning an attempt once its writing time has expired", async () => {
+    const progress = new ProgressRepository(cardIds);
+    await progress.resetAll();
+    const repository = new MockExamRepository(cardIds, questionIds);
+    const attempt = createMockAttempt({
+      ...buildMockExam({ bank: examQuestions, seed: "expired-abandon" }),
+      id: "expired-abandon-attempt",
+      seed: "expired-abandon",
+      createdAt: "2026-08-11T00:00:00.000Z",
+    });
+    await repository.createAttempt(attempt);
+    await expect(
+      repository.abandonAttempt(attempt.id, "2026-08-11T02:00:00.000Z"),
+    ).rejects.toThrow(/expired mock/);
+    expect((await repository.getAttempt(attempt.id))?.status).toBe("active");
   });
 });

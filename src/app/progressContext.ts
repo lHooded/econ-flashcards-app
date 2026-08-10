@@ -25,6 +25,7 @@ export interface ProgressContextValue {
   readonly finalizeMockAttempt?: (
     id: string,
     submittedAt: string,
+    committedAt?: string,
   ) => Promise<FinalizedMock>;
   readonly refreshProgress?: () => Promise<void>;
   readonly exportProgress: () => string;

@@ -72,6 +72,12 @@ See [docs/MOCK_EXAM.md](docs/MOCK_EXAM.md) for the full mock blueprint, determin
 selection, timer semantics, persistence, exactly-once Exam-SRS integration, and
 Practice Lab limitations.
 
+Practice Lab is deliberately separate from the scheduler recommendation: Study now
+follows Exam-SRS, while Question Bank Drill, Graphs & Tables, Calculations, and
+self-marked Written Response are untimed user-selected formats. Written responses are
+not automatically graded and typed text is not stored. No proprietary or authenticated
+Playconomics/Academia content is accessed or copied.
+
 ## Development
 
 ```bash

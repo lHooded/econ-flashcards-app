@@ -126,10 +126,14 @@ function parseMockAttempts(
   }
   const ids = new Set<string>();
   const attempts = value.map((entry) => {
-    const attempt = validateMockAttempt(
-      entry,
-      validQuestionIds.size > 0 ? validQuestionIds : undefined,
-    );
+    // Current question content is required to resume/update an active
+    // attempt. Historical terminal attempts remain structurally portable when
+    // a future app version no longer ships one of their display questions.
+    const structuralAttempt = validateMockAttempt(entry);
+    const attempt =
+      structuralAttempt.status === "active" && validQuestionIds.size > 0
+        ? validateMockAttempt(structuralAttempt, validQuestionIds)
+        : structuralAttempt;
     if (ids.has(attempt.id))
       throw new Error(
         `Backup validation failed: duplicate mock attempt ${attempt.id}.`,

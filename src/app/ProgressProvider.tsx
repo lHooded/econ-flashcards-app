@@ -191,9 +191,13 @@ export function ProgressProvider({ children }: PropsWithChildren) {
   );
 
   const finalizeMockAttempt = useCallback(
-    async (id: string, submittedAt: string) => {
+    async (id: string, submittedAt: string, committedAt?: string) => {
       try {
-        const finalized = await mockRepository.finalizeAttempt(id, submittedAt);
+        const finalized = await mockRepository.finalizeAttempt(
+          id,
+          submittedAt,
+          committedAt,
+        );
         await refreshProgress();
         setError(null);
         return finalized;

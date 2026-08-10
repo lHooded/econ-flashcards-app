@@ -32,8 +32,20 @@ changes and at approximate active-question checkpoints; per-question time is
 explicitly approximate active interaction time.
 
 There is only one unfinished attempt. An unfinished attempt can be resumed or
-abandoned. Submission is irreversible and may happen early. Expiry is finalised on
-the next foreground/reopen if the app was closed at the deadline.
+abandoned while it is still within reading or writing time. An expired active attempt
+cannot be abandoned: it must be finalised so unanswered questions produce objective
+failure evidence. Submission is irreversible and may happen early only during writing
+time. Before either manual submission or automatic expiry finalisation, the page
+flushes and awaits the exact latest autosave; a save failure leaves the attempt active
+and retryable. Expiry uses `writingEndsAt` as the objective `submittedAt` and as the
+review timestamp for unanswered questions, even when the app is reopened much later.
+
+The stored manifest is authoritative for historical scoring metadata: correct choice,
+review card, chapter, style, difficulty, and stimulus type. The current bank is used
+only for display content when it is still available. If a future app version no longer
+ships a historical question, its stored score and analytics remain valid and the result
+page shows an unavailable-content placeholder rather than dropping the question or
+blocking startup.
 
 ## Exam-SRS integration
 
@@ -45,10 +57,14 @@ Repeating finalisation is idempotent and cannot increment card states twice.
 
 ## Practice Lab
 
-Practice Lab is untimed and user-directed. Question-bank drills expose chapter,
-style, stimulus, and small set-size filters. Graphs & Tables focuses the 30 audited
-stimulus questions, and Calculations focuses authored calculation MCQs. These modes
-give immediate feedback only after their normal MCQ review has saved successfully.
+Practice Lab is untimed and user-directed. Question Bank Drill exposes chapter, style,
+stimulus (`All questions`, `Graphs only`, `Tables only`, or `Text only`), and small
+set-size filters. Graphs & Tables is always limited to the 30 audited stimulus
+questions and offers `All graphs & tables`, `Graphs only`, or `Tables only`.
+Calculations is always limited to authored calculation MCQs and honours any displayed
+stimulus filter. These modes give immediate feedback only after their normal MCQ
+review has saved successfully; a failed save freezes the question and exact payload
+until retry succeeds.
 
 Written Response selects canonical non-MCQ cards. The learner types a response,
 explicitly reveals the model answer and canonical explanation, then self-rates with

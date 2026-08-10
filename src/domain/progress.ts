@@ -119,6 +119,26 @@ export function applyReviewToCardState(
   };
 }
 
+/**
+ * Rebuild one card's derived state from its complete chronological history.
+ *
+ * This is intentionally separate from the incremental write path: imported or
+ * delayed mock reviews can be older than a review already recorded by Study.
+ */
+export function deriveCardStateFromReviews(
+  cardId: string,
+  reviews: readonly ReviewEvent[],
+): CardState {
+  const chronological = sortReviewEventsChronologically(
+    reviews.filter((review) => review.cardId === cardId),
+  );
+  let state = createEmptyCardState(cardId);
+  for (const review of chronological) {
+    state = applyReviewToCardState(state, review);
+  }
+  return state;
+}
+
 function createReviewId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();

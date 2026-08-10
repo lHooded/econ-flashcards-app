@@ -6,6 +6,7 @@ interface MockQuestionProps {
   readonly questionNumber: number;
   readonly selectedChoice: number | null;
   readonly reading: boolean;
+  readonly disabled?: boolean;
   readonly onSelect: (choice: 0 | 1 | 2 | 3) => void;
 }
 
@@ -14,6 +15,7 @@ export function MockQuestion({
   questionNumber,
   selectedChoice,
   reading,
+  disabled = false,
   onSelect,
 }: MockQuestionProps) {
   return (
@@ -45,7 +47,7 @@ export function MockQuestion({
               type="radio"
               name={`mock-choice-${question.id}`}
               checked={selectedChoice === index}
-              disabled={reading}
+              disabled={reading || disabled}
               onChange={() => onSelect(index as 0 | 1 | 2 | 3)}
             />
             <span>

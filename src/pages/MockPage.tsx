@@ -18,6 +18,9 @@ export function MockPage() {
     [snapshot?.mockAttempts],
   );
   const active = attempts.find((attempt) => attempt.status === "active");
+  const activeClock =
+    active === undefined ? undefined : deriveMockClock(active, Date.now());
+  const activeExpired = activeClock?.phase === "expired";
   const [error, setError] = useState<string | null>(null);
   const questionUsage = useMemo(() => {
     const usage = new Map<string, number>();
@@ -32,6 +35,10 @@ export function MockPage() {
     setError(null);
     try {
       if (active !== undefined) {
+        if (activeExpired) {
+          window.location.hash = `#/mock/attempt?id=${encodeURIComponent(active.id)}`;
+          return;
+        }
         if (
           !window.confirm(
             "Abandon the unfinished mock and start a new one? Its answers will not enter Exam-SRS.",
@@ -77,23 +84,35 @@ export function MockPage() {
           </p>
         </div>
         <button className="primary-button heading-action" type="button" onClick={start}>
-          {active === undefined ? "Start full mock" : "Abandon and start new"}
+          {active === undefined
+            ? "Start full mock"
+            : activeExpired
+              ? "Resume expired mock"
+              : "Abandon and start new"}
         </button>
       </section>
       {active !== undefined && (
         <section className="callout callout-accent">
           <div>
             <p className="section-kicker">Unfinished mock</p>
-            <h2>Resume your attempt</h2>
+            <h2>
+              {activeExpired ? "Expired mock needs finalising" : "Resume your attempt"}
+            </h2>
             <p>
               {formatMockProgress(active)} · {clockLabel(active)}
             </p>
+            {activeExpired && (
+              <p className="muted-text">
+                This attempt cannot be abandoned; its unanswered questions must enter
+                the normal Exam-SRS evidence history.
+              </p>
+            )}
           </div>
           <a
             className="secondary-button"
             href={`#/mock/attempt?id=${encodeURIComponent(active.id)}`}
           >
-            Resume mock exam
+            {activeExpired ? "Finalise expired mock" : "Resume mock exam"}
           </a>
         </section>
       )}

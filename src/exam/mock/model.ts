@@ -150,6 +150,8 @@ export function validateMockAttempt(
   );
   if (status === "submitted" && submittedAt === null)
     throw new Error("Submitted mock needs submittedAt.");
+  if (status === "submitted" && committedAt === null)
+    throw new Error("Submitted mock needs reviewEventsCommittedAt.");
   if (status === "abandoned" && abandonedAt === null)
     throw new Error("Abandoned mock needs abandonedAt.");
   if (

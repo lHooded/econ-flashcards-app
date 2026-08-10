@@ -16,27 +16,41 @@ export function MockResults({
 }) {
   const [filter, setFilter] = useState<ResultFilter>("all");
   const result = scoreMockAttempt(attempt);
-  const analytics = useMemo(
-    () => analyseMockAttempt(attempt, questionsById),
-    [attempt, questionsById],
-  );
+  const analytics = useMemo(() => analyseMockAttempt(attempt), [attempt]);
   const states = new Map(
     attempt.questionStates.map((state) => [state.questionId, state]),
   );
+  const manifests = new Map(
+    attempt.manifest.map((manifest) => [manifest.questionId, manifest]),
+  );
   const visibleQuestions = attempt.questionOrder
-    .map((id) => questionsById.get(id))
-    .filter((question): question is ExamQuestion => question !== undefined)
-    .filter((question) => {
-      const state = states.get(question.id);
+    .map((id, index) => ({
+      index,
+      manifest: manifests.get(id),
+      question: questionsById.get(id),
+      state: states.get(id),
+    }))
+    .filter(
+      (
+        entry,
+      ): entry is {
+        readonly index: number;
+        readonly manifest: MockAttempt["manifest"][number];
+        readonly question: ExamQuestion | undefined;
+        readonly state: MockAttempt["questionStates"][number];
+      } => entry.manifest !== undefined && entry.state !== undefined,
+    )
+    .filter((entry) => {
+      const { manifest, state } = entry;
       if (state === undefined) return false;
       if (filter === "incorrect")
         return (
           state.selectedChoice !== null &&
-          state.selectedChoice !== question.correctChoice
+          state.selectedChoice !== manifest.correctChoice
         );
       if (filter === "unanswered") return state.selectedChoice === null;
       if (filter === "flagged") return state.flagged;
-      if (filter === "stimulus") return question.stimulus !== undefined;
+      if (filter === "stimulus") return manifest.stimulusType !== null;
       return true;
     });
   return (
@@ -111,16 +125,16 @@ export function MockResults({
           )}
         </div>
         <div className="result-question-list">
-          {visibleQuestions.map((question) => {
-            const state = states.get(question.id);
-            if (state === undefined) return null;
-            const correct = state.selectedChoice === question.correctChoice;
+          {visibleQuestions.map(({ index, manifest, question, state }) => {
+            const correct =
+              state.selectedChoice !== null &&
+              state.selectedChoice === manifest.correctChoice;
             return (
-              <article className="result-question" key={question.id}>
+              <article className="result-question" key={manifest.questionId}>
                 <div className="mock-question-meta">
-                  <span>Question {attempt.questionOrder.indexOf(question.id) + 1}</span>
+                  <span>Question {index + 1}</span>
                   <span>
-                    Chapter {question.chapter} · {question.topic}
+                    Chapter {manifest.chapter} · {question?.topic ?? manifest.style}
                   </span>
                   <strong
                     className={
@@ -134,35 +148,49 @@ export function MockResults({
                         : "Incorrect"}
                   </strong>
                 </div>
-                <QuestionStimulus stimulus={question.stimulus} />
-                <h3>{question.stem}</h3>
-                <ol className="result-choice-list" type="A">
-                  {question.choices.map((choice, index) => (
-                    <li
-                      className={`${index === question.correctChoice ? "correct-choice-row" : ""} ${state.selectedChoice === index && index !== question.correctChoice ? "selected-wrong-row" : ""}`}
-                      key={choice}
-                    >
-                      <span>{choice}</span>
-                      {index === question.correctChoice && (
-                        <strong>Correct answer</strong>
-                      )}
-                      {state.selectedChoice === index && (
-                        <em>
-                          {index === question.correctChoice
-                            ? "Your answer"
-                            : "Your answer"}
-                        </em>
-                      )}
-                      <details>
-                        <summary>Rationale</summary>
-                        <p>{question.choiceRationales[index]}</p>
-                      </details>
-                    </li>
-                  ))}
-                </ol>
-                <p>
-                  <strong>Explanation:</strong> {question.explanation}
-                </p>
+                {question === undefined ? (
+                  <div className="callout">
+                    <p>
+                      Historical question content is unavailable in this app version.
+                    </p>
+                    <p>
+                      Stored result:{" "}
+                      {correct
+                        ? "Correct"
+                        : state.selectedChoice === null
+                          ? "Unanswered"
+                          : "Incorrect"}
+                      . Chapter {manifest.chapter} · Difficulty {manifest.difficulty} ·{" "}
+                      {manifest.style}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <QuestionStimulus stimulus={question.stimulus} />
+                    <h3>{question.stem}</h3>
+                    <ol className="result-choice-list" type="A">
+                      {question.choices.map((choice, choiceIndex) => (
+                        <li
+                          className={`${choiceIndex === manifest.correctChoice ? "correct-choice-row" : ""} ${state.selectedChoice === choiceIndex && choiceIndex !== manifest.correctChoice ? "selected-wrong-row" : ""}`}
+                          key={`${manifest.questionId}-${choiceIndex}`}
+                        >
+                          <span>{choice}</span>
+                          {choiceIndex === manifest.correctChoice && (
+                            <strong>Correct answer</strong>
+                          )}
+                          {state.selectedChoice === choiceIndex && <em>Your answer</em>}
+                          <details>
+                            <summary>Rationale</summary>
+                            <p>{question.choiceRationales[choiceIndex]}</p>
+                          </details>
+                        </li>
+                      ))}
+                    </ol>
+                    <p>
+                      <strong>Explanation:</strong> {question.explanation}
+                    </p>
+                  </>
+                )}
               </article>
             );
           })}
