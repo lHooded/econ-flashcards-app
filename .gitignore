@@ -1,2 +1,6 @@
-*
-!.gitignore
+# Course materials
+*.pdf
+exam_details.txt
+homework/
+lectures/
+worksheets/
