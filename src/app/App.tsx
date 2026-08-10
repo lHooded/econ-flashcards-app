@@ -4,6 +4,9 @@ import { useProgress } from "./progressContext";
 import { AppShell } from "../components/AppShell";
 import { HomePage } from "../pages/HomePage";
 import { SettingsPage } from "../pages/SettingsPage";
+import { MockPage } from "../pages/MockPage";
+import { MockAttemptPage } from "../pages/MockAttemptPage";
+import { PracticePage } from "../pages/PracticePage";
 import { StudyPage } from "../pages/StudyPage";
 import { parseHashLocation, type ParsedHashLocation } from "./hashRoute";
 
@@ -53,7 +56,7 @@ function StartupError({ message }: { message: string }) {
 }
 
 function Application() {
-  const { route, studyScope } = useHashRoute();
+  const { route, studyScope, attemptId, practiceMode } = useHashRoute();
   const { snapshot, isLoading, error, clearError } = useProgress();
 
   if (isLoading || snapshot === null) {
@@ -66,6 +69,12 @@ function Application() {
         <StudyPage scope={studyScope} />
       ) : route === "/settings" ? (
         <SettingsPage />
+      ) : route === "/mock" ? (
+        <MockPage />
+      ) : route === "/mock/attempt" && attemptId !== null ? (
+        <MockAttemptPage attemptId={attemptId} />
+      ) : route === "/practice" ? (
+        <PracticePage initialMode={practiceMode} />
       ) : (
         <HomePage />
       )}

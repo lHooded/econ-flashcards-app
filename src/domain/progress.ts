@@ -31,6 +31,8 @@ export interface ProgressSnapshot {
   readonly settings: AppSettings;
   readonly cardStates: Readonly<Record<string, CardState>>;
   readonly reviewEvents: readonly ReviewEvent[];
+  /** Optional for compatibility with pre-mock snapshot fixtures. */
+  readonly mockAttempts?: readonly import("../exam/mock/model").MockAttempt[];
 }
 
 export type NewReviewEvent = Omit<ReviewEvent, "id" | "reviewedAt"> & {
@@ -115,6 +117,26 @@ export function applyReviewToCardState(
     correctReviews: state.correctReviews + (wasCorrect ? 1 : 0),
     consecutiveCorrect: wasCorrect ? state.consecutiveCorrect + 1 : 0,
   };
+}
+
+/**
+ * Rebuild one card's derived state from its complete chronological history.
+ *
+ * This is intentionally separate from the incremental write path: imported or
+ * delayed mock reviews can be older than a review already recorded by Study.
+ */
+export function deriveCardStateFromReviews(
+  cardId: string,
+  reviews: readonly ReviewEvent[],
+): CardState {
+  const chronological = sortReviewEventsChronologically(
+    reviews.filter((review) => review.cardId === cardId),
+  );
+  let state = createEmptyCardState(cardId);
+  for (const review of chronological) {
+    state = applyReviewToCardState(state, review);
+  }
+  return state;
 }
 
 function createReviewId(): string {

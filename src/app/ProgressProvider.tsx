@@ -7,7 +7,7 @@ import {
 } from "react";
 import { ProgressContext, type ProgressContextValue } from "./progressContext";
 import { cardIds } from "../data/deck";
-import { serializeProgressBackup, type ProgressBackupV1 } from "../domain/backup";
+import { serializeProgressBackup, type ProgressBackupV2 } from "../domain/backup";
 import {
   sortReviewEventsChronologically,
   type AppSettings,
@@ -15,9 +15,13 @@ import {
   type ProgressSnapshot,
 } from "../domain/progress";
 import { ProgressRepository } from "../db/progressRepository";
+import { MockExamRepository } from "../db/mockExamRepository";
+import { examQuestions } from "../exam/questionBank";
+import type { MockAttempt, MockQuestionAttemptState } from "../exam/mock/model";
 
 function toSnapshot(
   data: Awaited<ReturnType<ProgressRepository["load"]>>,
+  mockAttempts: readonly MockAttempt[],
 ): ProgressSnapshot {
   return {
     settings: data.settings,
@@ -25,6 +29,7 @@ function toSnapshot(
       data.cardStates.map((state) => [state.cardId, state]),
     ),
     reviewEvents: data.reviews,
+    mockAttempts,
   };
 }
 
@@ -36,17 +41,24 @@ function errorMessage(error: unknown): string {
 
 export function ProgressProvider({ children }: PropsWithChildren) {
   const repository = useMemo(() => new ProgressRepository(cardIds), []);
+  const mockRepository = useMemo(
+    () =>
+      new MockExamRepository(
+        cardIds,
+        new Set(examQuestions.map((question) => question.id)),
+      ),
+    [],
+  );
   const [snapshot, setSnapshot] = useState<ProgressSnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    repository
-      .load()
-      .then((data) => {
+    Promise.all([repository.load(), mockRepository.listAttempts()])
+      .then(([data, attempts]) => {
         if (!cancelled) {
-          setSnapshot(toSnapshot(data));
+          setSnapshot(toSnapshot(data, attempts));
           setIsLoading(false);
         }
       })
@@ -60,7 +72,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
     return () => {
       cancelled = true;
     };
-  }, [repository]);
+  }, [mockRepository, repository]);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -120,12 +132,89 @@ export function ProgressProvider({ children }: PropsWithChildren) {
     return serializeProgressBackup(snapshot);
   }, [snapshot]);
 
+  const refreshProgress = useCallback(async () => {
+    const [data, attempts] = await Promise.all([
+      repository.load(),
+      mockRepository.listAttempts(),
+    ]);
+    setSnapshot(toSnapshot(data, attempts));
+  }, [mockRepository, repository]);
+
+  const createMockAttempt = useCallback(
+    async (attempt: MockAttempt) => {
+      try {
+        const created = await mockRepository.createAttempt(attempt);
+        await refreshProgress();
+        setError(null);
+        return created;
+      } catch (createError: unknown) {
+        const message = errorMessage(createError);
+        setError(message);
+        throw new Error(message);
+      }
+    },
+    [mockRepository, refreshProgress],
+  );
+
+  const updateMockAttemptProgress = useCallback(
+    async (id: string, states: readonly MockQuestionAttemptState[], index: number) => {
+      try {
+        const updated = await mockRepository.updateAttemptProgress(id, states, index);
+        setSnapshot((current) =>
+          current === null
+            ? current
+            : {
+                ...current,
+                mockAttempts: (current.mockAttempts ?? []).map((attempt) =>
+                  attempt.id === id ? updated : attempt,
+                ),
+              },
+        );
+        setError(null);
+        return updated;
+      } catch (updateError: unknown) {
+        const message = errorMessage(updateError);
+        setError(message);
+        throw new Error(message);
+      }
+    },
+    [mockRepository],
+  );
+
+  const abandonMockAttempt = useCallback(
+    async (id: string, abandonedAt: string) => {
+      const abandoned = await mockRepository.abandonAttempt(id, abandonedAt);
+      await refreshProgress();
+      return abandoned;
+    },
+    [mockRepository, refreshProgress],
+  );
+
+  const finalizeMockAttempt = useCallback(
+    async (id: string, submittedAt: string, committedAt?: string) => {
+      try {
+        const finalized = await mockRepository.finalizeAttempt(
+          id,
+          submittedAt,
+          committedAt,
+        );
+        await refreshProgress();
+        setError(null);
+        return finalized;
+      } catch (finalizeError: unknown) {
+        const message = errorMessage(finalizeError);
+        setError(message);
+        throw new Error(message);
+      }
+    },
+    [mockRepository, refreshProgress],
+  );
+
   const replaceProgress = useCallback(
-    async (backup: ProgressBackupV1) => {
+    async (backup: ProgressBackupV2) => {
       try {
         await repository.replaceAll(backup);
-        const data = await repository.load();
-        setSnapshot(toSnapshot(data));
+        await refreshProgress();
         setError(null);
       } catch (replaceError: unknown) {
         const message = errorMessage(replaceError);
@@ -133,21 +222,20 @@ export function ProgressProvider({ children }: PropsWithChildren) {
         throw new Error(message);
       }
     },
-    [repository],
+    [refreshProgress, repository],
   );
 
   const resetProgress = useCallback(async () => {
     try {
       await repository.resetAll();
-      const data = await repository.load();
-      setSnapshot(toSnapshot(data));
+      await refreshProgress();
       setError(null);
     } catch (resetError: unknown) {
       const message = errorMessage(resetError);
       setError(message);
       throw new Error(message);
     }
-  }, [repository]);
+  }, [refreshProgress, repository]);
 
   const value = useMemo<ProgressContextValue>(
     () => ({
@@ -157,20 +245,30 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       clearError,
       saveSettings,
       recordReview,
+      createMockAttempt,
+      updateMockAttemptProgress,
+      abandonMockAttempt,
+      finalizeMockAttempt,
+      refreshProgress,
       exportProgress,
       replaceProgress,
       resetProgress,
     }),
     [
       clearError,
+      createMockAttempt,
       error,
       exportProgress,
       isLoading,
       recordReview,
+      refreshProgress,
       replaceProgress,
       resetProgress,
       saveSettings,
       snapshot,
+      updateMockAttemptProgress,
+      abandonMockAttempt,
+      finalizeMockAttempt,
     ],
   );
 

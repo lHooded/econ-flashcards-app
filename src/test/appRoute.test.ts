@@ -35,4 +35,18 @@ describe("hash routing", () => {
     );
     expect(buildStudyHash({ preset: "smart", chapter: 0 })).toBe("#/study?chapter=0");
   });
+
+  it("parses mock and Practice Lab routes safely", () => {
+    expect(parseHashLocation("#/mock").route).toBe("/mock");
+    expect(parseHashLocation("#/mock/attempt?id=abc")).toMatchObject({
+      route: "/mock/attempt",
+      attemptId: "abc",
+    });
+    expect(parseHashLocation("#/mock/attempt?id=").route).toBe("/mock");
+    expect(parseHashLocation("#/practice?mode=stimulus")).toMatchObject({
+      route: "/practice",
+      practiceMode: "stimulus",
+    });
+    expect(parseHashLocation("#/practice?mode=not-real").practiceMode).toBeNull();
+  });
 });

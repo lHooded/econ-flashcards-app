@@ -7,23 +7,34 @@ import {
   type ProgressSnapshot,
   type ReviewEvent,
 } from "./progress";
+import { validateMockAttempt, type MockAttempt } from "../exam/mock/model";
 
 export const BACKUP_FORMAT = "econ-flashcards-progress" as const;
-export const BACKUP_VERSION = 1 as const;
+export const BACKUP_VERSION = 2 as const;
 
 export interface ProgressBackupV1 {
   readonly format: typeof BACKUP_FORMAT;
-  readonly version: typeof BACKUP_VERSION;
+  readonly version: 1;
   readonly exportedAt: string;
   readonly settings: AppSettings;
   readonly cardStates: readonly CardState[];
   readonly reviews: readonly ReviewEvent[];
 }
 
+export interface ProgressBackupV2 {
+  readonly format: typeof BACKUP_FORMAT;
+  readonly version: 2;
+  readonly exportedAt: string;
+  readonly settings: AppSettings;
+  readonly cardStates: readonly CardState[];
+  readonly reviews: readonly ReviewEvent[];
+  readonly mockAttempts: readonly MockAttempt[];
+}
+
 export function createProgressBackup(
   snapshot: ProgressSnapshot,
   exportedAt = new Date().toISOString(),
-): ProgressBackupV1 {
+): ProgressBackupV2 {
   if (!Number.isFinite(Date.parse(exportedAt))) {
     throw new Error("Export timestamp must be a valid ISO date-time.");
   }
@@ -35,6 +46,12 @@ export function createProgressBackup(
     settings: { ...snapshot.settings },
     cardStates: Object.values(snapshot.cardStates).map((state) => ({ ...state })),
     reviews: snapshot.reviewEvents.map((review) => ({ ...review })),
+    mockAttempts: (snapshot.mockAttempts ?? []).map((attempt) => ({
+      ...attempt,
+      questionOrder: [...attempt.questionOrder],
+      manifest: attempt.manifest.map((entry) => ({ ...entry })),
+      questionStates: attempt.questionStates.map((state) => ({ ...state })),
+    })),
   };
 }
 
@@ -48,7 +65,8 @@ export function serializeProgressBackup(
 export function parseProgressBackup(
   input: unknown,
   validCardIds: ReadonlySet<string>,
-): ProgressBackupV1 {
+  validQuestionIds: ReadonlySet<string> = new Set(),
+): ProgressBackupV2 {
   if (!isRecord(input)) {
     throw new Error("Backup validation failed: the top-level value must be an object.");
   }
@@ -57,9 +75,9 @@ export function parseProgressBackup(
     throw new Error(`Unsupported backup format: expected "${BACKUP_FORMAT}".`);
   }
 
-  if (input.version !== BACKUP_VERSION) {
+  if (input.version !== 1 && input.version !== BACKUP_VERSION) {
     throw new Error(
-      `Unsupported backup version: expected ${BACKUP_VERSION}, received ${String(input.version)}.`,
+      `Unsupported backup version: expected 1 or ${BACKUP_VERSION}, received ${String(input.version)}.`,
     );
   }
 
@@ -67,6 +85,10 @@ export function parseProgressBackup(
   const settings = validateSettings(input.settings);
   const cardStates = parseCardStates(input.cardStates, validCardIds);
   const reviews = parseReviews(input.reviews, validCardIds);
+  const mockAttempts =
+    input.version === 1
+      ? []
+      : parseMockAttempts(input.mockAttempts, validQuestionIds, reviews);
 
   return {
     format: BACKUP_FORMAT,
@@ -75,13 +97,15 @@ export function parseProgressBackup(
     settings,
     cardStates,
     reviews,
+    mockAttempts,
   };
 }
 
 export function parseProgressBackupText(
   text: string,
   validCardIds: ReadonlySet<string>,
-): ProgressBackupV1 {
+  validQuestionIds: ReadonlySet<string> = new Set(),
+): ProgressBackupV2 {
   let input: unknown;
   try {
     input = JSON.parse(text) as unknown;
@@ -89,7 +113,53 @@ export function parseProgressBackupText(
     throw new Error("Backup validation failed: the file is not valid JSON.");
   }
 
-  return parseProgressBackup(input, validCardIds);
+  return parseProgressBackup(input, validCardIds, validQuestionIds);
+}
+
+function parseMockAttempts(
+  value: unknown,
+  validQuestionIds: ReadonlySet<string>,
+  reviews: readonly ReviewEvent[],
+): MockAttempt[] {
+  if (!Array.isArray(value)) {
+    throw new Error("Backup validation failed: mockAttempts must be an array.");
+  }
+  const ids = new Set<string>();
+  const attempts = value.map((entry) => {
+    // Current question content is required to resume/update an active
+    // attempt. Historical terminal attempts remain structurally portable when
+    // a future app version no longer ships one of their display questions.
+    const structuralAttempt = validateMockAttempt(entry);
+    const attempt =
+      structuralAttempt.status === "active" && validQuestionIds.size > 0
+        ? validateMockAttempt(structuralAttempt, validQuestionIds)
+        : structuralAttempt;
+    if (ids.has(attempt.id))
+      throw new Error(
+        `Backup validation failed: duplicate mock attempt ${attempt.id}.`,
+      );
+    ids.add(attempt.id);
+    return attempt;
+  });
+  const active = attempts.filter((attempt) => attempt.status === "active");
+  if (active.length > 1)
+    throw new Error("Backup validation failed: more than one active mock attempt.");
+  const reviewIds = new Set(reviews.map((review) => review.id));
+  for (const attempt of attempts) {
+    if (attempt.status === "submitted" && attempt.reviewEventsCommittedAt !== null) {
+      for (const questionId of attempt.questionOrder) {
+        const reviewId = `mock:${attempt.id}:${questionId}`;
+        if (!reviewIds.has(reviewId)) {
+          throw new Error(
+            `Backup validation failed: committed mock review ${reviewId} is missing.`,
+          );
+        }
+      }
+    }
+  }
+  // A submitted attempt is restored as data, never replayed. The repository
+  // restores its committed events together with the attempt in one replacement.
+  return attempts;
 }
 
 function parseCardStates(

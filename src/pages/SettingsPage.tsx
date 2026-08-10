@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useProgress } from "../app/progressContext";
 import { cardIds } from "../data/deck";
+import { examQuestions } from "../exam/questionBank";
 import { parseProgressBackupText } from "../domain/backup";
 import { type AppSettings } from "../domain/progress";
 import {
@@ -95,7 +96,11 @@ export function SettingsPage() {
     setDataError(null);
     setDataMessage(null);
     try {
-      const backup = parseProgressBackupText(await file.text(), cardIds);
+      const backup = parseProgressBackupText(
+        await file.text(),
+        cardIds,
+        new Set(examQuestions.map((question) => question.id)),
+      );
       if (
         !window.confirm(
           "Replace all progress and settings on this device with this backup? This cannot be undone.",
@@ -117,7 +122,7 @@ export function SettingsPage() {
     setDataMessage(null);
     if (
       !window.confirm(
-        "Delete every review, card state, and exam setting stored on this device? This cannot be undone unless you have an export.",
+        "Delete every review, card state, exam setting, and mock history stored on this device? This cannot be undone unless you have an export.",
       )
     ) {
       return;
@@ -125,7 +130,7 @@ export function SettingsPage() {
 
     try {
       await resetProgress();
-      setDataMessage("Local progress and settings were reset.");
+      setDataMessage("Local progress, settings, and mock history were reset.");
     } catch (error: unknown) {
       setDataError(
         error instanceof Error ? error.message : "Progress could not be reset.",
@@ -203,8 +208,9 @@ export function SettingsPage() {
             <h2>Take your study history with you.</h2>
           </div>
           <p>
-            Export includes settings, card states, and review history. It does not copy
-            the canonical deck; card IDs reconnect the backup to this bundled content.
+            Export includes settings, card states, review history, and mock attempts. It
+            does not copy the canonical deck; card IDs reconnect the backup to this
+            bundled content.
           </p>
           <div className="data-actions">
             <button className="secondary-button" type="button" onClick={downloadBackup}>
