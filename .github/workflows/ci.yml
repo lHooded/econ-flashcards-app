@@ -28,6 +28,9 @@ jobs:
       - name: Validate canonical deck
         run: npm run validate:deck
 
+      - name: Validate exam question bank
+        run: npm run validate:exam-questions
+
       - name: Typecheck
         run: npm run typecheck
 

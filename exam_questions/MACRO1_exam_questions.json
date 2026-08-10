@@ -1,0 +1,2432 @@
+[
+  {
+    "id": "auth-ch01-001",
+    "chapter": 1,
+    "topic": "GDP and imports",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "An Australian household buys a newly produced laptop made in the United States. In GDP expenditure accounting for Australia, which treatment is correct?",
+    "choices": [
+      "It enters C and M with equal value, so its net contribution to Australian GDP is zero.",
+      "It enters C only, so Australian GDP rises by the purchase price.",
+      "It enters I because a laptop is a durable good.",
+      "It is excluded from both C and M because imported goods never appear in GDP accounting."
+    ],
+    "correctChoice": 0,
+    "explanation": "The household purchase is consumption expenditure, but the laptop is imported, so the same value is subtracted as M. The net contribution to Australian GDP is zero because the production occurred abroad.",
+    "choiceRationales": [
+      "This correctly applies Y = C + I + G + X - M: the imported laptop appears in C and is offset by M.",
+      "Imports can initially appear in C, but omitting M would incorrectly count foreign production in Australian GDP.",
+      "Macroeconomic I includes newly produced capital, inventories and new dwellings; a household laptop is consumption here.",
+      "Imports are recorded in the expenditure identity precisely so that foreign production embedded in spending is removed."
+    ],
+    "reviewCardId": "ch01-004",
+    "sourceCardIds": ["ch01-004"],
+    "tags": ["exam-bank", "GDP", "imports", "net-exports"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch01-002",
+    "chapter": 1,
+    "topic": "Value added",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "A firm sells output worth $900 and purchases $550 of intermediate inputs from other firms. What is its value added?",
+    "choices": ["$350", "$550", "$900", "$1,450"],
+    "correctChoice": 0,
+    "explanation": "Value added is the value of output minus the value of intermediate inputs: $900 - $550 = $350.",
+    "choiceRationales": [
+      "Value added is $900 - $550 = $350, so this is the amount counted from the firm without double counting inputs.",
+      "$550 is the intermediate-input cost, not the value created by this firm.",
+      "$900 is the firm’s sales value before subtracting inputs purchased from other firms.",
+      "Adding output and inputs double counts the intermediate goods rather than measuring the firm’s contribution."
+    ],
+    "reviewCardId": "ch01-006",
+    "sourceCardIds": ["ch01-006"],
+    "tags": ["exam-bank", "value-added", "GDP"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch01-003",
+    "chapter": 1,
+    "topic": "Inventory investment",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "A firm’s inventories are $240 at the beginning of the period and $285 at the end. What is inventory investment during the period?",
+    "choices": ["-$45", "$285", "+$45", "$525"],
+    "correctChoice": 2,
+    "explanation": "Inventory investment is the change in the inventory stock: $285 - $240 = +$45.",
+    "choiceRationales": [
+      "This reverses the change and would describe inventories falling from $285 to $240.",
+      "$285 is the ending stock, not the flow of inventory investment during the period.",
+      "The stock increased by $45, so inventory investment is +$45.",
+      "Adding beginning and ending stocks does not measure the change in the stock."
+    ],
+    "reviewCardId": "ch01-010",
+    "sourceCardIds": ["ch01-010"],
+    "tags": ["exam-bank", "calculation", "inventory", "investment"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch01-004",
+    "chapter": 1,
+    "topic": "GDP versus GNI",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "Assume a foreign-owned factory produces in Australia and all of the factory’s profits accrue to non-resident owners. Which statement is correct?",
+    "choices": [
+      "It is excluded from both measures because foreign ownership determines the national accounts.",
+      "It enters Australian GNI but not GDP because GNI follows income rather than location.",
+      "It enters both measures in full because all production is resident income.",
+      "Production enters Australian GDP; profits paid to non-residents are excluded from Australian GNI."
+    ],
+    "correctChoice": 3,
+    "explanation": "GDP is based on where production occurs, so production inside Australia is included. GNI is based on income accruing to residents, so profits paid to non-resident owners are not Australian GNI.",
+    "choiceRationales": [
+      "Location makes the production part of Australian GDP, so it is not excluded from both measures.",
+      "This reverses the location-based GDP rule and the resident-income basis of GNI.",
+      "The production is in GDP, but the stated non-resident profits are not income accruing to Australian residents.",
+      "This separates the two measures correctly: GDP follows production location and GNI follows resident factor income."
+    ],
+    "reviewCardId": "ch01-013",
+    "sourceCardIds": ["ch01-013"],
+    "tags": ["exam-bank", "GDP", "GNI", "model-discrimination"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch01-005",
+    "chapter": 1,
+    "topic": "Real GDP",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Using base-year prices, good A costs $3 and good B costs $8. Current-year quantities are 120 units of A and 30 units of B. What is current real GDP measured at base-year prices?",
+    "choices": ["$600", "$360", "$240", "$960"],
+    "correctChoice": 0,
+    "explanation": "Real GDP uses current quantities and base-year prices: 3(120) + 8(30) = 360 + 240 = $600.",
+    "choiceRationales": [
+      "This applies base-year prices to each current quantity and sums the two values: $360 + $240 = $600.",
+      "$360 counts only good A and omits good B’s base-price value.",
+      "$240 counts only good B and omits good A’s base-price value.",
+      "$960 does not follow the stated base prices; it overstates the weighted quantity calculation."
+    ],
+    "reviewCardId": "ch01-015",
+    "sourceCardIds": ["ch01-015"],
+    "tags": ["exam-bank", "real-GDP", "base-year", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch01-006",
+    "chapter": 1,
+    "topic": "CPI definition",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "Which construction matches the standard fixed-basket consumer price index?",
+    "choices": [
+      "The cost of current-year quantities at current prices relative to output valued at base-year prices.",
+      "The cost of a fixed representative consumer basket at current prices relative to its cost in the base period.",
+      "The value of all domestically produced final output using current production weights.",
+      "The cost of imported goods only, because services are not part of consumer prices."
+    ],
+    "correctChoice": 1,
+    "explanation": "A standard fixed-basket CPI compares the cost of the same representative consumer basket across periods. It is not a domestic-production index and includes services as well as goods.",
+    "choiceRationales": [
+      "This mixes current quantities and prices and describes neither the fixed consumer basket nor the CPI comparison.",
+      "The CPI holds the representative basket fixed and compares its current cost with its base-period cost.",
+      "That describes the coverage and changing weights of a GDP deflator rather than a fixed-basket CPI.",
+      "The CPI includes consumer services and domestic as well as imported consumer goods when they are in the basket."
+    ],
+    "reviewCardId": "ch01-018",
+    "sourceCardIds": ["ch01-018"],
+    "tags": ["exam-bank", "CPI", "price-index", "definition"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch01-007",
+    "chapter": 1,
+    "topic": "CPI versus GDP deflator",
+    "style": "model_discrimination",
+    "difficulty": 3,
+    "stem": "The price of imported consumer phones rises while domestic output quantities and all other prices stay unchanged. Which result is most consistent with the course definitions?",
+    "choices": [
+      "The GDP deflator rises while the CPI is unchanged.",
+      "The CPI and GDP deflator rise by exactly the same percentage.",
+      "CPI rises; the GDP deflator excludes the imported phones and need not rise.",
+      "Neither index can change because the phones are not produced domestically."
+    ],
+    "correctChoice": 2,
+    "explanation": "Imported consumer goods can be part of the CPI basket, so their price rise raises the CPI. The GDP deflator covers domestically produced final output and does not directly include imported phones.",
+    "choiceRationales": [
+      "The CPI can include imported consumer goods, while the GDP deflator is not directly raised by an imported phone price.",
+      "The indexes have different baskets and geographical coverage, so equal movements are not required.",
+      "This applies the fixed consumer-basket versus domestic-production distinction correctly.",
+      "The phones can change the CPI even though they are not part of domestic production."
+    ],
+    "reviewCardId": "ch01-020",
+    "sourceCardIds": ["ch01-020"],
+    "tags": ["exam-bank", "CPI", "GDP-deflator", "model-discrimination"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch01-008",
+    "chapter": 1,
+    "topic": "Growth rate",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "Which expression correctly calculates the percentage growth rate when real GDP rises from 500 to 525?",
+    "choices": [
+      "(525 - 500) / 525 × 100",
+      "25 / 100 × 100",
+      "(500 - 525) / 500 × 100",
+      "(525 - 500) / 500 × 100"
+    ],
+    "correctChoice": 3,
+    "explanation": "Percentage growth uses the change divided by the earlier value: (525 - 500) / 500 × 100 = 5%.",
+    "choiceRationales": [
+      "The denominator should be the earlier value, 500, not the new value 525.",
+      "The denominator 100 is not the previous GDP level, so this does not measure GDP growth.",
+      "This reverses the change and would report a negative growth rate for an increase.",
+      "This uses the standard old-value denominator and gives 25/500 × 100 = 5%."
+    ],
+    "reviewCardId": "ch01-024",
+    "sourceCardIds": ["ch01-024"],
+    "tags": ["exam-bank", "growth", "real-GDP", "formula"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch01-009",
+    "chapter": 1,
+    "topic": "Unexpected inflation",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "A fixed-rate nominal loan was agreed before inflation turned out higher than expected. Who gains in real terms from the surprise?",
+    "choices": [
+      "The borrower, because the fixed nominal repayment has lower purchasing power than expected.",
+      "The lender, because higher inflation raises the real value of the repayment.",
+      "Neither party, because nominal contracts are unaffected by inflation.",
+      "Both parties equally, because the nominal interest rate is fixed."
+    ],
+    "correctChoice": 0,
+    "explanation": "Higher-than-expected inflation reduces the purchasing power of fixed nominal repayments. The borrower repays less in real terms and the lender receives less real value.",
+    "choiceRationales": [
+      "The borrower benefits because the agreed nominal repayment is worth less in purchasing-power terms.",
+      "The lender receives the same nominal amount but its real value is lower after the inflation surprise.",
+      "Nominal payments are fixed, but their real value changes with the price level.",
+      "The fixed nominal rate determines the dollar payment, not an unchanged real distribution between the parties."
+    ],
+    "reviewCardId": "ch01-027",
+    "sourceCardIds": ["ch01-027"],
+    "tags": ["exam-bank", "inflation", "nominal-real", "redistribution"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch01-010",
+    "chapter": 1,
+    "topic": "Good and bad deflation",
+    "style": "scenario",
+    "difficulty": 3,
+    "stem": "Which situation best fits the textbook’s example of potentially good deflation rather than recessionary bad deflation?",
+    "choices": [
+      "Weak demand lowers prices while unemployment rises sharply.",
+      "Falling incomes reduce spending and firms cut production as prices decline.",
+      "A debt-deflation spiral lowers prices while bankruptcies and unemployment increase.",
+      "Broad productivity gains increase production capacity and lower prices without a collapse in output."
+    ],
+    "correctChoice": 3,
+    "explanation": "The course distinguishes deflation caused by weak demand and economic distress from price declines generated by productivity and production gains. The latter can be good deflation.",
+    "choiceRationales": [
+      "Weak demand combined with rising unemployment is the recessionary bad-deflation case.",
+      "Falling income and production describe a demand contraction, not a productivity-led improvement.",
+      "A debt-deflation spiral is a damaging financial and macroeconomic contraction.",
+      "Productivity gains can lower prices while supporting real production, matching the good-deflation example."
+    ],
+    "reviewCardId": "ch01-033",
+    "sourceCardIds": ["ch01-033"],
+    "tags": ["exam-bank", "deflation", "productivity", "business-cycle"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-001",
+    "chapter": 2,
+    "topic": "Labour statistics",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "A country has a working-age population of 2,000, a participation rate of 75%, and an employment-to-population ratio of 68%. What are its labour force, employment, unemployment and unemployment rate?",
+    "choices": [
+      "LF=1,500; E=1,360; U=640; u=42.67%",
+      "LF=1,360; E=1,500; U=-140; u=-10.29%",
+      "LF=1,500; E=1,360; U=140; u=9.33%",
+      "LF=2,000; E=1,360; U=640; u=32.00%"
+    ],
+    "correctChoice": 2,
+    "explanation": "LF = .75(2,000)=1,500. Employment is .68(2,000)=1,360, so U=1,500-1,360=140 and u=140/1,500=9.33%.",
+    "choiceRationales": [
+      "This treats the non-employed working-age population as unemployed and uses the wrong denominator for u.",
+      "Employment cannot exceed the labour force here, and unemployment cannot be negative.",
+      "These values apply the participation, employment and unemployment definitions in the correct order.",
+      "The working-age population is not the labour-force denominator for the unemployment rate."
+    ],
+    "reviewCardId": "ch02-007",
+    "sourceCardIds": ["ch02-007"],
+    "tags": ["exam-bank", "labour-force", "unemployment", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-002",
+    "chapter": 2,
+    "topic": "Natural rate flows",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "With a constant labour force, the job-separation rate is s=0.03 and the job-finding rate is f=0.17. What is the steady-state unemployment rate?",
+    "choices": ["3%", "17%", "20%", "15%"],
+    "correctChoice": 3,
+    "explanation": "The steady-state rate is u*=s/(s+f)=0.03/(0.03+0.17)=0.03/0.20=0.15, or 15%.",
+    "choiceRationales": [
+      "This reports separations alone and omits the job-finding flow in the steady-state denominator.",
+      "This reports the job-finding rate rather than the unemployment stock implied by both flows.",
+      "This adds the two rates but does not form the steady-state ratio.",
+      "The correct formula is s/(s+f)=.03/.20=.15, or 15%."
+    ],
+    "reviewCardId": "ch02-013",
+    "sourceCardIds": ["ch02-013"],
+    "tags": ["exam-bank", "unemployment", "natural-rate", "labour-flows"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-003",
+    "chapter": 2,
+    "topic": "Output gap",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "Actual output is 980 and potential output is 1,000. What is the percentage output gap?",
+    "choices": ["-2%", "+2%", "-20%", "+20%"],
+    "correctChoice": 0,
+    "explanation": "The output gap is (Y-Y*)/Y* ×100 = (980-1,000)/1,000 ×100 = -2%.",
+    "choiceRationales": [
+      "Actual output is $20 below potential, and dividing by potential gives -20/1,000=-2%.",
+      "This reverses the sign even though actual output is below potential.",
+      "This treats the dollar gap as a percentage without dividing by potential output.",
+      "The dollar gap is 20, not 20% of potential, and its direction is negative."
+    ],
+    "reviewCardId": "ch02-017",
+    "sourceCardIds": ["ch02-017"],
+    "tags": ["exam-bank", "output-gap", "potential-output", "formula"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-004",
+    "chapter": 2,
+    "topic": "Wage floor",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "In the simple labour-market model, a wage floor is set above the competitive equilibrium wage. What outcome follows if the floor is binding?",
+    "choices": [
+      "Employment demanded falls and excess labour supply/unemployment appears.",
+      "Employment rises because every worker receives a higher wage.",
+      "The wage floor has no effect because it is above equilibrium.",
+      "Labour supply falls and firms hire more workers at the higher wage."
+    ],
+    "correctChoice": 0,
+    "explanation": "A binding wage floor keeps the wage above the market-clearing level. Firms demand fewer workers while more workers want to work, creating excess labour supply/unemployment.",
+    "choiceRationales": [
+      "A binding wage above equilibrium reduces quantity of labour demanded and creates excess supply of labour.",
+      "A higher statutory wage does not make firms demand more labour in the basic downward-sloping demand model.",
+      "A floor above equilibrium is binding by definition; a floor below equilibrium would be non-binding.",
+      "The binding floor does not shift labour supply down or make firms hire more at the higher cost."
+    ],
+    "reviewCardId": "ch02-027",
+    "sourceCardIds": ["ch02-027"],
+    "tags": ["exam-bank", "wage-floor", "labour-market", "unemployment"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-005",
+    "chapter": 2,
+    "topic": "Marginal product of labour",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "What does the marginal product of labour measure when capital and other inputs are held fixed?",
+    "choices": [
+      "Total output divided by the number of workers",
+      "The wage paid to the last worker hired",
+      "The additional output produced by one more unit of labour",
+      "The total number of workers employed at the profit-maximising point"
+    ],
+    "correctChoice": 2,
+    "explanation": "MPL is the change in output caused by one additional unit of labour, holding other inputs fixed. It is a marginal physical product, not an average or a wage.",
+    "choiceRationales": [
+      "Total output per worker is average labour productivity, not the marginal product.",
+      "The wage is a price of labour; MPL is a physical output increment.",
+      "This is the definition of MPL with the other production inputs held constant.",
+      "That is an employment level, not the output change from one additional worker."
+    ],
+    "reviewCardId": "ch02-020",
+    "sourceCardIds": ["ch02-020"],
+    "tags": ["exam-bank", "MPL", "labour-demand", "definition"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-006",
+    "chapter": 2,
+    "topic": "Firm labour demand",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "A competitive firm faces output price p=$12, MPL=5, and nominal wage W=$54. What is the firm’s marginal hiring decision?",
+    "choices": [
+      "Stop hiring because the average product is not given.",
+      "Fire a worker because the nominal wage exceeds the output price.",
+      "Be indifferent because MPL is below the wage in dollar units.",
+      "Hire the additional worker because VMPL=$60 exceeds W=$54."
+    ],
+    "correctChoice": 3,
+    "explanation": "The value of marginal product is p×MPL=$12×5=$60. Since it exceeds the $54 nominal wage, the additional worker adds more revenue than cost at the margin.",
+    "choiceRationales": [
+      "The marginal rule uses VMPL, so average product is not needed for this decision.",
+      "Comparing W with p alone ignores the worker’s marginal physical contribution.",
+      "VMPL is $60, not below the $54 wage, so the firm is not indifferent.",
+      "VMPL=p×MPL=$12×5=$60>$54, so the marginal hiring condition supports hiring."
+    ],
+    "reviewCardId": "ch02-022",
+    "sourceCardIds": ["ch02-022"],
+    "tags": ["exam-bank", "labour-demand", "VMPL", "scenario"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-007",
+    "chapter": 2,
+    "topic": "Labour-demand shift",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "Holding wages and productivity fixed, what happens to a firm’s labour-demand curve when the relative price of its output falls?",
+    "choices": [
+      "It shifts left because the value of each worker’s marginal product falls.",
+      "It shifts right because the firm can sell more labour at the old wage.",
+      "The curve stays fixed and the firm moves along it because output price is an axis variable.",
+      "Labour supply shifts left while labour demand is unchanged."
+    ],
+    "correctChoice": 0,
+    "explanation": "A lower output price reduces VMPL=p×MPL at each quantity of labour, shifting labour demand inward/left. A wage change would instead create movement along a fixed demand curve.",
+    "choiceRationales": [
+      "The lower p lowers VMPL at every employment level, so desired labour demand shifts left.",
+      "A lower product price weakens, rather than expands, the revenue return from hiring.",
+      "Output price is a shift determinant of labour demand, not the wage-axis movement described here.",
+      "The shock concerns firms’ demand for labour; it does not directly change workers’ labour supply."
+    ],
+    "reviewCardId": "ch02-024",
+    "sourceCardIds": ["ch02-024"],
+    "tags": [
+      "exam-bank",
+      "labour-demand",
+      "shift-versus-movement",
+      "model-discrimination"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-008",
+    "chapter": 2,
+    "topic": "Labour-supply shift",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "Several nearby plants close and release workers with skills similar to those used by a remaining plant. What happens to labour supply facing the remaining plant?",
+    "choices": [
+      "It shifts left because fewer plants are operating.",
+      "It shifts right because more workers are available at each wage.",
+      "Labour demand shifts right because the remaining plant has less competition.",
+      "There is only movement along labour supply because the wage has not changed."
+    ],
+    "correctChoice": 1,
+    "explanation": "Workers released by nearby plants increase the pool available to the remaining plant. At each wage, more labour is supplied, so local labour supply shifts right.",
+    "choiceRationales": [
+      "Plant closures release workers rather than remove them from the local labour pool.",
+      "The additional similarly skilled workers shift the remaining plant’s labour supply outward/right.",
+      "The direct change is in labour availability, not in the remaining firm’s product-demand or labour-demand curve.",
+      "A change in the pool of available workers is a supply shift even if the wage has not yet changed."
+    ],
+    "reviewCardId": "ch02-026",
+    "sourceCardIds": ["ch02-026"],
+    "tags": ["exam-bank", "labour-supply", "structural-change", "scenario"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-009",
+    "chapter": 2,
+    "topic": "Labour tax wedge",
+    "style": "scenario",
+    "difficulty": 3,
+    "stem": "In the course’s labour-market model, an income tax on workers is introduced. Which combination is expected in the simple competitive diagram?",
+    "choices": [
+      "Labour supply shifts right, employment rises, and workers receive more after-tax wage than firms pay.",
+      "Labour demand shifts left, employment rises, and the tax has no wedge effect.",
+      "Labour supply shifts up/left, employment falls, and the wage paid by firms exceeds the after-tax wage received by workers.",
+      "Labour supply and demand both shift right, so the tax cannot affect employment."
+    ],
+    "correctChoice": 2,
+    "explanation": "The tax creates a wedge between the firm’s labour cost and the worker’s after-tax reward. In the course’s simple presentation, labour supply shifts up/left and employment falls, although incidence is shared by both sides in equilibrium.",
+    "choiceRationales": [
+      "The tax reduces the worker’s net return at a given firm-paid wage, so supply does not shift right.",
+      "This omits the labour-supply response and incorrectly says employment rises.",
+      "This captures the course mechanism: a supply wedge, lower employment, and firm wage above worker after-tax wage.",
+      "The tax is not a reason for both curves to shift right and it can affect the employment quantity."
+    ],
+    "reviewCardId": "ch02-028",
+    "sourceCardIds": ["ch02-028"],
+    "tags": ["exam-bank", "labour-market", "tax-wedge", "incidence"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-010",
+    "chapter": 2,
+    "topic": "Recession and unemployment",
+    "style": "sequence",
+    "difficulty": 2,
+    "stem": "Under the course’s basic definitions, what is the expected unemployment classification during a recession, absent a separately stated structural change?",
+    "choices": [
+      "Both natural and cyclical unemployment automatically rise by definition.",
+      "Only the natural unemployment rate rises because all recession unemployment is structural.",
+      "Cyclical unemployment falls while the natural rate is unchanged.",
+      "Cyclical unemployment rises while the natural rate is conceptually unchanged by the recession itself."
+    ],
+    "correctChoice": 3,
+    "explanation": "A recession creates a negative output gap and raises cyclical unemployment. The natural rate is defined by frictional and structural components and does not automatically change merely because of a cyclical downturn in this basic model.",
+    "choiceRationales": [
+      "The natural rate is not defined as all unemployment and does not automatically move with every recession.",
+      "Recession-related job losses are cyclical unless the question adds a structural mechanism.",
+      "A downturn raises rather than lowers the cyclical component.",
+      "This separates the short-run cyclical rise from the natural rate’s frictional/structural definition."
+    ],
+    "reviewCardId": "ch02-031",
+    "sourceCardIds": ["ch02-031"],
+    "tags": ["exam-bank", "cyclical-unemployment", "natural-rate", "sequence"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-001",
+    "chapter": 3,
+    "topic": "Exact real interest",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "A nominal interest rate is i=8% and realised inflation is π=3%. Using the exact one-period relation, what is the realised real interest rate?",
+    "choices": ["4.85%", "5.00%", "11.00%", "-5.00%"],
+    "correctChoice": 0,
+    "explanation": "The exact real rate is r=(1+i)/(1+π)-1=1.08/1.03-1≈0.0485, or 4.85%.",
+    "choiceRationales": [
+      "The exact multiplicative calculation gives 1.08/1.03-1≈4.85%.",
+      "5% is the approximation i-π; it is close but not the exact result requested.",
+      "Adding nominal interest and inflation confuses the nominal and price components.",
+      "This reverses the real-rate subtraction even though nominal interest exceeds inflation."
+    ],
+    "reviewCardId": "ch03-003",
+    "sourceCardIds": ["ch03-003"],
+    "tags": ["exam-bank", "real-interest", "nominal-real", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-002",
+    "chapter": 3,
+    "topic": "Fisher effect",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "A deposit pays a 1.75% nominal return, and the saver expects a 1.50% real return. Under the approximate Fisher relation, what expected inflation is implied?",
+    "choices": ["0.25%", "3.25%", "-0.25%", "1.50%"],
+    "correctChoice": 0,
+    "explanation": "The approximate Fisher relation is i≈r+πᵉ, so expected inflation is πᵉ≈1.75%-1.50%=0.25%.",
+    "choiceRationales": [
+      "Subtracting the expected real return from the nominal return gives 0.25% expected inflation.",
+      "Adding the nominal and real rates does not solve i≈r+πᵉ; inflation is the residual.",
+      "This reverses the subtraction and assigns the wrong sign to the residual.",
+      "This reports the given real return rather than the implied inflation rate."
+    ],
+    "reviewCardId": "ch03-007",
+    "sourceCardIds": ["ch03-007"],
+    "tags": ["exam-bank", "Fisher-effect", "inflation-expectations", "interest"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-003",
+    "chapter": 3,
+    "topic": "Zero lower bound",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "The nominal policy rate is stuck at 0%. Expected inflation falls from +1% to -2%. What happens to the expected real interest rate?",
+    "choices": [
+      "It falls from 1% to -2%.",
+      "It stays at 0% because the nominal rate is fixed.",
+      "It rises from about -1% to about +2%.",
+      "It rises from about +1% to about +3%."
+    ],
+    "correctChoice": 2,
+    "explanation": "Using rᵉ≈i-πᵉ, the expected real rate is 0-1=-1% initially and 0-(-2)=+2% after expected deflation. Deflation therefore tightens real conditions at the lower bound.",
+    "choiceRationales": [
+      "This treats expected inflation as the real rate and reverses the real-rate relation.",
+      "A fixed nominal rate does not fix the real rate when expected inflation changes.",
+      "The real rate moves from -1% to +2% because lower expected inflation raises i-πᵉ.",
+      "The initial real rate is negative, not positive, when expected inflation is +1%."
+    ],
+    "reviewCardId": "ch03-008",
+    "sourceCardIds": ["ch03-008"],
+    "tags": ["exam-bank", "zero-lower-bound", "real-interest", "deflation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-004",
+    "chapter": 3,
+    "topic": "Capital stock",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "Which statement correctly distinguishes investment from the capital stock?",
+    "choices": [
+      "Both are flows measured over a period.",
+      "Investment is a stock at a point in time, while capital is a flow over a year.",
+      "Both are stocks because they describe physical assets.",
+      "Investment is a period flow; capital is a point-in-time stock."
+    ],
+    "correctChoice": 3,
+    "explanation": "Investment records additions to capital during a period, while the capital stock records the accumulated amount of capital at a point in time.",
+    "choiceRationales": [
+      "Investment is a flow, but the capital stock is not measured as a flow over the same period.",
+      "This reverses the stock-flow classifications.",
+      "The physical nature of capital does not make both variables stocks; investment is the change-producing flow.",
+      "This is the correct stock-flow distinction and prevents adding incompatible units."
+    ],
+    "reviewCardId": "ch03-010",
+    "sourceCardIds": ["ch03-010"],
+    "tags": ["exam-bank", "investment", "capital", "stock-flow"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-005",
+    "chapter": 3,
+    "topic": "Capital accumulation",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "A capital stock begins at K₀=500, gross investment is I=80, and the ending stock is K₁=550. Using K₁=K₀+I-δK₀, what depreciation rate is implied?",
+    "choices": ["6%", "10%", "16%", "30%"],
+    "correctChoice": 0,
+    "explanation": "The stock rose by 50, while gross investment was 80, so depreciation was 30. Thus δ=30/500=6%.",
+    "choiceRationales": [
+      "Solving 550=500+80-500δ gives 500δ=30 and δ=6%.",
+      "10% would imply depreciation of 50 and an ending stock of 530, not 550.",
+      "This confuses gross investment or the stock change with depreciation.",
+      "$30 is the dollar depreciation amount, not the depreciation rate."
+    ],
+    "reviewCardId": "ch03-013",
+    "sourceCardIds": ["ch03-013"],
+    "tags": ["exam-bank", "capital-accumulation", "depreciation", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-006",
+    "chapter": 3,
+    "topic": "User cost of capital",
+    "style": "concept",
+    "difficulty": 3,
+    "stem": "Holding the capital-good price and depreciation rate fixed, what does a higher real interest rate do in the approximate user-cost model UC≈P_K(r+δ)?",
+    "choices": [
+      "It lowers user cost and shifts desired investment upward.",
+      "It raises user cost and reduces the number of projects worth undertaking.",
+      "It leaves user cost unchanged because depreciation is fixed.",
+      "It raises user cost but makes every project profitable."
+    ],
+    "correctChoice": 1,
+    "explanation": "The real interest rate is part of the financing/opportunity cost of capital. A higher r raises user cost and means fewer projects have expected VMPK high enough to justify investment.",
+    "choiceRationales": [
+      "The direction is reversed: a higher real rate raises rather than lowers user cost.",
+      "Higher r increases UC and reduces desired investment at the margin.",
+      "Depreciation is only one component; the real-rate component still changes user cost.",
+      "Higher user cost makes marginal projects less, not more, likely to be profitable."
+    ],
+    "reviewCardId": "ch03-018",
+    "sourceCardIds": ["ch03-018"],
+    "tags": ["exam-bank", "user-cost", "investment", "comparative-statics"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-007",
+    "chapter": 3,
+    "topic": "Investment demand",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "Expected profitability of new capital falls while the real interest rate is unchanged. What happens in the investment-demand diagram?",
+    "choices": [
+      "The investment-demand curve shifts right.",
+      "There is movement up along an unchanged investment-demand curve.",
+      "Investment demand shifts left; desired I falls at unchanged r.",
+      "The saving curve shifts right because firms are less profitable."
+    ],
+    "correctChoice": 2,
+    "explanation": "Expected profitability is a determinant of desired investment. A fall shifts investment demand left; the real rate itself would cause movement along the curve.",
+    "choiceRationales": [
+      "Lower profitability makes fewer projects worthwhile, so demand does not shift right.",
+      "The shock is to profitability, a shift variable, not the real-rate movement along the curve.",
+      "Lower expected VMPK shifts investment demand left and lowers desired investment at the same r.",
+      "The direct change is in firms’ investment demand, not households’ or the economy’s saving schedule."
+    ],
+    "reviewCardId": "ch03-020",
+    "sourceCardIds": ["ch03-020"],
+    "tags": ["exam-bank", "investment-demand", "shift-versus-movement", "models"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-008",
+    "chapter": 3,
+    "topic": "Public saving",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Tax receipts are $300, transfers are $40, government interest payments are $20, and government purchases G are $180. Using the course notation, what is public saving?",
+    "choices": ["$40", "$100", "-$60", "$60"],
+    "correctChoice": 3,
+    "explanation": "Net taxes are T=300-40-20=$240. Public saving is T-G=$240-$180=$60.",
+    "choiceRationales": [
+      "$40 is the transfer amount, not net taxes minus government purchases.",
+      "$100 omits the effect of government interest payments or otherwise miscomputes net taxes.",
+      "The government has positive rather than negative saving with net taxes of $240 and G of $180.",
+      "Public saving is T-G=(300-40-20)-180=$60 under the course’s net-tax convention."
+    ],
+    "reviewCardId": "ch03-026",
+    "sourceCardIds": ["ch03-026"],
+    "tags": ["exam-bank", "public-saving", "taxes", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-009",
+    "chapter": 3,
+    "topic": "Investment slump",
+    "style": "sequence",
+    "difficulty": 2,
+    "stem": "In the closed-economy saving-investment model, what sequence follows an exogenous fall in desired investment?",
+    "choices": [
+      "The investment curve shifts left, the real interest rate falls, and equilibrium saving and investment fall.",
+      "The saving curve shifts right, the real interest rate falls, and investment rises.",
+      "The investment curve shifts right, the real interest rate rises, and equilibrium saving falls.",
+      "The real interest rate is fixed by the world market, so only the current account changes."
+    ],
+    "correctChoice": 0,
+    "explanation": "A fall in desired investment shifts the investment curve left. The closed-economy real rate falls to restore S=I, and the lower rate moves along the saving schedule so equilibrium saving and investment both fall.",
+    "choiceRationales": [
+      "This correctly shifts investment demand left and applies the lower equilibrating real rate in the closed economy.",
+      "The shock is to investment demand, not saving, and lower r does not make desired investment rise after the leftward shift.",
+      "The direction of the investment shift and interest-rate response is reversed.",
+      "A fixed world rate and current-account adjustment describe the small-open-economy model, not this closure."
+    ],
+    "reviewCardId": "ch03-030",
+    "sourceCardIds": ["ch03-030"],
+    "tags": ["exam-bank", "investment-demand", "closed-economy", "sequence"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch03-010",
+    "chapter": 3,
+    "topic": "Saving versus investment",
+    "style": "scenario",
+    "difficulty": 3,
+    "stem": "A household takes out a mortgage to buy a newly built house. How is this transaction classified in the course framework?",
+    "choices": [
+      "Consumption expenditure and positive household saving.",
+      "New house = investment; mortgage-financed buyer has negative saving.",
+      "Financial investment only, with no GDP expenditure component.",
+      "Government investment and public saving."
+    ],
+    "correctChoice": 1,
+    "explanation": "A newly built dwelling is investment in the GDP accounts. For the household, financing the purchase with borrowing means current expenditure exceeds current disposable income, so it is dissaving/negative saving.",
+    "choiceRationales": [
+      "A new dwelling is classified as investment, and borrowing does not create positive household saving for the buyer.",
+      "This correctly separates the national-account investment from the household’s negative saving position.",
+      "The house is a newly produced real asset, not merely a financial claim or an omitted GDP transaction.",
+      "Nothing in the transaction makes it government expenditure or public saving."
+    ],
+    "reviewCardId": "ch03-032",
+    "sourceCardIds": ["ch03-032"],
+    "tags": ["exam-bank", "investment", "saving", "housing"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-001",
+    "chapter": 4,
+    "topic": "Actual versus planned expenditure",
+    "style": "model_discrimination",
+    "difficulty": 3,
+    "stem": "Which statement correctly distinguishes the income-expenditure equilibrium condition from the accounting identity for actual expenditure?",
+    "choices": [
+      "Y=AE is always true ex post, while behavioural equilibrium requires Y=PAE.",
+      "Y=PAE is always true ex post, while equilibrium requires Y=AE.",
+      "Both Y=AE and Y=PAE are behavioural conditions that can fail at the same time.",
+      "Neither equality is used because inventories are excluded from the income-expenditure model."
+    ],
+    "correctChoice": 0,
+    "explanation": "Actual inventory investment adjusts so actual expenditure equals output ex post. The equilibrium condition concerns planned expenditure: firms are satisfied only when PAE=Y.",
+    "choiceRationales": [
+      "This is the course distinction: actual inventory changes make AE=Y an identity, while PAE=Y is the behavioural equilibrium condition.",
+      "It reverses which expenditure concept is the ex-post identity.",
+      "AE=Y is not a behavioural condition that fails; unplanned inventories reconcile it accounting-wise.",
+      "Inventories are central to the adjustment mechanism and are not excluded from the model."
+    ],
+    "reviewCardId": "ch04-002",
+    "sourceCardIds": ["ch04-002"],
+    "tags": ["exam-bank", "PAE", "AE", "model-discrimination"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-002",
+    "chapter": 4,
+    "topic": "Disequilibrium inventories",
+    "style": "scenario",
+    "difficulty": 1,
+    "stem": "At an output level of 800, planned aggregate expenditure is 760. What adjustment should firms expect in the basic income-expenditure model?",
+    "choices": [
+      "Unplanned inventories fall by 40, so firms raise production.",
+      "Unplanned inventories accumulate by 40, so firms reduce production.",
+      "Planned investment rises by 40, so firms raise production permanently.",
+      "There is no inventory signal because actual expenditure must equal output."
+    ],
+    "correctChoice": 1,
+    "explanation": "When Y exceeds PAE, firms produced more than buyers planned to purchase. The resulting $40 unplanned inventory accumulation signals firms to reduce production.",
+    "choiceRationales": [
+      "The sign is reversed: production exceeds planned sales, so unsold goods accumulate rather than inventories fall.",
+      "Y-PAE=800-760=$40 of unplanned inventory accumulation, which prompts a production cut.",
+      "The inventory change is unplanned and does not mean desired investment rose permanently.",
+      "Actual expenditure equals output only after unplanned inventory investment is included; the signal still exists."
+    ],
+    "reviewCardId": "ch04-005",
+    "sourceCardIds": ["ch04-005"],
+    "tags": ["exam-bank", "PAE", "inventories", "output-adjustment"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-003",
+    "chapter": 4,
+    "topic": "Marginal propensity to consume",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "If the MPC is 0.70 and disposable income rises by $50, by how much does consumption rise in the simple consumption function?",
+    "choices": ["$7", "$20", "$35", "$50"],
+    "correctChoice": 2,
+    "explanation": "The MPC is the change in consumption per dollar of disposable income, so ΔC=0.70×$50=$35.",
+    "choiceRationales": [
+      "This multiplies the income change by 0.14 rather than the stated MPC.",
+      "This does not apply the 0.70 marginal propensity to the $50 income change.",
+      "MPC=.70 means consumption rises by .70×50=$35.",
+      "A $50 increase would be full pass-through, which would require MPC=1."
+    ],
+    "reviewCardId": "ch04-008",
+    "sourceCardIds": ["ch04-008"],
+    "tags": ["exam-bank", "MPC", "consumption", "income-expenditure"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-004",
+    "chapter": 4,
+    "topic": "Two-sector equilibrium",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "In a two-sector model, C=120+0.75Y and planned investment is Iᴾ=80. What is equilibrium GDP?",
+    "choices": ["$200", "$320", "$600", "$800"],
+    "correctChoice": 3,
+    "explanation": "Equilibrium satisfies Y=C+Iᴾ=120+0.75Y+80. Thus 0.25Y=200 and Y=$800.",
+    "choiceRationales": [
+      "$200 is autonomous expenditure before applying the multiplier, not equilibrium GDP.",
+      "$320 does not solve the equilibrium equation with MPC=.75.",
+      "This underestimates the multiplier effect of the autonomous $200 expenditure.",
+      "Y=(C₀+I₀)/(1-c)=200/.25=$800."
+    ],
+    "reviewCardId": "ch04-011",
+    "sourceCardIds": ["ch04-011"],
+    "tags": ["exam-bank", "income-expenditure", "equilibrium", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-005",
+    "chapter": 4,
+    "topic": "Multiplier size",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "In the two-sector income-expenditure model, the MPC rises while autonomous spending is unchanged. What happens to the multiplier and the response to a given autonomous spending shock?",
+    "choices": [
+      "The multiplier rises, so the same autonomous shock produces a larger change in equilibrium GDP.",
+      "The multiplier falls, so the same autonomous shock produces a smaller change in equilibrium GDP.",
+      "The multiplier is unchanged because only autonomous spending enters its formula.",
+      "The multiplier becomes negative because households consume more of each extra dollar."
+    ],
+    "correctChoice": 0,
+    "explanation": "The two-sector multiplier is k=1/(1-c). A higher MPC c reduces the leakage into saving, raises k, and makes equilibrium GDP more responsive to an autonomous spending change.",
+    "choiceRationales": [
+      "A larger c makes 1-c smaller, so k rises and each autonomous shock has a larger total effect.",
+      "The direction is reversed: a higher MPC increases rather than reduces the multiplier.",
+      "The multiplier is determined by MPC even when the autonomous spending level is unchanged.",
+      "For 0<c<1, the multiplier is positive; a higher MPC does not make it negative."
+    ],
+    "reviewCardId": "ch04-027",
+    "sourceCardIds": ["ch04-027"],
+    "tags": ["exam-bank", "multiplier", "MPC", "comparative-statics"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-006",
+    "chapter": 4,
+    "topic": "Open-economy PAE",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "In a simple open economy, induced consumption is 0.65Y and imports are 0.20Y. What is the slope of the PAE curve with respect to Y, holding autonomous terms fixed?",
+    "choices": ["0.45", "0.85", "0.65", "-0.45"],
+    "correctChoice": 0,
+    "explanation": "Imports are subtracted from PAE, so the induced slope is c-m=0.65-0.20=0.45.",
+    "choiceRationales": [
+      "PAE includes +cY-M, so the slope is .65-.20=.45.",
+      "Adding c and m treats imports as an injection rather than a leakage.",
+      "This omits the import leakage from the open-economy PAE equation.",
+      "Imports lower the slope but do not make it negative when c exceeds m."
+    ],
+    "reviewCardId": "ch04-021",
+    "sourceCardIds": ["ch04-021"],
+    "tags": ["exam-bank", "open-economy", "PAE", "leakages"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-007",
+    "chapter": 4,
+    "topic": "Open-economy equilibrium",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Suppose C=150+0.5Y, planned investment is 100, exports are 50, and M=0.1Y. What is equilibrium GDP?",
+    "choices": ["$300", "$400", "$500", "$750"],
+    "correctChoice": 2,
+    "explanation": "PAE=150+0.5Y+100+50-0.1Y=300+0.4Y. Setting Y=PAE gives 0.6Y=300 and Y=$500.",
+    "choiceRationales": [
+      "$300 is autonomous PAE before induced consumption and imports are solved out.",
+      "$400 does not satisfy Y=300+.4Y.",
+      "The open-economy multiplier is 1/(1-.5+.1)=1/.6, so Y=300/.6=$500.",
+      "This applies an incorrect slope or multiplier and overstates equilibrium output."
+    ],
+    "reviewCardId": "ch04-024",
+    "sourceCardIds": ["ch04-024"],
+    "tags": ["exam-bank", "open-economy", "equilibrium", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-008",
+    "chapter": 4,
+    "topic": "Paradox of thrift",
+    "style": "scenario",
+    "difficulty": 3,
+    "stem": "In the basic Keynesian income-expenditure model, households all try to save more by cutting autonomous consumption. Which outcome is possible?",
+    "choices": [
+      "Equilibrium income rises and aggregate saving rises one-for-one.",
+      "The multiplier becomes larger because autonomous consumption is lower.",
+      "Only planned investment falls; income is unchanged by the consumption change.",
+      "Income falls, so aggregate saving may not rise despite greater saving intent."
+    ],
+    "correctChoice": 3,
+    "explanation": "Lower autonomous consumption shifts PAE down. The resulting fall in equilibrium income can offset the intended increase in saving, which is the paradox of thrift.",
+    "choiceRationales": [
+      "The autonomous-spending cut reduces rather than raises equilibrium income.",
+      "The MPC is unchanged; lowering autonomous consumption does not make the multiplier larger.",
+      "The model’s endogenous income responds to autonomous consumption, even with planned investment fixed.",
+      "Income falls through the multiplier, so aggregate saving need not rise even when desired saving rises."
+    ],
+    "reviewCardId": "ch04-019",
+    "sourceCardIds": ["ch04-019"],
+    "tags": ["exam-bank", "paradox-of-thrift", "saving", "scenario"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-009",
+    "chapter": 4,
+    "topic": "Saving function",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "If consumption is C=100+0.8Y in a two-sector model, which saving function follows from S=Y-C?",
+    "choices": ["S=-100+0.2Y", "S=100+1.8Y", "S=100-0.8Y", "S=-100+0.8Y"],
+    "correctChoice": 0,
+    "explanation": "Subtracting consumption from income gives S=Y-(100+0.8Y)=-100+0.2Y.",
+    "choiceRationales": [
+      "S=Y-C=Y-100-.8Y=-100+.2Y, so this has both the correct intercept and slope.",
+      "This adds rather than subtracts consumption and uses an incorrect slope.",
+      "This reverses the autonomous-consumption intercept and omits the residual saving share.",
+      "The slope of saving is 1-MPC=.2, not the MPC .8."
+    ],
+    "reviewCardId": "ch04-017",
+    "sourceCardIds": ["ch04-017"],
+    "tags": ["exam-bank", "saving", "consumption", "formula"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch04-010",
+    "chapter": 4,
+    "topic": "Leakages and injections",
+    "style": "model_discrimination",
+    "difficulty": 3,
+    "stem": "In the simple open-economy income-expenditure model with no government, which leakage-injection equality is equivalent to equilibrium?",
+    "choices": ["S+Iᴾ=M+X", "S+M=Iᴾ+X", "S+X=Iᴾ+M", "S+M+X=Iᴾ"],
+    "correctChoice": 1,
+    "explanation": "Saving and imports are leakages from domestic spending, while planned investment and exports are injections. Equilibrium therefore requires S+M=Iᴾ+X.",
+    "choiceRationales": [
+      "This places planned investment on the leakage side and imports on the injection side.",
+      "The open-economy leakage-injection condition is S+M=Iᴾ+X.",
+      "Exports are an injection and imports a leakage, so these two terms are reversed here.",
+      "This omits exports from the injection side and cannot represent the stated model."
+    ],
+    "reviewCardId": "ch04-023",
+    "sourceCardIds": ["ch04-023"],
+    "tags": ["exam-bank", "open-economy", "leakages", "injections"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-001",
+    "chapter": 5,
+    "topic": "Tax function",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "With the tax function T=T₀+tY, let T₀=$20, t=0.25, and Y=$400. What are total taxes?",
+    "choices": ["$120", "$100", "$80", "$20"],
+    "correctChoice": 0,
+    "explanation": "T=20+0.25(400)=20+100=$120.",
+    "choiceRationales": [
+      "The autonomous $20 plus proportional tax of .25×$400=$100 gives total taxes of $120.",
+      "$100 is only the proportional component and omits T₀.",
+      "$80 uses an incorrect marginal rate or subtracts the autonomous component.",
+      "$20 is only autonomous taxes and ignores taxes linked to income."
+    ],
+    "reviewCardId": "ch05-002",
+    "sourceCardIds": ["ch05-002"],
+    "tags": ["exam-bank", "taxes", "fiscal-policy", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-002",
+    "chapter": 5,
+    "topic": "Four-sector PAE",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "In the four-sector model with proportional taxes and imports, let c=0.80, t=0.25 and m=0.10. What is the slope of PAE with respect to Y?",
+    "choices": ["0.90", "0.50", "0.70", "-0.50"],
+    "correctChoice": 1,
+    "explanation": "The four-sector PAE slope is c(1-t)-m=0.80(0.75)-0.10=0.60-0.10=0.50.",
+    "choiceRationales": [
+      "This adds the import propensity instead of subtracting it as a leakage and does not apply the proportional-tax reduction.",
+      "The slope is c(1-t)-m=.80(.75)-.10=.50, so this is the correct four-sector coefficient.",
+      "This subtracts m from c without first applying the tax leakage, giving .80-.10=.70.",
+      "Imports reduce the slope but do not make it negative for the stated parameters."
+    ],
+    "reviewCardId": "ch05-031",
+    "sourceCardIds": ["ch05-031"],
+    "tags": ["exam-bank", "four-sector", "PAE", "leakages"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-003",
+    "chapter": 5,
+    "topic": "Automatic stabilisers and multiplier",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "In the closed three-sector income-expenditure model, what does a higher proportional tax rate do to the government-spending multiplier, holding MPC fixed?",
+    "choices": [
+      "It increases the multiplier because tax receipts are additional government spending.",
+      "It leaves the multiplier unchanged because only MPC determines induced consumption.",
+      "It reduces the multiplier because more of each extra dollar of income leaks into taxes.",
+      "It makes the multiplier negative because taxes always reduce GDP."
+    ],
+    "correctChoice": 2,
+    "explanation": "The multiplier is k_G=1/[1-c(1-t)]. A higher t reduces disposable-income feedback into consumption, so the denominator rises and the multiplier falls.",
+    "choiceRationales": [
+      "Tax receipts are a leakage from disposable income; they do not become government purchases automatically in this multiplier formula.",
+      "The tax rate enters the induced-consumption coefficient c(1-t), so MPC alone does not determine k_G here.",
+      "A higher t lowers c(1-t), weakens induced consumption and reduces k_G.",
+      "The multiplier remains positive for standard 0<c<1 and 0≤t≤1; a higher tax rate does not make it negative."
+    ],
+    "reviewCardId": "ch05-013",
+    "sourceCardIds": ["ch05-013"],
+    "tags": ["exam-bank", "automatic-stabilisers", "multiplier", "taxes"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-004",
+    "chapter": 5,
+    "topic": "Autonomous tax multiplier",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "With c=0.75 and t=0.20, what is the multiplier for a one-dollar increase in autonomous taxes?",
+    "choices": ["-0.75", "-0.40", "-2.50", "-1.875"],
+    "correctChoice": 3,
+    "explanation": "k_T=-c/[1-c(1-t)]=-.75/[1-.75(.8)]=-.75/.4=-1.875.",
+    "choiceRationales": [
+      "This omits the subsequent induced-income rounds in the denominator.",
+      "This uses the denominator as the multiplier rather than dividing by it.",
+      "-2.50 is the negative of the government-spending multiplier, but the tax numerator is c rather than 1.",
+      "The tax multiplier is -0.75/.40=-1.875, including its negative demand effect."
+    ],
+    "reviewCardId": "ch05-008",
+    "sourceCardIds": ["ch05-008"],
+    "tags": ["exam-bank", "tax-multiplier", "fiscal-policy", "formula"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-005",
+    "chapter": 5,
+    "topic": "Balanced-budget multiplier",
+    "style": "concept",
+    "difficulty": 3,
+    "stem": "With c=0.80 and proportional tax rate t=0.25, what is the balanced-budget multiplier when ΔG₀=ΔT₀?",
+    "choices": ["0.50", "1.00", "2.50", "-0.50"],
+    "correctChoice": 0,
+    "explanation": "k_BB=(1-c)/[1-c(1-t)]=.20/[1-.80(.75)]=.20/.40=.50. With proportional taxes it need not equal one.",
+    "choiceRationales": [
+      "The numerator is .20 and the denominator is .40, giving k_BB=.50.",
+      "A balanced-budget multiplier of exactly one is the special no-proportional-tax result, not this case.",
+      "This is closer to the government-spending multiplier and ignores the offsetting tax effect.",
+      "Equal increases in G and autonomous taxes have a positive, not negative, net effect here."
+    ],
+    "reviewCardId": "ch05-010",
+    "sourceCardIds": ["ch05-010"],
+    "tags": ["exam-bank", "balanced-budget", "fiscal-multiplier", "taxes"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-006",
+    "chapter": 5,
+    "topic": "Automatic stabilisers",
+    "style": "scenario",
+    "difficulty": 1,
+    "stem": "During a recession, before any new legislation is passed, which automatic-fiscal response tends to dampen the fall in aggregate demand?",
+    "choices": [
+      "Tax receipts rise and transfer payments fall as income falls.",
+      "Tax receipts fall and transfer payments rise as income falls.",
+      "Government purchases must instantly fall to balance the budget.",
+      "The central bank raises the cash rate without a fiscal decision."
+    ],
+    "correctChoice": 1,
+    "explanation": "Lower income automatically reduces proportional tax receipts and can raise transfers such as unemployment support. Both support disposable income relative to what it would otherwise be and dampen the contraction.",
+    "choiceRationales": [
+      "These directions would amplify the downturn rather than provide automatic support.",
+      "Falling taxes and rising transfers are the automatic stabiliser response as income weakens.",
+      "Automatic stabilisers do not require government purchases to fall or the budget to balance each period.",
+      "The cash rate is a monetary-policy instrument, not an automatic fiscal stabiliser."
+    ],
+    "reviewCardId": "ch05-012",
+    "sourceCardIds": ["ch05-012"],
+    "tags": ["exam-bank", "automatic-stabilisers", "fiscal-policy", "recession"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-007",
+    "chapter": 5,
+    "topic": "Fiscal policy lags",
+    "style": "sequence",
+    "difficulty": 3,
+    "stem": "A discretionary tax cut is designed during a recession but takes effect after output has already returned to potential. What risk does the delay create?",
+    "choices": [
+      "It automatically becomes contractionary because taxes were cut during the recession.",
+      "It has no effect because the original policy intention determines the multiplier.",
+      "It can shift AD right after recovery, creating an expansionary gap and inflation pressure.",
+      "It reduces potential output directly by lowering current tax receipts."
+    ],
+    "correctChoice": 2,
+    "explanation": "Policy affects the economy when it is implemented, not when it is first intended. A tax cut arriving after recovery can stimulate demand when output is already at potential or above it.",
+    "choiceRationales": [
+      "The timing does not reverse a tax cut into contractionary policy; it can make the cut excessively expansionary.",
+      "The economic effect depends on implementation conditions, not only on the original intention.",
+      "A delayed tax cut can shift AD right after the gap has closed, creating inflationary pressure.",
+      "Lower tax receipts affect demand and the budget; they do not directly lower productive potential in this setup."
+    ],
+    "reviewCardId": "ch05-015",
+    "sourceCardIds": ["ch05-015"],
+    "tags": ["exam-bank", "fiscal-lags", "AD", "policy-timing"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-008",
+    "chapter": 5,
+    "topic": "Debt stock and deficit flow",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "Which statement correctly distinguishes a government budget deficit from public debt?",
+    "choices": [
+      "The deficit is a stock at a date, while debt is a flow over a year.",
+      "Both are flows because both are measured in dollars.",
+      "Both are stocks because both can be reported in dollars.",
+      "Deficit is a period flow; debt is an accumulated point-in-time stock."
+    ],
+    "correctChoice": 3,
+    "explanation": "A deficit measures borrowing need during a period. Public debt is the accumulated stock of outstanding obligations at a point in time.",
+    "choiceRationales": [
+      "This reverses the stock-flow classification.",
+      "Dollar units do not determine whether a variable is a flow; the measurement interval does.",
+      "The deficit is measured over a period and is therefore not a stock.",
+      "This is the correct distinction between a period change and the accumulated debt stock."
+    ],
+    "reviewCardId": "ch05-020",
+    "sourceCardIds": ["ch05-020"],
+    "tags": ["exam-bank", "public-debt", "deficit", "stock-flow"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-009",
+    "chapter": 5,
+    "topic": "Debt sustainability",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "Use Δd=[(r-g)/(1+g)]dₜ₋₁-pbb, where pbb is positive for a primary surplus. If dₜ₋₁=0.80, r=4%, g=6%, and pbb=-1%, what happens to the debt-to-GDP ratio?",
+    "choices": [
+      "It falls by about 0.51 percentage points.",
+      "It rises by about 0.51 percentage points.",
+      "It rises by about 1.51 percentage points.",
+      "It is unchanged because r is below g only after rounding."
+    ],
+    "correctChoice": 0,
+    "explanation": "The growth-interest term is [(.04-.06)/1.06](.80)≈-.01509. Subtracting pbb=-.01 adds .01, giving Δd≈-.00509, a fall of about 0.51 percentage points.",
+    "choiceRationales": [
+      "The calculated change is -.00509 of GDP, or about -0.51 percentage points.",
+      "This reverses the sign of the growth-interest contribution and misses that g>r helps reduce the ratio.",
+      "This treats the primary deficit as if it were larger or reverses the sign convention for pbb.",
+      "The difference between r and g is economically relevant even though the primary balance partly offsets it."
+    ],
+    "reviewCardId": "ch05-025",
+    "sourceCardIds": ["ch05-025"],
+    "tags": ["exam-bank", "debt-sustainability", "debt-to-GDP", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch05-010",
+    "chapter": 5,
+    "topic": "Four-sector multiplier",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "In the four-sector model, c=0.80, t=0.25 and the marginal propensity to import is m=0.10. What is the multiplier for an autonomous spending change?",
+    "choices": ["1.25", "2.00", "2.50", "5.00"],
+    "correctChoice": 1,
+    "explanation": "The four-sector multiplier is 1/[1-c(1-t)+m]=1/[1-.8(.75)+.1]=1/.5=2.",
+    "choiceRationales": [
+      "This does not use the induced-consumption and import leakages in the four-sector denominator.",
+      "The denominator is 1-.60+.10=.50, so the multiplier equals 2.00.",
+      "This omits the import leakage and is too large for the stated open economy.",
+      "This is the no-tax/no-import result for MPC=.80 and ignores both leakages."
+    ],
+    "reviewCardId": "ch05-032",
+    "sourceCardIds": ["ch05-032"],
+    "tags": ["exam-bank", "four-sector", "multiplier", "open-economy"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-001",
+    "chapter": 6,
+    "topic": "Asset return",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "An asset costs $100 today, pays $4 in income, and can be sold for $105 next period. What is its one-period net rate of return?",
+    "choices": ["4%", "9%", "5%", "109%"],
+    "correctChoice": 1,
+    "explanation": "The net return is (P₁+income-P₀)/P₀=(105+4-100)/100=0.09, or 9%.",
+    "choiceRationales": [
+      "The total dollar return is $5+$4=$9 on a $100 purchase, so the net rate is 9%.",
+      "This counts only the income payment and omits the $5 capital gain.",
+      "This counts only the capital gain and omits the $4 income payment.",
+      "The $109 final value is not a percentage return; the return is measured relative to the initial $100."
+    ],
+    "reviewCardId": "ch06-001",
+    "sourceCardIds": ["ch06-001"],
+    "tags": ["exam-bank", "asset-return", "capital-gain", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-002",
+    "chapter": 6,
+    "topic": "Bond price",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "A one-period zero-coupon bond pays $250 next year. If the market interest rate is 5%, what is its price today?",
+    "choices": ["$262.50", "$250.00", "$225.00", "$238.10"],
+    "correctChoice": 3,
+    "explanation": "The present value is P=F/(1+i)=250/1.05≈$238.10.",
+    "choiceRationales": [
+      "Multiplying by 1.05 compounds a present amount forward instead of discounting the future payment.",
+      "The future face value is not the current market price when the interest rate is positive.",
+      "This discounts by the wrong factor and understates the present value.",
+      "Discounting $250 by 1.05 gives $238.10, the current bond price."
+    ],
+    "reviewCardId": "ch06-003",
+    "sourceCardIds": ["ch06-003"],
+    "tags": ["exam-bank", "bond", "present-value", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-003",
+    "chapter": 6,
+    "topic": "Functions of money",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "Which set lists the three functions of money emphasised in the course?",
+    "choices": [
+      "Medium of exchange, unit of account, and store of value",
+      "Collateral, production input, and risk-free investment",
+      "Unit of account, government budget, and medium of production",
+      "Store of value, tax base, and guaranteed source of profit"
+    ],
+    "correctChoice": 0,
+    "explanation": "Money serves as a medium of exchange, a unit of account, and a store of value, although inflation can make it an imperfect store of value.",
+    "choiceRationales": [
+      "These are the three standard monetary functions used in the course.",
+      "Collateral and production are possible uses or economic roles, not the three defining functions listed here.",
+      "A government budget is not a function of money, and production is not the exchange function.",
+      "Money need not be a tax base or a guaranteed profitable asset, and those are not its defining functions."
+    ],
+    "reviewCardId": "ch06-006",
+    "sourceCardIds": ["ch06-006"],
+    "tags": ["exam-bank", "money", "functions", "definition"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-004",
+    "chapter": 6,
+    "topic": "Money demand",
+    "style": "model_discrimination",
+    "difficulty": 1,
+    "stem": "In a diagram with the nominal interest rate on the vertical axis and real balances on the horizontal axis, what does higher real income do to real money demand?",
+    "choices": [
+      "It shifts real money demand left.",
+      "It shifts real money demand right.",
+      "It causes movement down the existing curve only.",
+      "It leaves money demand unchanged because income is real rather than nominal."
+    ],
+    "correctChoice": 1,
+    "explanation": "Higher real income increases transactions and desired real balances at each interest rate, shifting the real money-demand curve right.",
+    "choiceRationales": [
+      "More transactions increase desired rather than reduce desired real balances.",
+      "Higher Y raises real money demand at every i, producing a rightward shift.",
+      "A change in i causes movement along the curve; income is a shift determinant.",
+      "Real income is precisely relevant to transactions demand, so it is not irrelevant."
+    ],
+    "reviewCardId": "ch06-011",
+    "sourceCardIds": ["ch06-011"],
+    "tags": ["exam-bank", "money-demand", "shift-versus-movement", "real-balances"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-005",
+    "chapter": 6,
+    "topic": "Money demand calculation",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "Suppose MD/P=0.5Y-1000i, with i in decimal form. If Y=1,600 and i=4%, what real money demand is implied?",
+    "choices": ["400", "640", "760", "1,560"],
+    "correctChoice": 2,
+    "explanation": "Use i=0.04: MD/P=0.5(1,600)-1,000(0.04)=800-40=760.",
+    "choiceRationales": [
+      "This does not apply the income term and interest-rate term in the stated equation.",
+      "This is 0.4Y and does not subtract the interest-opportunity-cost component.",
+      "The calculation is 800-40=760 real balances.",
+      "This adds rather than subtracts the interest term and overstates demand."
+    ],
+    "reviewCardId": "ch06-014",
+    "sourceCardIds": ["ch06-014"],
+    "tags": ["exam-bank", "money-demand", "real-balances", "interest-rate"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-006",
+    "chapter": 6,
+    "topic": "Bank balance sheet",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "From the commercial bank’s perspective, which balance-sheet classification is correct?",
+    "choices": [
+      "Deposits are assets, loans are liabilities, and reserves are equity.",
+      "Deposits and loans are both assets because customers own them.",
+      "Loans are liabilities, reserves are equity, and deposits are assets.",
+      "Loans and reserves are assets, deposits are liabilities, and equity is the residual net worth."
+    ],
+    "correctChoice": 3,
+    "explanation": "Deposits are amounts the bank owes customers, so they are liabilities. Loans and reserves are bank assets, and equity is assets minus liabilities.",
+    "choiceRationales": [
+      "This confuses the household’s perspective with the bank’s perspective and misclassifies reserves.",
+      "A customer’s asset is the bank’s deposit liability; loans are bank assets.",
+      "Loans are assets for the bank and reserves are assets, not equity.",
+      "This is the correct bank-side balance-sheet classification."
+    ],
+    "reviewCardId": "ch06-015",
+    "sourceCardIds": ["ch06-015"],
+    "tags": ["exam-bank", "banking", "balance-sheet", "assets-liabilities"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-007",
+    "chapter": 6,
+    "topic": "Bank lending",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "A bank grants a new $10,000 loan by crediting the borrower’s transaction deposit. What is the immediate balance-sheet and money-stock effect?",
+    "choices": [
+      "Loans rise by $10,000, deposits rise by $10,000, and the money stock rises by $10,000.",
+      "Loans rise by $10,000, deposits fall by $10,000, and the money stock is unchanged.",
+      "Bank equity rises by $10,000 with no change in loans or deposits.",
+      "Reserves rise by $10,000 and deposits do not change."
+    ],
+    "correctChoice": 0,
+    "explanation": "The new loan is a bank asset and the newly credited deposit is a bank liability and public money. Both rise by the loan amount at creation.",
+    "choiceRationales": [
+      "This is the immediate double-entry: a new loan asset and matching deposit liability, increasing transaction money.",
+      "The new deposit is created rather than reduced at the moment the loan is granted.",
+      "The immediate counterpart is the deposit liability, not bank equity.",
+      "Reserve positions may constrain or change later, but the stated creation entry includes a new deposit."
+    ],
+    "reviewCardId": "ch06-017",
+    "sourceCardIds": ["ch06-017"],
+    "tags": ["exam-bank", "bank-money", "loans", "deposits"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-008",
+    "chapter": 6,
+    "topic": "Solvency versus liquidity",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "A bank’s assets exceed its liabilities, but it cannot obtain cash quickly enough to meet withdrawals due today. How is the bank best described?",
+    "choices": [
+      "Insolvent but liquid",
+      "Solvent but illiquid",
+      "Both insolvent and liquid",
+      "Neither solvent nor illiquid because the two concepts are identical"
+    ],
+    "correctChoice": 1,
+    "explanation": "Assets exceeding liabilities means the bank is solvent. Inability to meet immediate payment demands is a liquidity problem, so it is illiquid.",
+    "choiceRationales": [
+      "The positive net worth contradicts insolvency, while the immediate cash shortage contradicts liquidity.",
+      "The bank has sufficient asset value overall but lacks immediately available cash: solvent but illiquid.",
+      "The balance-sheet condition says solvent, not insolvent; the payment problem is illiquidity.",
+      "Solvency concerns asset value and liquidity concerns timing of cash, so they are distinct concepts."
+    ],
+    "reviewCardId": "ch06-021",
+    "sourceCardIds": ["ch06-021"],
+    "tags": ["exam-bank", "banking", "liquidity", "solvency"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-009",
+    "chapter": 6,
+    "topic": "Quantity theory",
+    "style": "model_discrimination",
+    "difficulty": 3,
+    "stem": "Which statement correctly distinguishes the quantity identity from the simple long-run quantity-theory prediction?",
+    "choices": [
+      "MV=PY is a causal theory that requires no assumptions about velocity or output.",
+      "The quantity theory assumes money is fixed while the identity assumes output is fixed.",
+      "MV≡PY is an identity; price predictions need stable V and long-run real-output assumptions.",
+      "The quantity identity applies only when inflation is zero."
+    ],
+    "correctChoice": 2,
+    "explanation": "MV≡PY holds by definition. To infer that money growth drives prices, the course adds assumptions about velocity and long-run real output.",
+    "choiceRationales": [
+      "The identity alone does not establish which variable causes which; behavioural assumptions are needed.",
+      "This assigns the wrong assumptions and confuses the identity with the theory.",
+      "This correctly separates the accounting equality from the long-run causal assumptions.",
+      "The identity holds for any nominal price level and output values, not only zero inflation."
+    ],
+    "reviewCardId": "ch06-026",
+    "sourceCardIds": ["ch06-026"],
+    "tags": ["exam-bank", "quantity-theory", "money", "model-discrimination"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-010",
+    "chapter": 6,
+    "topic": "Money growth and inflation",
+    "style": "scenario",
+    "difficulty": 3,
+    "stem": "Why might rapid money growth fail to produce the same percentage increase in prices immediately in the short run?",
+    "choices": [
+      "The quantity equation is false in the short run.",
+      "Money growth automatically lowers velocity to zero.",
+      "Real output cannot respond to monetary conditions at any horizon.",
+      "Short-run V and Y can change, and prices may adjust with lags."
+    ],
+    "correctChoice": 3,
+    "explanation": "The quantity equation still holds as an identity, but the short-run decomposition of nominal spending can include changes in velocity and real output, with prices adjusting gradually.",
+    "choiceRationales": [
+      "MV=PY remains an accounting identity; the issue is how its components respond, not whether it holds.",
+      "There is no general implication that money growth makes velocity zero.",
+      "Real output can respond in the short run even if long-run output is tied to real-side factors.",
+      "Changing V, changing Y and adjustment lags explain why the long-run proportional price result need not hold immediately."
+    ],
+    "reviewCardId": "ch06-031",
+    "sourceCardIds": ["ch06-031"],
+    "tags": ["exam-bank", "money-growth", "inflation", "short-run"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-001",
+    "chapter": 7,
+    "topic": "RBA inflation target",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "What inflation target does the course use for the RBA?",
+    "choices": [
+      "Consumer price inflation of 2–3% over time",
+      "Exactly 0% every quarter",
+      "Nominal GDP growth of 2–3% every month",
+      "The unemployment rate must be 2–3% in every period"
+    ],
+    "correctChoice": 0,
+    "explanation": "The course uses a flexible 2–3% consumer-price inflation target over time, not a mechanical requirement that every observation lie in the band.",
+    "choiceRationales": [
+      "This states the course’s target variable, range and over-time horizon.",
+      "The target is positive and flexible rather than exactly zero in every quarter.",
+      "The target concerns consumer-price inflation, not a monthly nominal GDP-growth rule.",
+      "The 2–3% range is not an unemployment target."
+    ],
+    "reviewCardId": "ch07-002",
+    "sourceCardIds": ["ch07-002"],
+    "tags": ["exam-bank", "RBA", "inflation-target", "policy"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-002",
+    "chapter": 7,
+    "topic": "Cash rate",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "In the Australian monetary system described in the course, what is the cash rate?",
+    "choices": [
+      "The average interest rate paid on household mortgages",
+      "The overnight unsecured rate on interbank ES-balance loans",
+      "The annual return on RBA foreign reserves",
+      "The inflation rate used to set the CPI basket"
+    ],
+    "correctChoice": 1,
+    "explanation": "The cash rate is the overnight unsecured interbank rate for lending Exchange Settlement balances. It influences broader rates but is not itself a household mortgage rate.",
+    "choiceRationales": [
+      "Mortgage rates are influenced by monetary policy but are not the cash-rate definition.",
+      "This is the course-specific definition of the Australian overnight cash market.",
+      "Foreign-reserve returns are not the operating overnight interbank rate.",
+      "The CPI and inflation target are outcomes/measurement concepts, not the cash rate."
+    ],
+    "reviewCardId": "ch07-005",
+    "sourceCardIds": ["ch07-005"],
+    "tags": ["exam-bank", "cash-rate", "RBA", "Exchange-Settlement"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-003",
+    "chapter": 7,
+    "topic": "Exchange Settlement balances",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "What are Exchange Settlement balances in the course’s Australian banking model?",
+    "choices": [
+      "Cash notes held in household wallets",
+      "Shares issued by commercial banks to the RBA",
+      "Eligible institutions’ RBA deposits used for interbank settlement",
+      "All commercial-bank customer deposits counted a second time"
+    ],
+    "correctChoice": 2,
+    "explanation": "ES balances are deposits of eligible financial institutions at the RBA. They are used for interbank settlement and are distinct from household transaction deposits.",
+    "choiceRationales": [
+      "Household notes are currency, not deposits of banks at the RBA.",
+      "ES balances are deposit liabilities of the RBA, not bank equity shares.",
+      "This states the course definition and settlement function of ES balances.",
+      "Counting ES balances on top of customer deposits as ordinary public money would double count distinct balance-sheet items."
+    ],
+    "reviewCardId": "ch07-006",
+    "sourceCardIds": ["ch07-006"],
+    "tags": ["exam-bank", "ES-balances", "RBA", "bank-settlement"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-004",
+    "chapter": 7,
+    "topic": "Cash-rate corridor",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "A hypothetical cash-rate corridor is 40 basis points wide and centred on a 3.00% target. What are the floor and ceiling?",
+    "choices": [
+      "2.40% and 3.40%",
+      "2.60% and 3.40%",
+      "2.80% and 3.00%",
+      "2.80% and 3.20%"
+    ],
+    "correctChoice": 3,
+    "explanation": "Forty basis points is 0.40 percentage points. Half the width is 0.20, so the corridor is 3.00%-0.20%=2.80% to 3.00%+0.20%=3.20%.",
+    "choiceRationales": [
+      "This treats 40 basis points as 0.60 total percentage points rather than 0.40.",
+      "The endpoints are not equally distant from the 3.00% centre.",
+      "This gives only one side of the corridor and leaves the ceiling at the target.",
+      "A 0.20-point half-width around 3.00% gives the correct 2.80% floor and 3.20% ceiling."
+    ],
+    "reviewCardId": "ch07-008",
+    "sourceCardIds": ["ch07-008"],
+    "tags": ["exam-bank", "cash-rate", "corridor", "basis-points"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-005",
+    "chapter": 7,
+    "topic": "Open-market purchase",
+    "style": "scenario",
+    "difficulty": 1,
+    "stem": "All else equal, what does an RBA open-market purchase of securities do to Exchange Settlement balances and the overnight cash rate?",
+    "choices": [
+      "ES balances rise and the cash rate faces downward pressure.",
+      "ES balances fall and the cash rate faces downward pressure.",
+      "ES balances rise and the cash rate faces upward pressure.",
+      "Total ES balances are unchanged because the trade is between private banks."
+    ],
+    "correctChoice": 0,
+    "explanation": "The RBA pays for securities by adding settlement balances to the banking system. Greater liquidity puts downward pressure on the overnight cash rate.",
+    "choiceRationales": [
+      "An RBA purchase injects ES balances and eases the overnight reserve market.",
+      "The direction of the ES-balance change is reversed.",
+      "More settlement liquidity generally puts downward rather than upward pressure on the cash rate.",
+      "The stated purchase is by the RBA, not a private-bank-to-private-bank transfer."
+    ],
+    "reviewCardId": "ch07-011",
+    "sourceCardIds": ["ch07-011"],
+    "tags": ["exam-bank", "RBA", "open-market-operation", "ES-balances"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-006",
+    "chapter": 7,
+    "topic": "Interbank security trade",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "Bank A buys a security from Bank B and settles through their Exchange Settlement accounts. What happens to total ES balances in the banking system?",
+    "choices": [
+      "They rise by the value of the security.",
+      "They are unchanged because balances transfer from Bank A to Bank B.",
+      "They fall by the value of the security.",
+      "They double because both banks record the security transaction."
+    ],
+    "correctChoice": 1,
+    "explanation": "The payment transfers ES balances from the buying bank to the selling bank. The banking-system total is unchanged by a private-bank-to-private-bank transfer.",
+    "choiceRationales": [
+      "A private interbank trade does not inject new ES balances into the system.",
+      "Bank A loses and Bank B gains the same balances, so the total is unchanged.",
+      "The payment reallocates balances but does not drain them from the banking system.",
+      "Double-entry accounting records the trade but does not double the system total of ES balances."
+    ],
+    "reviewCardId": "ch07-014",
+    "sourceCardIds": ["ch07-014"],
+    "tags": ["exam-bank", "ES-balances", "interbank", "settlement"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-007",
+    "chapter": 7,
+    "topic": "Monetary transmission",
+    "style": "sequence",
+    "difficulty": 2,
+    "stem": "Which sequence best describes the course’s interest-rate channel from tighter monetary policy to aggregate demand?",
+    "choices": [
+      "Cash rate falls → real rates rise → C and I rise → AD falls.",
+      "Cash rate rises → expected inflation rises one-for-one → real rates fall → AD rises.",
+      "Cash rate rises → broader and expected real rates rise → interest-sensitive C and I fall → PAE/AD falls.",
+      "Cash rate rises → exports rise mechanically → AD rises, with no spending response."
+    ],
+    "correctChoice": 2,
+    "explanation": "Tighter policy raises the cash rate and broader borrowing/return rates. For given inflation expectations, expected real rates rise, reducing interest-sensitive consumption and investment and lowering PAE/AD.",
+    "choiceRationales": [
+      "This reverses the policy-rate movement and the spending response.",
+      "If expected inflation rose one-for-one, the real rate would not rise; this is not the tightening channel.",
+      "This is the course’s monetary-transmission sequence through real interest-sensitive spending.",
+      "Tighter policy does not mechanically raise exports; the relevant direct channel is lower domestic spending."
+    ],
+    "reviewCardId": "ch07-016",
+    "sourceCardIds": ["ch07-016"],
+    "tags": ["exam-bank", "monetary-policy", "transmission", "sequence"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-008",
+    "chapter": 7,
+    "topic": "Expectations hypothesis",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "Under the simplified expectations hypothesis with no term premium, the current one-year rate is 3% and the expected one-year rate next year is 5%. What is the approximate two-year annual rate?",
+    "choices": ["1.5%", "2.0%", "8.0%", "4.0%"],
+    "correctChoice": 3,
+    "explanation": "The approximate annualised two-year rate is the average of the current and expected one-year rates: (3%+5%)/2=4%.",
+    "choiceRationales": [
+      "This divides the two rates rather than averaging the annual rates.",
+      "This is not the average of 3% and 5% and does not follow the expectations approximation.",
+      "Adding the annual rates gives 8%, but a two-year quote is annualised rather than the sum of rates.",
+      "The arithmetic average is (3+5)/2=4% under the stated approximation."
+    ],
+    "reviewCardId": "ch07-019",
+    "sourceCardIds": ["ch07-019"],
+    "tags": ["exam-bank", "yield-curve", "expectations", "interest-rates"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-009",
+    "chapter": 7,
+    "topic": "Taylor rule",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "Using i=3+1.5(π-πᵀ)+0.5(output gap), what policy rate follows when π=3%, πᵀ=2%, and the output gap is -2%?",
+    "choices": ["3.5%", "4.0%", "1.5%", "6.0%"],
+    "correctChoice": 0,
+    "explanation": "The inflation gap is 1 percentage point and the output gap is -2 points: i=3+1.5(1)+0.5(-2)=3+1.5-1=3.5%.",
+    "choiceRationales": [
+      "Substituting the two gaps gives 3+1.5-1=3.5%.",
+      "This ignores the negative output-gap term or applies it with the wrong sign.",
+      "This uses only part of the gap response and omits the intercept correctly.",
+      "This adds the absolute output gap instead of subtracting it in the rule."
+    ],
+    "reviewCardId": "ch07-023",
+    "sourceCardIds": ["ch07-023"],
+    "tags": ["exam-bank", "Taylor-rule", "policy-rate", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-010",
+    "chapter": 7,
+    "topic": "Policy reaction function",
+    "style": "model_discrimination",
+    "difficulty": 3,
+    "stem": "What does an exogenous upward shift of the course’s monetary-policy reaction function mean?",
+    "choices": [
+      "Expansionary policy: a lower real rate at every inflation rate.",
+      "Contractionary policy: a higher real rate at every inflation rate.",
+      "A movement along an unchanged PRF caused by higher inflation.",
+      "A rightward shift of the money-demand curve caused by higher income."
+    ],
+    "correctChoice": 1,
+    "explanation": "An upward PRF shift raises the policy-selected real rate for each inflation rate, so it is an exogenous contractionary policy change. Higher inflation moving along an unchanged PRF is different.",
+    "choiceRationales": [
+      "A lower real rate at each inflation rate would be a downward, expansionary PRF shift.",
+      "This correctly interprets an upward exogenous policy shift as higher r at each π.",
+      "A change in inflation along the existing rule is a movement, not an exogenous shift.",
+      "The PRF maps inflation into the policy real rate; it is not the money-demand curve."
+    ],
+    "reviewCardId": "ch07-026",
+    "sourceCardIds": ["ch07-026"],
+    "tags": ["exam-bank", "PRF", "monetary-policy", "model-discrimination"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-001",
+    "chapter": 8,
+    "topic": "PAE with real interest",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "If C=180+0.5Y-15r and I=70-5r, with no other sectors, what is planned aggregate expenditure?",
+    "choices": ["250+0.5Y-10r", "180+0.5Y-20r", "250+0.5Y+20r", "250+0.5Y-20r"],
+    "correctChoice": 3,
+    "explanation": "Add consumption and investment: PAE=(180+70)+0.5Y-(15+5)r=250+0.5Y-20r.",
+    "choiceRationales": [
+      "This omits $10 of the combined interest-rate response.",
+      "This omits the $70 autonomous investment term from PAE.",
+      "Both C and I fall with r in the stated equations, so the r coefficient cannot be positive.",
+      "Adding the two equations gives the correct autonomous, income and real-rate terms."
+    ],
+    "reviewCardId": "ch08-003",
+    "sourceCardIds": ["ch08-003"],
+    "tags": ["exam-bank", "PAE", "real-interest", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-002",
+    "chapter": 8,
+    "topic": "Output and real rate",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "Using PAE=250+0.5Y-20r and the equilibrium condition Y=PAE, which output relation follows?",
+    "choices": ["Y=250-20r", "Y=500+40r", "Y=250+0.5r", "Y=500-40r"],
+    "correctChoice": 3,
+    "explanation": "Set Y=250+0.5Y-20r, so 0.5Y=250-20r and Y=500-40r.",
+    "choiceRationales": [
+      "This reads the autonomous PAE terms as output and does not solve out the induced-income term.",
+      "The signs of the interest response and the multiplier are reversed.",
+      "This does not use the equilibrium equation or the correct units for the income coefficient.",
+      "Solving the equilibrium condition gives Y=(250-20r)/.5=500-40r."
+    ],
+    "reviewCardId": "ch08-004",
+    "sourceCardIds": ["ch08-004"],
+    "tags": ["exam-bank", "PAE", "equilibrium", "real-interest"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-003",
+    "chapter": 8,
+    "topic": "Derive AD",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "If equilibrium output is Y=500-40r and the policy reaction function is r=2+0.4π, what AD relation follows?",
+    "choices": ["Y=420-16π", "Y=580+16π", "Y=500-40π", "Y=420+16π"],
+    "correctChoice": 0,
+    "explanation": "Substitute the PRF into output: Y=500-40(2+0.4π)=500-80-16π=420-16π.",
+    "choiceRationales": [
+      "Substitution gives 420-16π, so higher inflation lowers output through the PRF-induced real-rate increase.",
+      "This reverses both the autonomous-rate subtraction and the AD slope.",
+      "This substitutes inflation directly for r and ignores the PRF intercept and response coefficient.",
+      "The inflation coefficient is negative because the PRF raises r when π rises."
+    ],
+    "reviewCardId": "ch08-005",
+    "sourceCardIds": ["ch08-005"],
+    "tags": ["exam-bank", "AD", "PRF", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-004",
+    "chapter": 8,
+    "topic": "Movement along AD",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "In the course’s interest-rate-setting AD model, what produces a movement along an unchanged AD curve?",
+    "choices": [
+      "A change in autonomous government purchases with the PRF unchanged",
+      "Inflation changes along the same PRF and spending schedule",
+      "An exogenous upward shift of the PRF",
+      "A change in autonomous exports at every inflation rate"
+    ],
+    "correctChoice": 1,
+    "explanation": "With the PRF and autonomous spending unchanged, a change in inflation changes the policy real rate and output along the existing AD relationship. Autonomous shocks or a PRF shift move the curve.",
+    "choiceRationales": [
+      "Autonomous government spending shifts AD rather than moving the economy along the unchanged curve.",
+      "This is the within-curve movement generated by a different inflation rate under the same PRF and spending schedule.",
+      "An exogenous PRF shift changes output at every inflation rate and shifts AD.",
+      "Exports are autonomous demand, so a change shifts AD rather than tracing the old curve."
+    ],
+    "reviewCardId": "ch08-007",
+    "sourceCardIds": ["ch08-007"],
+    "tags": ["exam-bank", "AD", "movement-versus-shift", "PRF"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-005",
+    "chapter": 8,
+    "topic": "PRF shift and AD",
+    "style": "model_discrimination",
+    "difficulty": 1,
+    "stem": "What happens to the AD curve after an exogenous upward shift in the monetary-policy reaction function?",
+    "choices": [
+      "AD shifts right because the PRF is higher.",
+      "AD remains fixed because only inflation can affect AD.",
+      "AD shifts left because the policy real rate is higher at each inflation rate.",
+      "The economy moves up along AD but the curve itself cannot shift."
+    ],
+    "correctChoice": 2,
+    "explanation": "An upward PRF shift is contractionary: at each inflation rate it raises r, lowers interest-sensitive spending and reduces equilibrium output, shifting AD left.",
+    "choiceRationales": [
+      "The upward PRF is contractionary, so the direction of the AD shift is left rather than right.",
+      "Exogenous policy shifts are one of the determinants that can shift the course AD curve.",
+      "Higher r at each π lowers C and I and shifts AD left.",
+      "A policy shift changes the whole output relation, not merely the point along the old curve."
+    ],
+    "reviewCardId": "ch08-009",
+    "sourceCardIds": ["ch08-009"],
+    "tags": ["exam-bank", "AD", "PRF", "contractionary-policy"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-006",
+    "chapter": 8,
+    "topic": "Adverse supply shock",
+    "style": "scenario",
+    "difficulty": 3,
+    "stem": "An abrupt input-cost increase raises inflation pressure at every output gap. What short-run outcome and policy issue best describe the shock?",
+    "choices": [
+      "Lower inflation and higher output, with no policy trade-off",
+      "Higher output and lower inflation, so policy must tighten immediately",
+      "No effect on inflation because the shock is not a demand change",
+      "Input costs raise inflation and lower output, creating a policy trade-off"
+    ],
+    "correctChoice": 3,
+    "explanation": "An adverse supply/inflation shock shifts short-run inflation pressure up. It can produce higher inflation alongside lower output, so tightening inflation may worsen the output loss.",
+    "choiceRationales": [
+      "These are the directions associated with a favourable rather than adverse supply shock.",
+      "The shock lowers rather than raises output and does not unambiguously call for tightening without considering the trade-off.",
+      "An input-cost shock directly changes inflation pressure even though it is not an autonomous-demand shock.",
+      "The combination of higher inflation and weaker output is the adverse-supply policy trade-off."
+    ],
+    "reviewCardId": "ch08-022",
+    "sourceCardIds": ["ch08-022"],
+    "tags": ["exam-bank", "supply-shock", "inflation", "AD-AS"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-007",
+    "chapter": 8,
+    "topic": "Inflation dynamics",
+    "style": "scenario",
+    "difficulty": 1,
+    "stem": "If actual output is above potential output and there is no favourable supply shock, what happens to inflation over time in the course model?",
+    "choices": [
+      "Inflation tends to rise.",
+      "Inflation must immediately become zero.",
+      "The price level must fall, so inflation becomes negative.",
+      "Inflation is unrelated to the output gap."
+    ],
+    "correctChoice": 0,
+    "explanation": "A positive output gap creates upward inflation pressure in the short-run aggregate-supply/inflation relation. Rising inflation is a rate of change, not necessarily a fall or rise in the price level by itself.",
+    "choiceRationales": [
+      "A positive gap raises inflation pressure when no favourable supply shock offsets it.",
+      "The model does not imply an immediate return of inflation to zero.",
+      "Rising inflation does not mean the price level falls; it means the price level grows faster.",
+      "The output gap is one of the stated drivers of inflation dynamics."
+    ],
+    "reviewCardId": "ch08-015",
+    "sourceCardIds": ["ch08-015"],
+    "tags": ["exam-bank", "inflation", "output-gap", "short-run-AS"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-008",
+    "chapter": 8,
+    "topic": "Self-correction versus policy",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "Why might policymakers stabilise a negative demand shock even if the basic AD-AS model eventually self-corrects back to potential output?",
+    "choices": [
+      "Self-correction can be slow, leaving unemployment and lost output for a costly period.",
+      "Self-correction permanently lowers potential output, so policy must prevent any return to Y*.",
+      "A negative demand shock automatically raises inflation, so policy must tighten immediately.",
+      "The model says a negative demand shock cannot self-correct unless government spending rises."
+    ],
+    "correctChoice": 0,
+    "explanation": "Even when inflation and expectations eventually adjust output back toward Y*, the transition can involve prolonged unemployment and lost production. Stabilisation can reduce that temporary welfare cost.",
+    "choiceRationales": [
+      "This is the course’s reason for considering stabilisation despite eventual self-correction: the transition can be slow and costly.",
+      "Self-correction returns output toward the existing potential benchmark; it does not permanently lower Y* by definition.",
+      "A negative demand shock normally lowers inflation pressure, so this reverses the demand-shock direction.",
+      "The model allows adjustment through inflation and real-rate mechanisms; a new government-spending increase is not required for the conceptual point."
+    ],
+    "reviewCardId": "ch08-021",
+    "sourceCardIds": ["ch08-021"],
+    "tags": ["exam-bank", "AD-AS", "self-correction", "stabilisation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-009",
+    "chapter": 8,
+    "topic": "Potential-output shock",
+    "style": "scenario",
+    "difficulty": 3,
+    "stem": "Potential output Y* permanently falls while the AD position is initially unchanged. What pressure does the course model predict?",
+    "choices": [
+      "The old output level becomes a larger negative gap and inflation must fall.",
+      "AD automatically shifts right by exactly the fall in Y*.",
+      "Old Y becomes a positive gap; inflation rises as Y adjusts toward lower Y*.",
+      "The fall in Y* has no effect because potential output is only a statistical label."
+    ],
+    "correctChoice": 2,
+    "explanation": "A lower Y* makes a previously sustainable output level expansionary relative to the new benchmark. That positive gap creates inflation pressure unless demand/output adjusts toward the lower potential.",
+    "choiceRationales": [
+      "A lower benchmark makes unchanged output higher relative to potential, not lower.",
+      "A supply-side potential-output shock is not itself an AD shift.",
+      "The old Y becomes a positive gap relative to the new Y*, producing upward inflation pressure.",
+      "Potential output is the model’s sustainable production benchmark and changes the output-gap calculation."
+    ],
+    "reviewCardId": "ch08-026",
+    "sourceCardIds": ["ch08-026"],
+    "tags": ["exam-bank", "potential-output", "AD-AS", "supply-shock"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-010",
+    "chapter": 8,
+    "topic": "Financial crisis and AD",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "In the basic AD framework, how is a financial crisis that lowers confidence, credit availability and private spending represented?",
+    "choices": [
+      "As a rightward AD shift from higher autonomous investment",
+      "As a permanent increase in potential output",
+      "As a movement up the unchanged AD curve caused only by inflation",
+      "As a leftward AD shift from lower private spending"
+    ],
+    "correctChoice": 3,
+    "explanation": "The financial disturbance reduces private spending and/or raises effective borrowing conditions. In the course AD model those demand effects shift AD left.",
+    "choiceRationales": [
+      "A confidence and credit contraction lowers rather than raises private demand.",
+      "A financial crisis is not automatically a productivity or potential-output improvement.",
+      "The shock changes autonomous spending/financial conditions, so it shifts AD rather than merely moving along it.",
+      "This correctly maps the finance-originating shock into lower aggregate demand."
+    ],
+    "reviewCardId": "ch08-030",
+    "sourceCardIds": ["ch08-030"],
+    "tags": ["exam-bank", "financial-crisis", "AD", "confidence"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-001",
+    "chapter": 9,
+    "topic": "Current account",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "Which transaction belongs in the current account rather than the financial account?",
+    "choices": [
+      "An Australian resident receives a dividend from shares in a foreign company.",
+      "An Australian resident buys newly issued shares in a foreign company.",
+      "An Australian bank acquires a foreign government bond.",
+      "A foreign investor buys an Australian deposit."
+    ],
+    "correctChoice": 0,
+    "explanation": "Dividends are investment-income flows and therefore primary income in the current account. Buying the underlying financial asset is recorded in the financial account.",
+    "choiceRationales": [
+      "A dividend is a cross-border primary-income flow in the current account.",
+      "The share purchase is an acquisition of a financial asset, not a current-account import.",
+      "A bond acquisition is a financial-account transaction; later interest would be primary income.",
+      "The deposit purchase is a financial claim transaction, not a current-account flow of goods, services or income."
+    ],
+    "reviewCardId": "ch09-002",
+    "sourceCardIds": ["ch09-002"],
+    "tags": ["exam-bank", "current-account", "primary-income", "financial-account"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-002",
+    "chapter": 9,
+    "topic": "Balance of payments",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "Ignoring statistical discrepancy, if the current-account balance is -$25 billion under the course sign convention, what financial-account counterpart is required by CA+KFA=0?",
+    "choices": [
+      "KFA=-$25 billion",
+      "KFA=+$25 billion",
+      "KFA=0 because the current account is negative",
+      "KFA=+$50 billion"
+    ],
+    "correctChoice": 1,
+    "explanation": "The balance-of-payments identity requires KFA=-CA. If CA=-25, then KFA=+25 billion under the stated sign convention.",
+    "choiceRationales": [
+      "This gives the same sign as CA, so the two balances would sum to -$50 billion rather than zero.",
+      "KFA=+25 exactly offsets CA=-25 in CA+KFA=0.",
+      "A current-account deficit requires an offsetting financial-account entry; it does not make the counterpart zero.",
+      "This overstates the required counterpart and would not make the accounts sum to zero."
+    ],
+    "reviewCardId": "ch09-007",
+    "sourceCardIds": ["ch09-007"],
+    "tags": ["exam-bank", "balance-of-payments", "current-account", "signs"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-003",
+    "chapter": 9,
+    "topic": "PPP limitations",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "Which statement gives a course-consistent reason why purchasing power parity can fail substantially in practice?",
+    "choices": [
+      "Trade is frictionless and all goods are identical across countries.",
+      "A PPP deviation is always a costless arbitrage opportunity with no adjustment delay.",
+      "PPP is an exact short-run law whenever exchange rates are flexible.",
+      "Non-tradable goods, transport costs, product differences and slow price adjustment can limit arbitrage."
+    ],
+    "correctChoice": 3,
+    "explanation": "PPP is a long-run benchmark. Non-tradables, transport and trade costs, product differences, market segmentation and slow price adjustment can prevent the arbitrage needed for exact short-run parity.",
+    "choiceRationales": [
+      "These are assumptions that make parity more plausible, not reasons for observed deviations.",
+      "Adjustment costs and delays mean a price gap need not be a costless, immediately exploitable arbitrage opportunity.",
+      "The course treats PPP as a long-run benchmark rather than an exact short-run law.",
+      "These frictions and product differences limit arbitrage and are the stated reasons PPP can fail in practice."
+    ],
+    "reviewCardId": "ch09-027",
+    "sourceCardIds": ["ch09-027"],
+    "tags": ["exam-bank", "PPP", "trade-costs", "arbitrage"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-004",
+    "chapter": 9,
+    "topic": "Small open economy",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "In the small-open-economy model with r fixed at r*, a government deficit lowers national saving. What is the most direct predicted effect?",
+    "choices": [
+      "The domestic real rate must rise sharply and private investment must fall.",
+      "The current account moves toward surplus because lower saving raises exports.",
+      "Domestic investment must immediately equal the lower saving, with no foreign financing.",
+      "CA worsens and foreign borrowing rises; r need not rise."
+    ],
+    "correctChoice": 3,
+    "explanation": "With r pinned close to the world rate, lower national saving need not equilibrate through a higher domestic rate and lower investment. The gap is reflected in a lower CA and more foreign borrowing.",
+    "choiceRationales": [
+      "That is the closed-economy crowding-out mechanism, not the small-open-economy closure.",
+      "Lower saving with unchanged investment moves CA=S-I toward deficit, not surplus.",
+      "Foreign saving can finance the difference between domestic investment and national saving.",
+      "This applies CA=S-I and the r=r* assumption correctly."
+    ],
+    "reviewCardId": "ch09-013",
+    "sourceCardIds": ["ch09-013"],
+    "tags": ["exam-bank", "small-open-economy", "current-account", "crowding-out"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-005",
+    "chapter": 9,
+    "topic": "Currency conversion",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "Under the course quote e=0.72 USD/AUD, how many US dollars does A$250 buy?",
+    "choices": ["US$180", "US$347.22", "US$250.72", "US$0.35"],
+    "correctChoice": 0,
+    "explanation": "The quote gives USD per AUD, so multiply: 0.72 USD/AUD × 250 AUD = US$180.",
+    "choiceRationales": [
+      "The units cancel correctly: .72 USD per AUD times 250 AUD equals US$180.",
+      "This divides by .72 when the quote already gives dollars per Australian dollar.",
+      "Adding the quote to the AUD amount does not perform a currency conversion.",
+      "This is an inverted and dimensionally incorrect result for the stated units."
+    ],
+    "reviewCardId": "ch09-019",
+    "sourceCardIds": ["ch09-019"],
+    "tags": ["exam-bank", "exchange-rate", "currency-conversion", "USD-AUD"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-006",
+    "chapter": 9,
+    "topic": "Cross rate",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "If 1 AUD=0.72 USD and 1 EUR=1.20 USD, approximately how many euros does 1 AUD buy?",
+    "choices": ["1.92 EUR", "0.60 EUR", "0.48 EUR", "1.20 EUR"],
+    "correctChoice": 1,
+    "explanation": "Convert through the common USD unit: 1 AUD buys 0.72 USD, and each euro costs 1.20 USD, so euros per AUD=0.72/1.20=0.60.",
+    "choiceRationales": [
+      "This multiplies the two quotes instead of dividing by the USD price of one euro.",
+      "Dividing .72 USD per AUD by 1.20 USD per EUR gives .60 EUR per AUD.",
+      "This uses an incompatible reciprocal or an incorrect division.",
+      "1.20 is the USD price of one euro, not the euro amount bought by one AUD."
+    ],
+    "reviewCardId": "ch09-021",
+    "sourceCardIds": ["ch09-021"],
+    "tags": ["exam-bank", "exchange-rate", "cross-rate", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-007",
+    "chapter": 9,
+    "topic": "Real exchange rate",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "With e quoted as foreign currency per Australian dollar, let e=0.72, P_domestic=120 and P_foreign=100. What is q=eP_domestic/P_foreign?",
+    "choices": ["0.60", "0.72", "0.864", "1.20"],
+    "correctChoice": 2,
+    "explanation": "Using the course convention, q=0.72×120/100=0.864.",
+    "choiceRationales": [
+      "This divides by the nominal exchange rate or otherwise omits the domestic-price ratio.",
+      "This reports the nominal exchange rate and omits relative prices.",
+      "The stated formula gives .72×1.20=.864.",
+      "This uses the reciprocal price ratio and reverses the real-exchange-rate formula."
+    ],
+    "reviewCardId": "ch09-022",
+    "sourceCardIds": ["ch09-022"],
+    "tags": ["exam-bank", "real-exchange-rate", "exchange-rate", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-008",
+    "chapter": 9,
+    "topic": "Law of one price",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "A comparable good costs A$10 in Australia and US$7.50 in the United States. Under the law of one price, what USD/AUD rate would equalise the common-currency prices?",
+    "choices": ["1.33 USD/AUD", "17.50 USD/AUD", "2.50 USD/AUD", "0.75 USD/AUD"],
+    "correctChoice": 3,
+    "explanation": "To make A$10 equal US$7.50, one Australian dollar must buy 7.50/10=0.75 USD. The correct rate is therefore 0.75 USD/AUD.",
+    "choiceRationales": [
+      "This is the reciprocal-style error; the course quote requires foreign currency per AUD.",
+      "Adding the two prices does not create an exchange rate.",
+      "This uses neither the foreign-price-over-domestic-price calculation nor the stated units.",
+      "The common-currency equality requires US price divided by Australian price, 7.50/10=.75 USD/AUD."
+    ],
+    "reviewCardId": "ch09-025",
+    "sourceCardIds": ["ch09-025"],
+    "tags": ["exam-bank", "law-of-one-price", "exchange-rate", "PPP"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-009",
+    "chapter": 9,
+    "topic": "Relative PPP",
+    "style": "concept",
+    "difficulty": 3,
+    "stem": "Australian inflation remains above foreign inflation for an extended period. Under relative PPP and the course convention e=foreign currency per AUD, what nominal movement is predicted for the AUD?",
+    "choices": [
+      "The AUD depreciates and e tends to fall.",
+      "The AUD appreciates and e tends to fall.",
+      "The AUD depreciates and e tends to rise.",
+      "The AUD cannot move because PPP fixes the exchange rate permanently."
+    ],
+    "correctChoice": 0,
+    "explanation": "Higher domestic inflation reduces the purchasing power of the AUD relative to foreign currency. Under the foreign-currency-per-AUD quote, the AUD depreciates as e falls.",
+    "choiceRationales": [
+      "Relative PPP predicts AUD depreciation; with foreign currency per AUD, depreciation is a fall in e.",
+      "The direction of appreciation is wrong even though the numerical direction of e is stated correctly.",
+      "Under this quote, a rise in e is appreciation, not depreciation.",
+      "PPP is a long-run benchmark, not a claim that exchange rates are permanently fixed."
+    ],
+    "reviewCardId": "ch09-028",
+    "sourceCardIds": ["ch09-028"],
+    "tags": ["exam-bank", "PPP", "relative-inflation", "exchange-rate"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-010",
+    "chapter": 9,
+    "topic": "Monetary transmission via FX",
+    "style": "sequence",
+    "difficulty": 3,
+    "stem": "Which chain best describes how tighter Australian monetary policy can reduce aggregate demand through the exchange-rate channel, under the course convention?",
+    "choices": [
+      "Rates↓ → AUD depreciates → NX↓ → AD↓.",
+      "Rates↑ → AUD appreciates → NX↓ → AD↓.",
+      "Rates↑ → AUD depreciates → NX↑ → AD↓.",
+      "Rates have no effect on AUD assets, exchange rates or NX."
+    ],
+    "correctChoice": 1,
+    "explanation": "Higher Australian rates make AUD assets relatively attractive, tending to appreciate the AUD. The appreciation reduces export competitiveness and makes imports cheaper, lowering net exports and aggregate demand.",
+    "choiceRationales": [
+      "This reverses the interest-rate movement and says an appreciation lowers net exports, so the chain is internally inconsistent.",
+      "This is the course’s FX transmission chain: higher relative rates, appreciation, lower NX and lower AD.",
+      "Under the course mechanism, higher rates tend to appreciate rather than depreciate the AUD; the later NX direction is also inconsistent.",
+      "The exchange-rate channel works through the relative attractiveness of AUD assets and the resulting currency movement."
+    ],
+    "reviewCardId": "ch09-040",
+    "sourceCardIds": ["ch09-040"],
+    "tags": ["exam-bank", "exchange-rate", "monetary-policy", "net-exports"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-001",
+    "chapter": 10,
+    "topic": "Economic growth",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "Which measure is most closely tied to long-run improvement in average material living standards?",
+    "choices": [
+      "Growth in the nominal value of government debt",
+      "Growth in total population",
+      "Growth in real GDP per capita",
+      "Growth in the current-account deficit"
+    ],
+    "correctChoice": 2,
+    "explanation": "Real GDP per capita tracks real production available per person and is therefore more closely related to average material living standards than total or nominal aggregates.",
+    "choiceRationales": [
+      "Nominal debt growth says nothing directly about real production per person.",
+      "A larger population does not by itself mean more output or resources per person.",
+      "Real GDP per capita is the course measure most closely linked to average material living standards.",
+      "A current-account deficit is a financing/flow measure, not a direct living-standard measure."
+    ],
+    "reviewCardId": "ch10-001",
+    "sourceCardIds": ["ch10-001"],
+    "tags": ["exam-bank", "economic-growth", "GDP-per-capita", "living-standards"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-002",
+    "chapter": 10,
+    "topic": "Compound growth",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Real output is 100 today and grows at 3% per year for two years. What is its level after two years?",
+    "choices": ["103.00", "106.00", "109.00", "106.09"],
+    "correctChoice": 3,
+    "explanation": "Compound growth gives Y₂=100(1.03)²=100(1.0609)=106.09.",
+    "choiceRationales": [
+      "103 is the level after one year, not after two compounded years.",
+      "This adds two 3-point increases but omits compounding on the first year’s increase.",
+      "This treats the 3% rate as a 9% two-year increase rather than compounding it.",
+      "The compound formula 100×1.03² gives 106.09."
+    ],
+    "reviewCardId": "ch10-003",
+    "sourceCardIds": ["ch10-003"],
+    "tags": ["exam-bank", "growth", "compound-growth", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-003",
+    "chapter": 10,
+    "topic": "Rule of 70",
+    "style": "concept",
+    "difficulty": 1,
+    "stem": "At a constant annual real GDP per capita growth rate of 2%, about how long does the rule of 70 predict for doubling?",
+    "choices": ["35 years", "70 years", "140 years", "0.028 years"],
+    "correctChoice": 0,
+    "explanation": "The rule of 70 gives doubling time ≈70 divided by the annual percentage rate: 70/2≈35 years.",
+    "choiceRationales": [
+      "Using the percentage number 2 in the denominator gives approximately 35 years.",
+      "70 is the numerator, not the doubling time when growth is 2%.",
+      "This multiplies rather than divides by the growth rate.",
+      "The rule uses the percentage number, not the decimal 0.02 in a way that produces a fraction of a year."
+    ],
+    "reviewCardId": "ch10-004",
+    "sourceCardIds": ["ch10-004"],
+    "tags": ["exam-bank", "rule-of-70", "growth", "doubling-time"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-004",
+    "chapter": 10,
+    "topic": "Total factor productivity",
+    "style": "model_discrimination",
+    "difficulty": 1,
+    "stem": "In Y=AK^αL^(1-α), what does A represent in the course’s growth model?",
+    "choices": [
+      "The number of workers employed, measured separately from L",
+      "A is total factor productivity—the efficiency of K and L",
+      "The nominal price level used to value capital and labour",
+      "The depreciation rate on the capital stock"
+    ],
+    "correctChoice": 1,
+    "explanation": "A is total factor productivity. It captures the efficiency or technology with which measured capital and labour are transformed into real output and is often measured as a residual in growth accounting.",
+    "choiceRationales": [
+      "L already denotes labour in the production function; A is not a second worker-count variable.",
+      "A scales output for given K and L and represents total factor productivity/efficiency.",
+      "The nominal price level is not the production-function productivity term.",
+      "Depreciation affects capital accumulation but is not what A represents."
+    ],
+    "reviewCardId": "ch10-018",
+    "sourceCardIds": ["ch10-018"],
+    "tags": ["exam-bank", "TFP", "productivity", "growth-accounting"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-005",
+    "chapter": 10,
+    "topic": "Diminishing marginal product",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "A disaster destroys much of a country’s capital while labour and technology are initially unchanged. What happens to output and the marginal product of the remaining/new capital?",
+    "choices": [
+      "Output rises while MPK falls because surviving capital is more productive.",
+      "Both output and MPK fall because destruction lowers every marginal return.",
+      "Output falls but MPK rises because capital is now relatively scarce.",
+      "Output and MPK both remain unchanged."
+    ],
+    "correctChoice": 2,
+    "explanation": "Destroying capital lowers the production level. With less capital per worker, the marginal product of an additional unit of capital rises in the diminishing-returns model, making rebuilding more productive.",
+    "choiceRationales": [
+      "The loss of an input lowers output, so output cannot rise from the destruction alone.",
+      "The output level falls, but scarcity of capital raises rather than lowers its marginal product.",
+      "This combines the level effect with the diminishing-returns comparative static correctly.",
+      "Both output and the capital-to-labour ratio change when capital is destroyed."
+    ],
+    "reviewCardId": "ch10-012",
+    "sourceCardIds": ["ch10-012"],
+    "tags": ["exam-bank", "MPK", "capital", "diminishing-returns"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-006",
+    "chapter": 10,
+    "topic": "Output per worker",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Under y=A(K/L)^α, if A=2, K/L=4 and α=0.5, what is output per worker y?",
+    "choices": ["2", "3", "8", "4"],
+    "correctChoice": 3,
+    "explanation": "y=2×4^0.5=2×2=4.",
+    "choiceRationales": [
+      "This uses A alone and ignores capital per worker.",
+      "This does not follow from taking the square root of K/L=4 and multiplying by A=2.",
+      "This multiplies A by K/L without applying the exponent .5.",
+      "The square root of 4 is 2, so y=2×2=4."
+    ],
+    "reviewCardId": "ch10-014",
+    "sourceCardIds": ["ch10-014"],
+    "tags": ["exam-bank", "output-per-worker", "capital-deepening", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-007",
+    "chapter": 10,
+    "topic": "Non-rival and non-excludable ideas",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "Which pairing correctly distinguishes non-rival from non-excludable?",
+    "choices": [
+      "Non-rival: one user does not reduce availability; non-excludable: access is difficult to restrict.",
+      "Non-rival means only the inventor can use an idea; non-excludable means every use reduces availability.",
+      "The terms are synonyms for a good that is not traded.",
+      "Non-rival refers to price, while non-excludable refers to whether output is produced domestically."
+    ],
+    "correctChoice": 0,
+    "explanation": "Non-rivalry concerns whether one person’s use leaves less for others. Non-excludability concerns whether access can be restricted. They are distinct properties.",
+    "choiceRationales": [
+      "This gives the correct use-based and access-based definitions.",
+      "It reverses both ideas: non-rival use can be shared, and non-excludability concerns access rather than rivalry.",
+      "The properties are distinct and do not require the good to be untraded.",
+      "Neither property is defined by the currency price or domestic location of production."
+    ],
+    "reviewCardId": "ch10-020",
+    "sourceCardIds": ["ch10-020"],
+    "tags": ["exam-bank", "ideas", "non-rival", "non-excludable"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-008",
+    "chapter": 10,
+    "topic": "Institutions and property rights",
+    "style": "model_discrimination",
+    "difficulty": 2,
+    "stem": "Why can secure property rights and effective institutions raise long-run economic growth in the course framework?",
+    "choices": [
+      "They guarantee that every investment earns a positive return regardless of productivity.",
+      "They make investment, innovation and contracts more secure and predictable.",
+      "They replace the need for human capital and physical capital in production.",
+      "They raise aggregate demand permanently above potential output without inflation pressure."
+    ],
+    "correctChoice": 1,
+    "explanation": "Secure rights and effective institutions make the returns to productive activity more predictable. That supports investment, innovation, contracting and efficient resource allocation, raising long-run growth conditions.",
+    "choiceRationales": [
+      "Institutions improve incentives and reduce uncertainty, but they cannot guarantee a positive return for every project.",
+      "This describes the incentive and transaction-cost channels through which institutions support investment and innovation.",
+      "Institutions complement rather than replace productive capital and human skills.",
+      "A demand expansion cannot permanently hold output above potential without creating gap/inflation pressure in the course model."
+    ],
+    "reviewCardId": "ch10-022",
+    "sourceCardIds": ["ch10-022"],
+    "tags": ["exam-bank", "institutions", "property-rights", "economic-growth"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-009",
+    "chapter": 10,
+    "topic": "GDP per capita decomposition",
+    "style": "scenario",
+    "difficulty": 3,
+    "stem": "If output per worker Y/L is unchanged but the employment-to-population ratio L/Population rises, what happens to real GDP per capita?",
+    "choices": [
+      "It falls because output per worker did not rise.",
+      "It is unchanged because only Y/L matters.",
+      "It rises because Y/Population=(Y/L)(L/Population).",
+      "It becomes equal to the unemployment rate."
+    ],
+    "correctChoice": 2,
+    "explanation": "Real GDP per capita is the product of labour productivity and employment intensity. A higher share of the population employed raises GDP per capita even when output per worker is unchanged.",
+    "choiceRationales": [
+      "The employment-intensity factor can raise GDP per capita even without higher productivity.",
+      "GDP per capita depends on both output per worker and the employment-to-population ratio.",
+      "The decomposition directly implies a rise when L/Population rises and Y/L is fixed.",
+      "The unemployment rate is a different labour-market statistic and is not equal to GDP per capita."
+    ],
+    "reviewCardId": "ch10-028",
+    "sourceCardIds": ["ch10-028"],
+    "tags": ["exam-bank", "GDP-per-capita", "labour-productivity", "employment"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-010",
+    "chapter": 10,
+    "topic": "Catch-up versus frontier growth",
+    "style": "model_discrimination",
+    "difficulty": 3,
+    "stem": "Why can a capital-poor economy sometimes grow rapidly without inventing frontier technology, while a rich frontier economy depends more on innovation?",
+    "choices": [
+      "Poor economies face no diminishing returns, while frontier economies have negative marginal products.",
+      "Poor economies cannot adopt existing ideas, so they must invent all technology themselves.",
+      "Frontier economies grow faster because their existing capital stock guarantees high returns to every new machine.",
+      "Poor economies catch up through technology adoption and capital deepening; frontier economies rely more on innovation."
+    ],
+    "correctChoice": 3,
+    "explanation": "A capital-poor economy can catch up by adopting known technologies and accumulating capital, where marginal returns are relatively high. A frontier economy has less imitation-based growth available and must rely more on innovation to keep productivity rising.",
+    "choiceRationales": [
+      "Diminishing returns apply to both economies; the poorer economy simply has more scope for high-return catch-up.",
+      "Access to existing technology is the basis of catch-up growth, so a poor economy need not invent every technology.",
+      "A large existing capital stock generally means stronger diminishing returns, not guaranteed high returns to every new machine.",
+      "This is the course distinction between adoption/capital deepening during catch-up and innovation at the frontier."
+    ],
+    "reviewCardId": "ch10-029",
+    "sourceCardIds": ["ch10-029"],
+    "tags": ["exam-bank", "convergence", "catch-up-growth", "innovation"],
+    "provenance": "authored_from_flashcards"
+  }
+]
