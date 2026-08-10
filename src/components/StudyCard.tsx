@@ -129,6 +129,11 @@ export function StudyCard({
         return;
       }
 
+      // A selected rating is an unresolved durable action until recordReview
+      // succeeds. StudyPage must keep this card stable if the study focus
+      // changes while local persistence is still pending or has failed.
+      onPhaseChange?.("pending_save");
+
       // Recall self-ratings remain separate from objective correctness so Exam-SRS
       // can distinguish a weak success from a clean retrieval.
       void submit({
@@ -143,7 +148,17 @@ export function StudyCard({
         }
       });
     },
-    [card, isMcq, onFinish, revealed, revealResponseTimeMs, saving, submit, submitted],
+    [
+      card,
+      isMcq,
+      onFinish,
+      onPhaseChange,
+      revealed,
+      revealResponseTimeMs,
+      saving,
+      submit,
+      submitted,
+    ],
   );
 
   useEffect(() => {

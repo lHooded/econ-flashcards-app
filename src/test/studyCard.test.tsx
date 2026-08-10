@@ -1,8 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { cards } from "../data/deck";
-import { StudyCard } from "../components/StudyCard";
+import { StudyCard, type StudyCardPhase } from "../components/StudyCard";
 
 describe("StudyCard", () => {
   it.each([
@@ -198,6 +198,44 @@ describe("StudyCard", () => {
 
     await user.click(screen.getByRole("button", { name: "Next card" }));
     expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  it("moves a recall rating through pending_save before completing", async () => {
+    const user = userEvent.setup();
+    const card = cards.find((candidate) => candidate.choices === undefined);
+    if (card === undefined) {
+      throw new Error("The canonical deck should contain a non-MCQ card.");
+    }
+
+    let resolveSave!: () => void;
+    const savePromise = new Promise<void>((resolve) => {
+      resolveSave = resolve;
+    });
+    const phases: StudyCardPhase[] = [];
+    const onSubmitReview = vi.fn().mockReturnValueOnce(savePromise);
+    const onFinish = vi.fn();
+
+    render(
+      <StudyCard
+        card={card}
+        onSubmitReview={onSubmitReview}
+        onFinish={onFinish}
+        onPhaseChange={(phase) => phases.push(phase)}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show answer" }));
+    await user.click(screen.getByRole("button", { name: "Struggled" }));
+
+    expect(phases).toEqual(["unanswered", "revealed", "pending_save"]);
+    expect(onFinish).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveSave();
+      await savePromise;
+    });
+    await waitFor(() => expect(onFinish).toHaveBeenCalledTimes(1));
+    expect(phases).toEqual(["unanswered", "revealed", "pending_save", "completed"]);
   });
 
   it("reveals non-MCQ content and records the self-rating", async () => {
