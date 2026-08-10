@@ -2,6 +2,7 @@ import {
   createReviewEvent,
   applyReviewToCardState,
   DEFAULT_APP_SETTINGS,
+  sortReviewEventsChronologically,
   validateSettings,
   type AppSettings,
   type CardState,
@@ -39,10 +40,14 @@ export class ProgressRepository {
     const cardStates = (await transaction
       .objectStore("cardStates")
       .getAll()) as CardState[];
-    const reviews = (await transaction
+    const rawReviews = (await transaction
       .objectStore("reviewEvents")
       .getAll()) as ReviewEvent[];
     await transaction.done;
+
+    // IndexedDB returns reviewEvents in primary-key order, but IDs are random.
+    // The repository boundary guarantees chronological history for consumers.
+    const reviews = sortReviewEventsChronologically(rawReviews);
 
     return {
       settings: settingsRecord?.value ?? DEFAULT_APP_SETTINGS,

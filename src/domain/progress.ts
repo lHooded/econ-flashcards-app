@@ -54,6 +54,41 @@ export function isReviewRating(value: unknown): value is ReviewRating {
   return typeof value === "string" && REVIEW_RATINGS.includes(value as ReviewRating);
 }
 
+/**
+ * Review history is chronological by the parsed instant, with the event ID
+ * providing a deterministic tie-breaker. Imported timestamps may use
+ * different, equivalent offsets, so ISO string comparison is not sufficient.
+ */
+export function compareReviewEventsChronologically(
+  left: ReviewEvent,
+  right: ReviewEvent,
+): number {
+  const leftTime = Date.parse(left.reviewedAt);
+  const rightTime = Date.parse(right.reviewedAt);
+
+  if (leftTime < rightTime) {
+    return -1;
+  }
+  if (leftTime > rightTime) {
+    return 1;
+  }
+
+  if (left.id < right.id) {
+    return -1;
+  }
+  if (left.id > right.id) {
+    return 1;
+  }
+
+  return 0;
+}
+
+export function sortReviewEventsChronologically(
+  reviews: readonly ReviewEvent[],
+): ReviewEvent[] {
+  return [...reviews].sort(compareReviewEventsChronologically);
+}
+
 export function createEmptyCardState(cardId: string): CardState {
   return {
     cardId,

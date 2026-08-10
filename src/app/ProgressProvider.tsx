@@ -8,7 +8,12 @@ import {
 import { ProgressContext, type ProgressContextValue } from "./progressContext";
 import { cardIds } from "../data/deck";
 import { serializeProgressBackup, type ProgressBackupV1 } from "../domain/backup";
-import type { AppSettings, NewReviewEvent, ProgressSnapshot } from "../domain/progress";
+import {
+  sortReviewEventsChronologically,
+  type AppSettings,
+  type NewReviewEvent,
+  type ProgressSnapshot,
+} from "../domain/progress";
 import { ProgressRepository } from "../db/progressRepository";
 
 function toSnapshot(
@@ -91,7 +96,10 @@ export function ProgressProvider({ children }: PropsWithChildren) {
               ...current.cardStates,
               [result.cardState.cardId]: result.cardState,
             },
-            reviewEvents: [...current.reviewEvents, result.event],
+            reviewEvents: sortReviewEventsChronologically([
+              ...current.reviewEvents,
+              result.event,
+            ]),
           };
         });
         setError(null);

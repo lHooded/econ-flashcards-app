@@ -49,6 +49,62 @@ describe("progress backups", () => {
     expect(parsed.exportedAt).toBe("2026-08-10T02:00:00.000Z");
   });
 
+  it("keeps imported review timestamps intact while exposing chronological history", async () => {
+    const repository = new ProgressRepository(cardIds);
+    await repository.resetAll();
+    const backup = createProgressBackup({
+      settings: { examAt: null, studyBufferHours: 24 },
+      cardStates: {},
+      reviewEvents: [
+        {
+          id: "a-later",
+          cardId: "ch01-001",
+          reviewedAt: "2026-08-10T12:00:00+02:00",
+          mode: "recall",
+          correct: true,
+          rating: "got_it",
+          responseTimeMs: null,
+          selectedChoice: null,
+        },
+        {
+          id: "z-earlier",
+          cardId: "ch01-002",
+          reviewedAt: "2026-08-10T09:00:00.000Z",
+          mode: "recall",
+          correct: false,
+          rating: "forgot",
+          responseTimeMs: null,
+          selectedChoice: null,
+        },
+        {
+          id: "b-tie",
+          cardId: "ch01-003",
+          reviewedAt: "2026-08-10T11:00:00+02:00",
+          mode: "recall",
+          correct: true,
+          rating: "struggled",
+          responseTimeMs: null,
+          selectedChoice: null,
+        },
+      ],
+    });
+
+    const parsed = parseProgressBackupText(JSON.stringify(backup), cardIds);
+    await repository.replaceAll(parsed);
+    const loaded = await repository.load();
+
+    expect(loaded.reviews.map((review) => review.id)).toEqual([
+      "b-tie",
+      "z-earlier",
+      "a-later",
+    ]);
+    expect(loaded.reviews.map((review) => review.reviewedAt)).toEqual([
+      "2026-08-10T11:00:00+02:00",
+      "2026-08-10T09:00:00.000Z",
+      "2026-08-10T12:00:00+02:00",
+    ]);
+  });
+
   it("rejects invalid JSON and unsupported versions", () => {
     expect(() => parseProgressBackupText("not json", cardIds)).toThrow(/valid JSON/);
 

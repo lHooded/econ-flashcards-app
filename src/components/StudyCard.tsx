@@ -8,6 +8,8 @@ interface StudyCardProps {
   readonly onFinish: () => void;
 }
 
+type CapturedReviewPayload = Omit<NewReviewEvent, "cardId">;
+
 function modeForCard(card: Flashcard): NewReviewEvent["mode"] {
   return card.kind === "calculation" ? "calculation" : "recall";
 }
@@ -21,6 +23,8 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [revealResponseTimeMs, setRevealResponseTimeMs] = useState<number | null>(null);
   const activeAt = useRef(performance.now());
+  const pendingMcqReview = useRef<CapturedReviewPayload | null>(null);
+  const saveInFlight = useRef(false);
 
   useEffect(() => {
     activeAt.current = performance.now();
@@ -29,7 +33,12 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
   const responseTime = () =>
     Math.max(0, Math.round(performance.now() - activeAt.current));
 
-  const submit = async (input: Omit<NewReviewEvent, "cardId">): Promise<boolean> => {
+  const submit = async (input: CapturedReviewPayload): Promise<boolean> => {
+    if (saveInFlight.current) {
+      return false;
+    }
+
+    saveInFlight.current = true;
     setSaving(true);
     setSaveError(null);
     try {
@@ -42,6 +51,7 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
       );
       return false;
     } finally {
+      saveInFlight.current = false;
       setSaving(false);
     }
   };
@@ -53,20 +63,29 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
       card.correctChoice === undefined ||
       card.choices === undefined ||
       revealed ||
-      saving
+      saving ||
+      pendingMcqReview.current !== null
     ) {
       return;
     }
 
-    const responseTimeMs = responseTime();
-    setRevealed(true);
-    void submit({
+    const payload: CapturedReviewPayload = {
       mode: "mcq",
       correct: selectedChoice === card.correctChoice,
       rating: null,
-      responseTimeMs,
+      responseTimeMs: responseTime(),
       selectedChoice,
-    });
+    };
+    pendingMcqReview.current = payload;
+    setRevealed(true);
+    void submit(payload);
+  };
+
+  const retryMcqSave = () => {
+    if (pendingMcqReview.current === null || submitted || saving) {
+      return;
+    }
+    void submit(pendingMcqReview.current);
   };
 
   const revealRecall = () => {
@@ -191,14 +210,21 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
 
           {isMcq ? (
             <div className="study-action-row">
-              <button
-                className="primary-button"
-                type="button"
-                disabled={!submitted || saving}
-                onClick={onFinish}
-              >
-                Next card
-              </button>
+              {submitted && (
+                <button className="primary-button" type="button" onClick={onFinish}>
+                  Next card
+                </button>
+              )}
+              {!submitted && saveError && (
+                <button
+                  className="secondary-button"
+                  type="button"
+                  disabled={saving}
+                  onClick={retryMcqSave}
+                >
+                  Retry save
+                </button>
+              )}
             </div>
           ) : (
             <fieldset className="rating-list">
