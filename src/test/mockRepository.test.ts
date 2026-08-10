@@ -210,6 +210,51 @@ describe("mock exam repository", () => {
     });
   });
 
+  it("finalises a stored attempt when a later bank no longer has its display question", async () => {
+    const progress = new ProgressRepository(cardIds);
+    await progress.resetAll();
+    const build = buildMockExam({
+      bank: examQuestions,
+      seed: "missing-display-finalise",
+    });
+    const attempt = createMockAttempt({
+      ...build,
+      id: "missing-display-finalise-attempt",
+      seed: "missing-display-finalise",
+      createdAt: "2026-08-11T00:00:00.000Z",
+    });
+    const first = attempt.manifest[0];
+    const answeredStates = attempt.questionStates.map((state) =>
+      state.questionId === first.questionId
+        ? {
+            ...state,
+            selectedChoice: first.correctChoice,
+            lastAnsweredAt: "2026-08-11T01:00:00.000Z",
+          }
+        : state,
+    );
+    const originalRepository = new MockExamRepository(cardIds, questionIds);
+    await originalRepository.createAttempt(attempt);
+    await originalRepository.updateAttemptProgress(attempt.id, answeredStates, 0);
+
+    const missingQuestionIds = new Set(
+      [...questionIds].filter((questionId) => questionId !== first.questionId),
+    );
+    const laterRepository = new MockExamRepository(cardIds, missingQuestionIds);
+    const finalized = await laterRepository.finalizeAttempt(
+      attempt.id,
+      "2026-08-11T15:00:00.000Z",
+    );
+
+    expect(finalized.attempt.status).toBe("submitted");
+    expect(finalized.attempt.submittedAt).toBe(attempt.writingEndsAt);
+    expect(finalized.reviewEvents).toHaveLength(60);
+    expect(finalized.result).toMatchObject({ score: 1, total: 60 });
+    expect(
+      finalized.reviewEvents.find((event) => event.cardId === first.reviewCardId),
+    ).toMatchObject({ correct: true, selectedChoice: first.correctChoice });
+  });
+
   it("aborts on a normal application exception before any mock review commits", async () => {
     const progress = new ProgressRepository(cardIds);
     await progress.resetAll();

@@ -130,7 +130,11 @@ export class MockExamRepository {
       if (structuralAttempt.status === "abandoned") {
         throw new Error("Abandoned mock attempts cannot be submitted.");
       }
-      const attempt = validateMockAttempt(structuralAttempt, this.validQuestionIds);
+      // Finalisation is a historical operation: the immutable manifest and
+      // persisted question states are sufficient for objective scoring. The
+      // current bank is required when creating/updating an attempt, but a
+      // removed display question must not strand an already-created attempt.
+      const attempt = validateMockAttempt(structuralAttempt);
       const effectiveSubmittedAt =
         Number.isFinite(Date.parse(submittedAt)) &&
         Date.parse(submittedAt) >= Date.parse(attempt.writingEndsAt)
@@ -181,15 +185,12 @@ export class MockExamRepository {
         await reviewStore.add(event);
         this.transactionFailure?.(index + 1);
       }
-      const submitted = validateMockAttempt(
-        {
-          ...attempt,
-          status: "submitted",
-          submittedAt: effectiveSubmittedAt,
-          reviewEventsCommittedAt: committedAt,
-        },
-        this.validQuestionIds,
-      );
+      const submitted = validateMockAttempt({
+        ...attempt,
+        status: "submitted",
+        submittedAt: effectiveSubmittedAt,
+        reviewEventsCommittedAt: committedAt,
+      });
       await transaction.objectStore("mockAttempts").put(submitted);
       await transaction.done;
       return {

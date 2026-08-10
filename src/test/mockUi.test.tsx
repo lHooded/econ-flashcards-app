@@ -199,6 +199,117 @@ describe("mock and Practice Lab interactions", () => {
     }
   });
 
+  it("rejects post-deadline interactions even while the rendered clock is stale", async () => {
+    vi.useFakeTimers({ now: Date.now() });
+    try {
+      const base = writingAttempt("stale-rendered-clock-ui");
+      const attempt = {
+        ...base,
+        questionStates: base.questionStates.map((state, index) =>
+          index === 0
+            ? {
+                ...state,
+                selectedChoice: 0 as 0 | 1 | 2 | 3,
+                firstViewedAt: "2026-08-11T00:01:00.000Z",
+                lastAnsweredAt: "2026-08-11T00:02:00.000Z",
+              }
+            : state,
+        ),
+      };
+      const update = vi.fn().mockResolvedValue(attempt);
+      const finalize = vi.fn().mockResolvedValue(submittedResult(attempt));
+      render(
+        <ProgressContext.Provider
+          value={mockProgressContext(attempt, update, finalize)}
+        >
+          <MockAttemptPage attemptId={attempt.id} />
+        </ProgressContext.Provider>,
+      );
+
+      expect(screen.getAllByRole("radio")[0]).toBeEnabled();
+      const beforeUpdates = update.mock.calls.length;
+      vi.setSystemTime(Date.parse(attempt.writingEndsAt) + 1);
+
+      fireEvent.click(screen.getAllByRole("radio")[1]);
+      fireEvent.keyDown(window, { key: "2" });
+      fireEvent.click(screen.getByRole("button", { name: "Flag for review" }));
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+      expect(screen.getAllByRole("radio")[0]).toBeChecked();
+      expect(screen.getAllByRole("radio")[1]).not.toBeChecked();
+      expect(
+        screen.getByRole("button", { name: "Flag for review" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Question 1 of 60" }),
+      ).toBeInTheDocument();
+      expect(update).toHaveBeenCalledTimes(beforeUpdates);
+      expect(finalize).not.toHaveBeenCalled();
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(finalize).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("checks expiry immediately when a backgrounded page becomes visible", async () => {
+    vi.useFakeTimers({ now: Date.now() });
+    const originalVisibility = document.visibilityState;
+    const setVisibility = (value: "visible" | "hidden") =>
+      Object.defineProperty(document, "visibilityState", {
+        configurable: true,
+        value,
+      });
+    try {
+      const base = writingAttempt("visibility-expiry-ui");
+      const attempt = {
+        ...base,
+        questionStates: base.questionStates.map((state, index) =>
+          index === 0 ? { ...state, selectedChoice: 0 as 0 | 1 | 2 | 3 } : state,
+        ),
+      };
+      const update = vi.fn().mockResolvedValue(attempt);
+      const finalize = vi.fn().mockResolvedValue(submittedResult(attempt));
+      render(
+        <ProgressContext.Provider
+          value={mockProgressContext(attempt, update, finalize)}
+        >
+          <MockAttemptPage attemptId={attempt.id} />
+        </ProgressContext.Provider>,
+      );
+
+      setVisibility("hidden");
+      document.dispatchEvent(new Event("visibilitychange"));
+      vi.setSystemTime(Date.parse(attempt.writingEndsAt) + 1);
+      const beforeReturnUpdates = update.mock.calls.length;
+      setVisibility("visible");
+      await act(async () => {
+        document.dispatchEvent(new Event("visibilitychange"));
+        const radio = screen.queryAllByRole("radio")[1];
+        if (radio !== undefined) fireEvent.click(radio);
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(finalize).toHaveBeenCalledTimes(1);
+      expect(update.mock.calls.length).toBe(beforeReturnUpdates);
+      vi.advanceTimersByTime(1000);
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(finalize).toHaveBeenCalledTimes(1);
+    } finally {
+      setVisibility(originalVisibility);
+      vi.useRealTimers();
+    }
+  });
+
   it("persists answers and flags and restores them on a page reload", async () => {
     const attempt = writingAttempt("reload-ui");
     let persisted = attempt;

@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProgress } from "../app/progressContext";
 import { examQuestions } from "../exam/questionBank";
 import { deriveMockClock } from "../exam/mock/timer";
-import { questionStateById, type MockAttempt } from "../exam/mock/model";
+import {
+  questionStateById,
+  type MockAttempt,
+  type MockClockPhase,
+} from "../exam/mock/model";
 import { MockQuestion } from "../components/mock/MockQuestion";
 import { MockNavigator } from "../components/mock/MockNavigator";
 import { MockResults } from "../components/mock/MockResults";
@@ -242,7 +246,16 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
     const onVisibility = () => {
       if (document.visibilityState === "hidden") checkpoint();
       documentVisible.current = document.visibilityState === "visible";
-      if (documentVisible.current) segmentStartedAt.current = performance.now();
+      if (documentVisible.current) {
+        segmentStartedAt.current = performance.now();
+        const current = attemptRef.current;
+        if (
+          current?.status === "active" &&
+          currentAttemptPhase(current) === "expired"
+        ) {
+          void runFinalization(true);
+        }
+      }
     };
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
       const hasUnsavedRevision =
@@ -261,7 +274,7 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("beforeunload", onBeforeUnload);
     };
-  }, [checkpoint, dirty, localAttempt?.status, saveError]);
+  }, [checkpoint, dirty, localAttempt?.status, runFinalization, saveError]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -283,10 +296,7 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
         toggleFlag();
         return;
       }
-      if (
-        deriveMockClock(current, nowMs).phase === "writing" &&
-        /^[1-4]$/.test(event.key)
-      ) {
+      if (currentAttemptPhase(current) === "writing" && /^[1-4]$/.test(event.key)) {
         event.preventDefault();
         selectChoice((Number(event.key) - 1) as 0 | 1 | 2 | 3);
       }
@@ -351,12 +361,8 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
   const interactionLocked = isFinalizing || clock.phase === "expired";
 
   function selectChoice(choice: 0 | 1 | 2 | 3) {
-    if (
-      finalizingRef.current ||
-      interactionLocked ||
-      deriveMockClock(attemptRef.current ?? activeAttempt, nowMs).phase !== "writing"
-    )
-      return;
+    const current = attemptRef.current ?? activeAttempt;
+    if (finalizingRef.current || currentAttemptPhase(current) !== "writing") return;
     apply((attempt) => ({
       ...attempt,
       questionStates: attempt.questionStates.map((state) =>
@@ -372,7 +378,8 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
     }));
   }
   function toggleFlag() {
-    if (finalizingRef.current || interactionLocked) return;
+    const current = attemptRef.current ?? activeAttempt;
+    if (finalizingRef.current || !isOpenMockPhase(currentAttemptPhase(current))) return;
     apply((attempt) => ({
       ...attempt,
       questionStates: attempt.questionStates.map((state) =>
@@ -387,9 +394,13 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
     }));
   }
   function goTo(index: number) {
-    if (finalizingRef.current || interactionLocked) return;
+    const current = attemptRef.current ?? activeAttempt;
+    if (finalizingRef.current || !isOpenMockPhase(currentAttemptPhase(current))) return;
     const nextIndex = Math.max(0, Math.min(59, index));
     checkpoint();
+    const afterCheckpoint = attemptRef.current ?? activeAttempt;
+    if (finalizingRef.current || !isOpenMockPhase(currentAttemptPhase(afterCheckpoint)))
+      return;
     apply((attempt) => ({
       ...attempt,
       currentQuestionIndex: nextIndex,
@@ -402,7 +413,7 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
     segmentStartedAt.current = performance.now();
   }
   function nextFlagged() {
-    if (finalizingRef.current || interactionLocked) return;
+    if (finalizingRef.current) return;
     const current = attemptRef.current ?? activeAttempt;
     const next = current.questionStates.findIndex(
       (state, index) => index > current.currentQuestionIndex && state.flagged,
@@ -551,6 +562,14 @@ export function MockAttemptPage({ attemptId }: { readonly attemptId: string }) {
       </p>
     </div>
   );
+}
+
+function currentAttemptPhase(attempt: MockAttempt): MockClockPhase {
+  return deriveMockClock(attempt, Date.now()).phase;
+}
+
+function isOpenMockPhase(phase: MockClockPhase): boolean {
+  return phase === "reading" || phase === "writing";
 }
 
 function isEditable(target: EventTarget | null): boolean {
