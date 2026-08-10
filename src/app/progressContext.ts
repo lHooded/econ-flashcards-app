@@ -1,7 +1,9 @@
 import { createContext, useContext } from "react";
-import type { ProgressBackupV1 } from "../domain/backup";
+import type { ProgressBackupV2 } from "../domain/backup";
 import type { AppSettings, NewReviewEvent, ProgressSnapshot } from "../domain/progress";
+import type { FinalizedMock } from "../db/mockExamRepository";
 import type { RecordedReview } from "../db/progressRepository";
+import type { MockAttempt, MockQuestionAttemptState } from "../exam/mock/model";
 
 export interface ProgressContextValue {
   readonly snapshot: ProgressSnapshot | null;
@@ -10,8 +12,23 @@ export interface ProgressContextValue {
   readonly clearError: () => void;
   readonly saveSettings: (settings: AppSettings) => Promise<void>;
   readonly recordReview: (input: NewReviewEvent) => Promise<RecordedReview>;
+  readonly createMockAttempt?: (attempt: MockAttempt) => Promise<MockAttempt>;
+  readonly updateMockAttemptProgress?: (
+    id: string,
+    questionStates: readonly MockQuestionAttemptState[],
+    currentQuestionIndex: number,
+  ) => Promise<MockAttempt>;
+  readonly abandonMockAttempt?: (
+    id: string,
+    abandonedAt: string,
+  ) => Promise<MockAttempt>;
+  readonly finalizeMockAttempt?: (
+    id: string,
+    submittedAt: string,
+  ) => Promise<FinalizedMock>;
+  readonly refreshProgress?: () => Promise<void>;
   readonly exportProgress: () => string;
-  readonly replaceProgress: (backup: ProgressBackupV1) => Promise<void>;
+  readonly replaceProgress: (backup: ProgressBackupV2) => Promise<void>;
   readonly resetProgress: () => Promise<void>;
 }
 

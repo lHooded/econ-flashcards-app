@@ -31,6 +31,8 @@ export interface ProgressSnapshot {
   readonly settings: AppSettings;
   readonly cardStates: Readonly<Record<string, CardState>>;
   readonly reviewEvents: readonly ReviewEvent[];
+  /** Optional for compatibility with pre-mock snapshot fixtures. */
+  readonly mockAttempts?: readonly import("../exam/mock/model").MockAttempt[];
 }
 
 export type NewReviewEvent = Omit<ReviewEvent, "id" | "reviewedAt"> & {

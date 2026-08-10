@@ -11,6 +11,7 @@ import {
 } from "../utils/date";
 import { useNow } from "../utils/useNow";
 import { buildStudyHash } from "../study/studyScope";
+import { deriveMockClock } from "../exam/mock/timer";
 
 function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): string {
   switch (phase) {
@@ -65,6 +66,51 @@ export function HomePage() {
         </div>
         <a className="primary-button heading-action" href="#/study">
           Study now
+        </a>
+      </section>
+
+      {(() => {
+        const activeMock = snapshot.mockAttempts?.find(
+          (attempt) => attempt.status === "active",
+        );
+        if (activeMock === undefined) return null;
+        const clock = deriveMockClock(activeMock, nowMs);
+        const answered = activeMock.questionStates.filter(
+          (state) => state.selectedChoice !== null,
+        ).length;
+        return (
+          <section className="callout callout-accent home-resume-mock">
+            <div>
+              <p className="section-kicker">Full mock in progress</p>
+              <h2>Resume mock exam</h2>
+              <p>
+                {clock.phase === "expired"
+                  ? "This attempt has expired and will be finalised when opened."
+                  : `${clock.phase === "reading" ? "Reading" : "Writing"} phase · ${answered} / 60 answered`}
+              </p>
+            </div>
+            <a
+              className="primary-button"
+              href={`#/mock/attempt?id=${encodeURIComponent(activeMock.id)}`}
+            >
+              Resume mock exam
+            </a>
+          </section>
+        );
+      })()}
+
+      <section className="workflow-strip" aria-label="Main workflow">
+        <a className="workflow-primary" href="#/study">
+          <strong>Study now</strong>
+          <span>Exam-SRS recommendation</span>
+        </a>
+        <a href="#/mock">
+          <strong>Full mock exam</strong>
+          <span>Realistic 60-question simulation</span>
+        </a>
+        <a href="#/practice">
+          <strong>Practice Lab</strong>
+          <span>Untimed deliberate drills</span>
         </a>
       </section>
 

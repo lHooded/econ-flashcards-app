@@ -56,18 +56,21 @@ deadline contraction, buffer semantics, selector priorities, and limitations.
 
 ## Static exam-question bank
 
-The repository also contains a separate, immutable multiple-choice exam bank for
-later realistic mock-exam work. Questions live in
+The repository contains an immutable multiple-choice exam bank used by the full mock
+and Practice Lab. Questions live in
 [exam_questions/MACRO1_exam_questions.json](exam_questions/MACRO1_exam_questions.json)
 alongside the declarative graph/table stimuli in
 [exam_questions/MACRO1_exam_stimulus_questions.json](exam_questions/MACRO1_exam_stimulus_questions.json).
 Questions are mapped back to canonical flashcards and include per-choice rationales
 and provenance. Graphs render locally as responsive SVG and tables use semantic HTML;
 distractors are statically authored and validated. There is no external chart service,
-runtime LLM generation, API call, or random distractor synthesis. The mock-exam UI and
-exam-performance persistence are intentionally reserved for a later phase. Because
-multiple representations may share a canonical concept, a future mock attempt must
-select at most one question for each `reviewCardId`.
+runtime LLM generation, API call, or random distractor synthesis. Because multiple
+representations may share a canonical concept, each mock attempt selects at most one
+question for each `reviewCardId`.
+
+See [docs/MOCK_EXAM.md](docs/MOCK_EXAM.md) for the full mock blueprint, deterministic
+selection, timer semantics, persistence, exactly-once Exam-SRS integration, and
+Practice Lab limitations.
 
 ## Development
 
@@ -127,17 +130,20 @@ source. The application validates its metadata and every card at module startup 
 before a production build; the real deck is bundled rather than copied into source
 code by hand.
 
-Mutable user data lives in IndexedDB database `econ-flashcards`, version 1:
+Mutable user data lives in IndexedDB database `econ-flashcards`, version 2:
 
 - `cardStates`: existing review counters and transactionally maintained card summaries;
 - `reviewEvents`: append-only chronological review history;
 - `settings`: the exam target and deliberate buffer.
+- `mockAttempts`: immutable question manifests plus resumable answers, flags, and
+  result state.
 
 Exam-SRS does not add persisted due dates, strength, ease, stability, readiness, or
 phase. Export/import remains the current device-sync mechanism: export a validated JSON
 backup from Settings / Data, then import it on another device. Backup format version 1
 is retained, and importing review history plus settings recreates the derived scheduler
-state without scheduler fields.
+state without scheduler fields. New exports use backup format version 2 and include
+mock attempts; version-1 backups migrate in memory with an empty mock history.
 
 ## Architecture
 
@@ -149,14 +155,15 @@ selects the next card, and produces dashboard summaries without calling `Date.no
 React pages pass an explicit current time and consume snapshots through the progress
 context rather than talking to IndexedDB directly.
 
-Mock exams, generated distractors, integrations, accounts, cloud sync, notifications,
-daily quotas, numeric-answer parsing, FSRS, SM-2, and projected scores are intentionally
-out of scope.
+Generated distractors, integrations, accounts, cloud sync, notifications, daily
+quotas, numeric-answer parsing, FSRS, SM-2, semantic essay grading, and projected
+scores are intentionally out of scope. Practice formats use only local authored
+content; no Playconomics content is copied or accessed.
 
 The reusable stimulus domain under `src/stimulus` and `src/components/stimulus` is
-bundled content infrastructure only. It is not wired into ordinary Study mode; the
-later mock-exam UI can render a question’s optional `question.stimulus` without
-knowing whether it is a graph, table, or absent.
+bundled content infrastructure. It remains outside ordinary Study mode, while mock
+and Practice Lab questions render optional graph/table stimuli without knowing the
+underlying representation.
 
 No malformed economics records were found in the supplied 349-card JSON. The 31
 authored MCQs have valid zero-based correct-choice indexes, and the 318 non-MCQ cards

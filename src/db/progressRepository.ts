@@ -9,7 +9,8 @@ import {
   type NewReviewEvent,
   type ReviewEvent,
 } from "../domain/progress";
-import type { ProgressBackupV1 } from "../domain/backup";
+import type { ProgressBackupV2 } from "../domain/backup";
+import { validateMockAttempt } from "../exam/mock/model";
 import { openProgressDatabase, SETTINGS_KEY, type SettingsRecord } from "./database";
 
 export interface RecordedReview {
@@ -83,7 +84,7 @@ export class ProgressRepository {
     return { event, cardState };
   }
 
-  public async replaceAll(backup: ProgressBackupV1): Promise<void> {
+  public async replaceAll(backup: ProgressBackupV2): Promise<void> {
     for (const state of backup.cardStates) {
       if (!this.validCardIds.has(state.cardId)) {
         throw new Error(`Cannot import unknown card ID "${state.cardId}".`);
@@ -94,16 +95,20 @@ export class ProgressRepository {
         throw new Error(`Cannot import unknown card ID "${review.cardId}".`);
       }
     }
+    for (const attempt of backup.mockAttempts) {
+      validateMockAttempt(attempt);
+    }
 
     const database = await this.database;
     const transaction = database.transaction(
-      ["settings", "cardStates", "reviewEvents"],
+      ["settings", "cardStates", "reviewEvents", "mockAttempts"],
       "readwrite",
     );
 
     transaction.objectStore("settings").clear();
     transaction.objectStore("cardStates").clear();
     transaction.objectStore("reviewEvents").clear();
+    transaction.objectStore("mockAttempts").clear();
     transaction.objectStore("settings").put({
       key: SETTINGS_KEY,
       value: backup.settings,
@@ -116,18 +121,21 @@ export class ProgressRepository {
     for (const review of backup.reviews) {
       reviewStore.put(review);
     }
+    const mockStore = transaction.objectStore("mockAttempts");
+    for (const attempt of backup.mockAttempts) mockStore.put(attempt);
     await transaction.done;
   }
 
   public async resetAll(): Promise<void> {
     const database = await this.database;
     const transaction = database.transaction(
-      ["settings", "cardStates", "reviewEvents"],
+      ["settings", "cardStates", "reviewEvents", "mockAttempts"],
       "readwrite",
     );
     transaction.objectStore("settings").clear();
     transaction.objectStore("cardStates").clear();
     transaction.objectStore("reviewEvents").clear();
+    transaction.objectStore("mockAttempts").clear();
     await transaction.done;
   }
 
