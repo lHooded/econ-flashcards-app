@@ -30,8 +30,10 @@ export interface EconDatabase extends DBSchema {
   };
 }
 
-export function openProgressDatabase(): Promise<IDBPDatabase<EconDatabase>> {
-  return openDB<EconDatabase>(DATABASE_NAME, DATABASE_VERSION, {
+export function openProgressDatabase(
+  databaseName = DATABASE_NAME,
+): Promise<IDBPDatabase<EconDatabase>> {
+  return openDB<EconDatabase>(databaseName, DATABASE_VERSION, {
     upgrade(database) {
       if (!database.objectStoreNames.contains("cardStates")) {
         database.createObjectStore("cardStates", { keyPath: "cardId" });
