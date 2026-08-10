@@ -113,8 +113,12 @@ The buffer is a recovery and polish period, not a second mandatory full-deck swe
   ```
 
 - When a buffer review brings a card to Learned, it is current through the exam.
-- After the exam, a newly recorded review uses ordinary baseline maintenance intervals
-  again.
+- After `examAt`, every card is evaluated using its ordinary baseline maintenance
+  interval from the latest usable review, regardless of whether that review occurred
+  during cram, buffer, or post-exam. Cram contraction and buffer freezing no longer
+  apply. The resulting baseline due time may already be before the current time, in
+  which case the card remains due; returning to maintenance does not forgive overdue
+  reviews.
 
 ## Selection policy
 

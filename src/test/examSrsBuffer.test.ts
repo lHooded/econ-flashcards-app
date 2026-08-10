@@ -127,4 +127,69 @@ describe("Exam-SRS buffer behaviour", () => {
     expect(state.dueAt).toBe("2026-08-10T17:00:00.000Z");
     expect(state.isDue).toBe(false);
   });
+
+  it("replaces a historical cram contraction with ordinary maintenance after the exam", () => {
+    const latestReviewAt = "2026-08-09T09:00:00.000Z";
+    const history = [
+      review("strength-1", "2026-08-08T00:00:00.000Z"),
+      review("strength-2", "2026-08-08T01:00:00.000Z"),
+      review("strength-3", "2026-08-08T02:00:00.000Z"),
+      review("strength-4", "2026-08-08T03:00:00.000Z"),
+      review("strength-5", "2026-08-08T04:00:00.000Z"),
+      review("strength-6", latestReviewAt),
+    ];
+
+    const duringBuffer = deriveCardState("card-1", history, settings, bufferNowMs);
+    const afterExam = deriveCardState("card-1", history, settings, examMs + 1);
+
+    expect(duringBuffer).toMatchObject({
+      learningState: "learned",
+      dueAt: new Date(examMs).toISOString(),
+      isDue: false,
+    });
+    expect(afterExam).toMatchObject({
+      dueAt: "2026-08-16T09:00:00.000Z",
+      isDue: false,
+    });
+  });
+
+  it("replaces a learned buffer freeze with the buffer review's baseline interval", () => {
+    const bufferReviewAt = "2026-08-09T20:00:00.000Z";
+    const history = [
+      review("first", "2026-08-09T00:00:00.000Z"),
+      review("buffer", bufferReviewAt),
+    ];
+
+    const duringBuffer = deriveCardState(
+      "card-1",
+      history,
+      settings,
+      Date.parse("2026-08-09T21:00:00.000Z"),
+    );
+    const afterExam = deriveCardState("card-1", history, settings, examMs + 1);
+
+    expect(duringBuffer).toMatchObject({
+      learningState: "learned",
+      dueAt: new Date(examMs).toISOString(),
+      isDue: false,
+    });
+    expect(afterExam).toMatchObject({
+      dueAt: "2026-08-10T12:00:00.000Z",
+      isDue: false,
+    });
+  });
+
+  it("does not forgive a maintenance interval that is already expired after the exam", () => {
+    const state = deriveCardState(
+      "card-1",
+      [review("expired", "2026-08-09T09:00:00.000Z")],
+      settings,
+      Date.parse("2026-08-10T11:00:00.000Z"),
+    );
+
+    expect(state).toMatchObject({
+      dueAt: "2026-08-09T15:00:00.000Z",
+      isDue: true,
+    });
+  });
 });

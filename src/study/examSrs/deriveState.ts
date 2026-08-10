@@ -212,7 +212,14 @@ function deriveDueAtMs(
   );
   const examAtMs = getExamAtMs(settings);
   const studyDeadlineMs = getStudyDeadlineMs(settings);
+  const currentPhase = deriveExamPhase(settings, nowMs);
   const phaseAtReview = deriveExamPhase(settings, reviewedAtMs);
+
+  // Once the exam has passed, recompute maintenance from the latest review
+  // regardless of which finite-horizon phase produced that review.
+  if (currentPhase === "post_exam") {
+    return reviewedAtMs + baseIntervalMs;
+  }
 
   if (phaseAtReview === "cram" && studyDeadlineMs !== null) {
     const remainingMs = Math.max(0, studyDeadlineMs - reviewedAtMs);
@@ -223,7 +230,7 @@ function deriveDueAtMs(
     // carried through the deliberate buffer. Overdue learned cards do not get
     // this forgiveness because their dueAt remains before the deadline.
     if (
-      deriveExamPhase(settings, nowMs) === "buffer" &&
+      currentPhase === "buffer" &&
       learningState === "learned" &&
       examAtMs !== null &&
       dueAtMs >= studyDeadlineMs
@@ -244,7 +251,7 @@ function deriveDueAtMs(
     return Math.min(reviewedAtMs + intervalMs, examAtMs);
   }
 
-  // no_exam and post_exam deliberately use the ordinary baseline intervals.
+  // no_exam deliberately uses the ordinary baseline interval.
   return reviewedAtMs + baseIntervalMs;
 }
 

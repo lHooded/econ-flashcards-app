@@ -54,6 +54,50 @@ function pushSuccess(
 }
 
 describe("Exam-SRS simulations", () => {
+  it("transitions one immutable history from cram contraction to buffer freeze to maintenance", () => {
+    const settings = {
+      examAt: "2026-08-10T10:00:00.000Z",
+      studyBufferHours: 24,
+    } as const;
+    const latestReviewAt = Date.parse("2026-08-09T09:00:00.000Z");
+    const reviews = Array.from({ length: 6 }, (_, index) =>
+      event(
+        `trajectory-${index}`,
+        "trajectory-card",
+        index === 5 ? latestReviewAt : Date.parse(`2026-08-08T0${index}:00:00.000Z`),
+      ),
+    );
+
+    const cram = deriveCardState(
+      "trajectory-card",
+      reviews,
+      settings,
+      Date.parse("2026-08-09T09:30:00.000Z"),
+    );
+    const buffer = deriveCardState(
+      "trajectory-card",
+      reviews,
+      settings,
+      Date.parse("2026-08-09T12:00:00.000Z"),
+    );
+    const postExam = deriveCardState(
+      "trajectory-card",
+      reviews,
+      settings,
+      Date.parse("2026-08-10T10:00:01.000Z"),
+    );
+
+    expect(cram.dueAt).toBe("2026-08-09T10:00:00.000Z");
+    expect(buffer).toMatchObject({
+      dueAt: "2026-08-10T10:00:00.000Z",
+      isDue: false,
+    });
+    expect(postExam).toMatchObject({
+      dueAt: "2026-08-16T09:00:00.000Z",
+      isDue: false,
+    });
+  });
+
   it("gives a strong learner expanding far-horizon intervals and contracting near the target", () => {
     const settings = {
       examAt: "2026-08-20T10:00:00.000Z",
