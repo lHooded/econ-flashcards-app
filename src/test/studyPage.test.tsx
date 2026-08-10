@@ -4,11 +4,7 @@ import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { ProgressContext, type ProgressContextValue } from "../app/progressContext";
 import { cards } from "../data/deck";
-import {
-  applyReviewToCardState,
-  createReviewEvent,
-  type ProgressSnapshot,
-} from "../domain/progress";
+import { createReviewEvent, type ProgressSnapshot } from "../domain/progress";
 import { StudyPage } from "../pages/StudyPage";
 
 const firstMcq = cards.find((card) => card.choices !== undefined);
@@ -21,24 +17,22 @@ if (
 }
 
 function StudyPageHarness() {
+  const baselineReviewedAt = new Date(Date.now() - 60_000).toISOString();
   const initialSnapshot: ProgressSnapshot = {
     settings: { examAt: null, studyBufferHours: 24 },
-    cardStates: Object.fromEntries(
-      cards
-        .filter((card) => card.id !== firstMcq!.id)
-        .map((card) => [
-          card.id,
-          {
-            cardId: card.id,
-            firstSeenAt: "2026-08-10T00:00:00.000Z",
-            lastSeenAt: "2026-08-10T00:00:00.000Z",
-            totalReviews: 1,
-            correctReviews: 1,
-            consecutiveCorrect: 1,
-          },
-        ]),
-    ),
-    reviewEvents: [],
+    cardStates: {},
+    reviewEvents: cards
+      .filter((card) => card.id !== firstMcq!.id)
+      .map((card) => ({
+        id: `seed-${card.id}`,
+        cardId: card.id,
+        reviewedAt: baselineReviewedAt,
+        mode: card.choices === undefined ? "recall" : "mcq",
+        correct: true,
+        rating: card.choices === undefined ? "got_it" : null,
+        responseTimeMs: null,
+        selectedChoice: null,
+      })),
   };
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const value: ProgressContextValue = {
@@ -54,18 +48,23 @@ function StudyPageHarness() {
       const event = createReviewEvent({
         ...input,
         id: "study-page-review",
-        reviewedAt: "2026-08-10T01:00:00.000Z",
+        reviewedAt: new Date().toISOString(),
       });
-      const cardState = applyReviewToCardState(
-        snapshot.cardStates[event.cardId],
-        event,
-      );
       setSnapshot((current) => ({
         ...current,
-        cardStates: { ...current.cardStates, [event.cardId]: cardState },
         reviewEvents: [...current.reviewEvents, event],
       }));
-      return { event, cardState };
+      return {
+        event,
+        cardState: {
+          cardId: event.cardId,
+          firstSeenAt: event.reviewedAt,
+          lastSeenAt: event.reviewedAt,
+          totalReviews: 1,
+          correctReviews: event.correct === true ? 1 : 0,
+          consecutiveCorrect: event.correct === true ? 1 : 0,
+        },
+      };
     },
   };
 
@@ -87,9 +86,10 @@ describe("StudyPage session", () => {
     expect(await screen.findByText(firstMcq.explanation)).toBeInTheDocument();
     expect(screen.getByText(firstMcq.front)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Next card" })).toBeInTheDocument();
-    expect(screen.getByText("0", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.getByText("1", { selector: "strong" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Next card" }));
     expect(screen.getByText("1", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.getByText("You’re caught up for now.")).toBeInTheDocument();
   });
 });

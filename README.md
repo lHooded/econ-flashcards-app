@@ -1,24 +1,36 @@
 # Econ Cram Cards
 
-Econ Cram Cards is an installable, offline-first React PWA for rapidly reviewing
-the 349-card macroeconomics deck covering Chapters 1–10. It is designed for the
-current exam-cramming vertical slice: answer cards, save every review locally, set
-an exam target and buffer, and carry progress between devices with an explicit JSON
-backup.
+Econ Cram Cards is an installable, offline-first React PWA for the 349-card
+macroeconomics deck covering Chapters 1–10. Its default study mode is **Exam-SRS**, a
+transparent deadline-aware heuristic for retrieval practice, corrective feedback,
+successive relearning, and full-deck coverage.
 
-## Current scope
+Exam-SRS is not SM-2 or FSRS. It is not a validated memory model, a probability of
+recall, a predicted exam mark, or a guarantee of exam performance. Its strength values,
+learning states, and deadlines are recomputed from immutable card content, chronological
+review events, and exam settings; scheduler state is not persisted.
 
-- Home progress facts: total, unseen, seen, and total reviews.
-- A simple unscheduled study queue: unseen cards first, then stable chapter/card ID
-  order.
-- Authored MCQ cards with objective correctness, explanations, and common traps.
-- Recall-style cards with `Forgot`, `Struggled`, and `Got it` self-ratings.
-- Exam date/time and deliberate study buffer settings. The default buffer is 24 hours.
-- IndexedDB persistence and validated replace-style JSON export/import.
-- A service worker and web app manifest for installable offline use.
+## Study behaviour
 
-Exam-SRS, due dates, readiness metrics, daily limits, mock exams, analytics, cloud
-sync, accounts, and backends are intentionally not implemented in this PR.
+- Configure the actual exam time and a deliberate study buffer, defaulting to 24 hours.
+  The effective study deadline is `examAt - studyBufferHours`.
+- Before the deadline, intervals contract toward the target. During the buffer,
+  Learned cards carried through the deadline are held for the exam while Relearning,
+  Weak, and Learning cards continue receiving recovery reviews. After the exam,
+  ordinary baseline maintenance intervals resume.
+- `Learned` means that repeated successful retrieval evidence reaches this app's current
+  operational criterion. It does not mean permanent retention; learned cards can become
+  due again.
+- `Study now` selects dynamically after each persisted review. Unseen cards protect
+  coverage, failures return after a short relearning interval without immediate
+  repetition, and weak/due cards are prioritised deterministically.
+- When no unseen or due card remains, Study says “You’re caught up for now”, shows the
+  next scheduled review, and offers explicit “Study ahead anyway” behaviour.
+- Recall cards retain `Forgot`, `Struggled`, and `Got it` self-ratings. Authored MCQs
+  use objective grading and retain the failed-save retry flow and exact retry payload.
+
+See [docs/EXAM_SRS.md](docs/EXAM_SRS.md) for the evidence rules, interval table,
+deadline contraction, buffer semantics, selector priorities, and limitations.
 
 ## Development
 
@@ -27,8 +39,8 @@ npm install
 npm run dev
 ```
 
-The development server is available at the URL Vite prints. The app uses the
-browser's local timezone for the `datetime-local` exam setting.
+The development server is available at the URL Vite prints. The app uses the browser's
+local timezone for the `datetime-local` exam setting.
 
 ## Quality checks
 
@@ -42,20 +54,33 @@ npm run build
 ```
 
 `npm run build` validates the canonical deck before producing a static production
-build. Generated output in `dist/` is not committed. Preview a production build
-with:
+bundle. Preview it with:
 
 ```bash
 npm run preview
 ```
 
-## Static deployment and offline use
+## GitHub Pages and offline use
 
-Deploy the contents of `dist/` to any static host that supports serving the SPA's
-entry point for `/`. The Vite PWA plugin generates `manifest.webmanifest` and a
-service worker that precaches the app shell and bundled assets. After one successful
-visit, core studying and the bundled deck work without a network connection. The
-service worker uses automatic update checks when a newer deployment is available.
+The production build is configured for the repository subpath and is intended for:
+
+<https://lhooded.github.io/econ-flashcards-app/>
+
+`.github/workflows/deploy-pages.yml` builds and deploys only pushes to
+`agent/initial-import`, plus manual `workflow_dispatch`. It uses the official Pages
+artifact/deploy actions, with `pages: write`, `id-token: write`, and the
+`github-pages` environment. Production deployment can only occur after this feature
+branch is merged (or otherwise lands) on `agent/initial-import`; this PR does not
+deploy its own branch over production. The repository owner may need to enable Pages
+with **GitHub Actions** once in the repository Settings → Pages → Build and deployment
+menu; that owner-side toggle cannot be encoded in this repository.
+
+Vite uses `/econ-flashcards-app/` as the production base, and the manifest start URL,
+scope, icons, favicon, service-worker registration, precache, and generated asset links
+use that same base. Hash navigation remains in use, so no server-side SPA rewrite is
+required. The generated service worker is scoped inside the project directory. After a
+successful visit, the app shell, bundled deck, and IndexedDB progress continue to work
+offline. Push notifications are not part of this app.
 
 ## Content, progress, and backups
 
@@ -66,41 +91,30 @@ code by hand.
 
 Mutable user data lives in IndexedDB database `econ-flashcards`, version 1:
 
-- `cardStates`: one summary state per reviewed card;
-- `reviewEvents`: append-only review history;
-- `settings`: the app settings record, including `examAt` and
-  `studyBufferHours`.
+- `cardStates`: existing review counters and transactionally maintained card summaries;
+- `reviewEvents`: append-only chronological review history;
+- `settings`: the exam target and deliberate buffer.
 
-The app never stores a second mutable copy of the deck. The derived study deadline is
-always calculated as `examAt - studyBufferHours`; it is not independently persisted.
-
-Export files use this format:
-
-```json
-{
-  "format": "econ-flashcards-progress",
-  "version": 1,
-  "exportedAt": "2026-08-10T00:00:00.000Z",
-  "settings": {},
-  "cardStates": [],
-  "reviews": []
-}
-```
-
-Imports are fully validated, including card IDs, timestamps, review fields, and
-version, before the user confirms replacement. The replacement uses one IndexedDB
-transaction so a failed write does not leave a half-imported database.
+Exam-SRS does not add persisted due dates, strength, ease, stability, readiness, or
+phase. Export/import remains the current device-sync mechanism: export a validated JSON
+backup from Settings / Data, then import it on another device. Backup format version 1
+is retained, and importing review history plus settings recreates the derived scheduler
+state without scheduler fields.
 
 ## Architecture
 
-The immutable-content layer (`src/data` and `src/domain/content`) parses and freezes
-the supplied deck. The progress domain (`src/domain/progress`) contains only mutable
-review/state/settings concepts, while `src/db` is the small persistence boundary over
-IndexedDB. React pages consume snapshots through the progress context rather than
-talking to IndexedDB directly. `src/study/unscheduledStudyQueue.ts` is deliberately a
-replaceable baseline scheduling boundary; a later Exam-SRS implementation can replace
-it without changing storage or card rendering fundamentals.
+The immutable-content layer (`src/data` and `src/domain/content`) parses and freezes the
+deck. The progress domain (`src/domain/progress`) contains mutable review/state/settings
+concepts, while `src/db` is the transactional IndexedDB boundary. The pure Exam-SRS
+boundary is under `src/study/examSrs/`: it derives evidence/state and intervals,
+selects the next card, and produces dashboard summaries without calling `Date.now()`.
+React pages pass an explicit current time and consume snapshots through the progress
+context rather than talking to IndexedDB directly.
 
-No malformed economics records were found in the supplied 349-card JSON during this
-PR. The 31 authored MCQs have valid zero-based correct-choice indexes, and the 318
-non-MCQ cards validate without choices.
+Mock exams, generated distractors, integrations, accounts, cloud sync, notifications,
+daily quotas, numeric-answer parsing, FSRS, SM-2, and projected scores are intentionally
+out of scope.
+
+No malformed economics records were found in the supplied 349-card JSON. The 31
+authored MCQs have valid zero-based correct-choice indexes, and the 318 non-MCQ cards
+validate without choices.

@@ -178,8 +178,9 @@ export function SettingsPage() {
             />
           </label>
           <p className="field-help">
-            Default: 24 hours. The future scheduler will ultimately aim for readiness by
-            the effective deadline, leaving this buffer before the actual exam.
+            Default: 24 hours. Exam-SRS aims to bring cards to its current learning
+            criterion by the effective deadline, leaving this buffer before the actual
+            exam.
           </p>
           <div className="computed-deadline">
             <span>Current effective study deadline</span>
@@ -248,8 +249,17 @@ export function SettingsPage() {
           <p className="section-kicker">Architecture note</p>
           <p>
             The flashcards are immutable bundled content. IndexedDB stores only mutable
-            progress, reviews, and settings. The scheduling layer is intentionally not
-            implemented yet, so this release uses an unscheduled study queue.
+            progress, reviews, and settings. Exam-SRS derives strength, learning state,
+            and due times from that history each time; no due dates or scheduler scores
+            are persisted. See the{" "}
+            <a
+              href="https://github.com/lHooded/econ-flashcards-app/blob/agent/initial-import/docs/EXAM_SRS.md"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Exam-SRS documentation
+            </a>{" "}
+            for the transparent heuristic and its limitations.
           </p>
         </div>
       </section>
