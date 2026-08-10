@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Flashcard } from "../domain/content";
 import type { NewReviewEvent, ReviewRating } from "../domain/progress";
 
@@ -6,15 +6,23 @@ interface StudyCardProps {
   readonly card: Flashcard;
   readonly onSubmitReview: (input: Omit<NewReviewEvent, "cardId">) => Promise<void>;
   readonly onFinish: () => void;
+  readonly onPhaseChange?: (phase: StudyCardPhase) => void;
 }
 
 type CapturedReviewPayload = Omit<NewReviewEvent, "cardId">;
+
+export type StudyCardPhase = "unanswered" | "revealed" | "pending_save" | "completed";
 
 function modeForCard(card: Flashcard): NewReviewEvent["mode"] {
   return card.kind === "calculation" ? "calculation" : "recall";
 }
 
-export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
+export function StudyCard({
+  card,
+  onSubmitReview,
+  onFinish,
+  onPhaseChange,
+}: StudyCardProps) {
   const isMcq = card.choices !== undefined && card.correctChoice !== undefined;
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
@@ -28,35 +36,42 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
 
   useEffect(() => {
     activeAt.current = performance.now();
-  }, [card.id]);
+    onPhaseChange?.("unanswered");
+  }, [card.id, onPhaseChange]);
 
-  const responseTime = () =>
-    Math.max(0, Math.round(performance.now() - activeAt.current));
+  const responseTime = useCallback(
+    () => Math.max(0, Math.round(performance.now() - activeAt.current)),
+    [],
+  );
 
-  const submit = async (input: CapturedReviewPayload): Promise<boolean> => {
-    if (saveInFlight.current) {
-      return false;
-    }
+  const submit = useCallback(
+    async (input: CapturedReviewPayload): Promise<boolean> => {
+      if (saveInFlight.current) {
+        return false;
+      }
 
-    saveInFlight.current = true;
-    setSaving(true);
-    setSaveError(null);
-    try {
-      await onSubmitReview(input);
-      setSubmitted(true);
-      return true;
-    } catch (error: unknown) {
-      setSaveError(
-        error instanceof Error ? error.message : "Review could not be saved.",
-      );
-      return false;
-    } finally {
-      saveInFlight.current = false;
-      setSaving(false);
-    }
-  };
+      saveInFlight.current = true;
+      setSaving(true);
+      setSaveError(null);
+      try {
+        await onSubmitReview(input);
+        setSubmitted(true);
+        onPhaseChange?.("completed");
+        return true;
+      } catch (error: unknown) {
+        setSaveError(
+          error instanceof Error ? error.message : "Review could not be saved.",
+        );
+        return false;
+      } finally {
+        saveInFlight.current = false;
+        setSaving(false);
+      }
+    },
+    [onPhaseChange, onSubmitReview],
+  );
 
-  const revealMcq = () => {
+  const revealMcq = useCallback(() => {
     if (
       !isMcq ||
       selectedChoice === null ||
@@ -78,8 +93,19 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
     };
     pendingMcqReview.current = payload;
     setRevealed(true);
+    onPhaseChange?.("pending_save");
     void submit(payload);
-  };
+  }, [
+    card.choices,
+    card.correctChoice,
+    isMcq,
+    onPhaseChange,
+    responseTime,
+    revealed,
+    saving,
+    selectedChoice,
+    submit,
+  ]);
 
   const retryMcqSave = () => {
     if (pendingMcqReview.current === null || submitted || saving) {
@@ -88,33 +114,120 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
     void submit(pendingMcqReview.current);
   };
 
-  const revealRecall = () => {
+  const revealRecall = useCallback(() => {
     if (isMcq || revealed || saving) {
       return;
     }
     setRevealResponseTimeMs(responseTime());
     setRevealed(true);
-  };
+    onPhaseChange?.("revealed");
+  }, [isMcq, onPhaseChange, responseTime, revealed, saving]);
 
-  const rateRecall = (rating: ReviewRating) => {
-    if (!revealed || isMcq || saving || submitted) {
-      return;
-    }
-
-    // Recall self-ratings remain separate from objective correctness so Exam-SRS
-    // can distinguish a weak success from a clean retrieval.
-    void submit({
-      mode: modeForCard(card),
-      correct: rating === "forgot" ? false : true,
-      rating,
-      responseTimeMs: revealResponseTimeMs,
-      selectedChoice: null,
-    }).then((success) => {
-      if (success) {
-        onFinish();
+  const rateRecall = useCallback(
+    (rating: ReviewRating) => {
+      if (!revealed || isMcq || saving || submitted) {
+        return;
       }
-    });
-  };
+
+      // A selected rating is an unresolved durable action until recordReview
+      // succeeds. StudyPage must keep this card stable if the study focus
+      // changes while local persistence is still pending or has failed.
+      onPhaseChange?.("pending_save");
+
+      // Recall self-ratings remain separate from objective correctness so Exam-SRS
+      // can distinguish a weak success from a clean retrieval.
+      void submit({
+        mode: modeForCard(card),
+        correct: rating === "forgot" ? false : true,
+        rating,
+        responseTimeMs: revealResponseTimeMs,
+        selectedChoice: null,
+      }).then((success) => {
+        if (success) {
+          onFinish();
+        }
+      });
+    },
+    [
+      card,
+      isMcq,
+      onFinish,
+      onPhaseChange,
+      revealed,
+      revealResponseTimeMs,
+      saving,
+      submit,
+      submitted,
+    ],
+  );
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isEditableStudyTarget(event.target)) {
+        return;
+      }
+
+      if (isMcq) {
+        if (!revealed && /^[1-9]$/.test(event.key)) {
+          const choiceIndex = Number(event.key) - 1;
+          if (
+            !saving &&
+            card.choices !== undefined &&
+            choiceIndex < card.choices.length
+          ) {
+            event.preventDefault();
+            setSelectedChoice(choiceIndex);
+          }
+          return;
+        }
+
+        if (!revealed && event.key === "Enter" && selectedChoice !== null && !saving) {
+          event.preventDefault();
+          revealMcq();
+          return;
+        }
+
+        if (revealed && submitted && event.key === "Enter") {
+          event.preventDefault();
+          onFinish();
+        }
+        return;
+      }
+
+      if (!revealed && (event.key === " " || event.key === "Enter") && !saving) {
+        event.preventDefault();
+        revealRecall();
+        return;
+      }
+
+      if (revealed && !saving && !submitted) {
+        const ratingByKey: Readonly<Record<string, ReviewRating>> = {
+          "1": "forgot",
+          "2": "struggled",
+          "3": "got_it",
+        };
+        const rating = ratingByKey[event.key];
+        if (rating !== undefined) {
+          event.preventDefault();
+          rateRecall(rating);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [
+    card.choices,
+    isMcq,
+    onFinish,
+    rateRecall,
+    revealMcq,
+    revealRecall,
+    revealed,
+    saving,
+    selectedChoice,
+    submitted,
+  ]);
 
   return (
     <article className="study-card" aria-labelledby={`card-${card.id}-prompt`}>
@@ -125,6 +238,11 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
       </div>
 
       <p className="card-id">{card.id}</p>
+      <p className="keyboard-hint" aria-hidden="true">
+        {isMcq
+          ? "Keyboard: 1–9 choose · Enter reveal / next"
+          : "Keyboard: Space / Enter reveal · 1–3 rate"}
+      </p>
       <h2 id={`card-${card.id}-prompt`} className="study-prompt">
         {card.front}
       </h2>
@@ -258,5 +376,16 @@ export function StudyCard({ card, onSubmitReview, onFinish }: StudyCardProps) {
         </div>
       )}
     </article>
+  );
+}
+
+function isEditableStudyTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return (
+    target.isContentEditable ||
+    ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(target.tagName)
   );
 }

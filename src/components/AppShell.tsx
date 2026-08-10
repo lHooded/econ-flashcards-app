@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from "react";
-import type { AppRoute } from "../app/App";
+import type { AppRoute } from "../app/hashRoute";
 
 interface AppShellProps extends PropsWithChildren {
   readonly route: AppRoute;

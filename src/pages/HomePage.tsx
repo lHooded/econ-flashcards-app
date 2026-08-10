@@ -10,6 +10,7 @@ import {
   getStudyDeadline,
 } from "../utils/date";
 import { useNow } from "../utils/useNow";
+import { buildStudyHash } from "../study/studyScope";
 
 function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): string {
   switch (phase) {
@@ -94,6 +95,43 @@ export function HomePage() {
           value={summary.relearning + summary.weak}
           detail={`${summary.learning} still learning`}
         />
+      </section>
+
+      <section className="quick-start panel" aria-labelledby="quick-start-title">
+        <div className="panel-heading quick-start-heading">
+          <p className="section-kicker">Quick starts</p>
+          <h2 id="quick-start-title">Choose a useful cram path.</h2>
+          <p className="muted-text">
+            These shortcuts restrict the candidate pool; Exam-SRS still chooses the
+            order inside it.
+          </p>
+        </div>
+        <div className="quick-action-list">
+          <a
+            className="secondary-button quick-action"
+            href={buildStudyHash({ preset: "needs_work", chapter: null })}
+          >
+            Needs work
+          </a>
+          <a
+            className="secondary-button quick-action"
+            href={buildStudyHash({ preset: "new", chapter: null })}
+          >
+            New cards
+          </a>
+          <a
+            className="secondary-button quick-action"
+            href={buildStudyHash({ preset: "calculations", chapter: null })}
+          >
+            Calculations
+          </a>
+          <a
+            className="secondary-button quick-action"
+            href={buildStudyHash({ preset: "mcq", chapter: null })}
+          >
+            MCQs
+          </a>
+        </div>
       </section>
 
       {snapshot.settings.examAt === null ? (

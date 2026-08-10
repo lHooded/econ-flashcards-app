@@ -151,6 +151,26 @@ to them only if that would leave no candidate. Ties use earlier due time, fewer
 historical reviews, lower chapter number, and lexical card ID. There is no random
 ordering.
 
+## Focused candidate scopes
+
+The Study page can apply a small `StudyScope` before this selector runs. Smart leaves
+the canonical deck unchanged. Needs work restricts the pool to Relearning, Weak, and
+Learning states; New restricts it to Unseen; Due restricts it to seen cards; and the
+content presets restrict it to calculation cards, valid authored MCQs (actual
+`choices` plus `correctChoice`), or cards with the existing `high-yield` tag. Normal
+unseen/due eligibility and the selector above still decide which card is eligible and
+which eligible card wins. In particular, Due does not select a future-due card during
+normal study; it can only be chosen by the explicit Study Ahead action.
+
+The chapter filter intersects the preset pool. It does not change coverage accounting,
+Chapter 0 thresholds, evidence, intervals, or priority constants. The one deliberate
+exception is candidate gating: an explicit Chapter 0 scope tells the selector that the
+learner deliberately restricted the universe to mixed exam-discrimination cards, so
+unseen Chapter 0 cards can be selected. Smart / All chapters continues to apply the
+automatic Chapter 0 gate. A scoped result distinguishes an eligible card, a matching
+pool that is caught up with its next due time, an empty canonical focus, and a New
+focus with no unseen cards remaining.
+
 ## Limitations
 
 Exam-SRS optimises for the current product goal: complete coverage, fast correction,

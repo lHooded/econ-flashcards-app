@@ -5,23 +5,22 @@ import { AppShell } from "../components/AppShell";
 import { HomePage } from "../pages/HomePage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { StudyPage } from "../pages/StudyPage";
+import { parseHashLocation, type ParsedHashLocation } from "./hashRoute";
 
-export type AppRoute = "/" | "/study" | "/settings";
+export type { AppRoute } from "./hashRoute";
 
-function useHashRoute(): AppRoute {
-  const routeFromHash = (): AppRoute => {
-    const path = window.location.hash.replace(/^#/, "") || "/";
-    return path === "/study" || path === "/settings" ? path : "/";
-  };
-  const [route, setRoute] = useState<AppRoute>(routeFromHash);
+function useHashRoute(): ParsedHashLocation {
+  const [location, setLocation] = useState<ParsedHashLocation>(() =>
+    parseHashLocation(window.location.hash),
+  );
 
   useEffect(() => {
-    const onHashChange = () => setRoute(routeFromHash());
+    const onHashChange = () => setLocation(parseHashLocation(window.location.hash));
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  return route;
+  return location;
 }
 
 function LoadingScreen() {
@@ -54,7 +53,7 @@ function StartupError({ message }: { message: string }) {
 }
 
 function Application() {
-  const route = useHashRoute();
+  const { route, studyScope } = useHashRoute();
   const { snapshot, isLoading, error, clearError } = useProgress();
 
   if (isLoading || snapshot === null) {
@@ -64,7 +63,7 @@ function Application() {
   return (
     <AppShell route={route} error={error} onDismissError={clearError}>
       {route === "/study" ? (
-        <StudyPage />
+        <StudyPage scope={studyScope} />
       ) : route === "/settings" ? (
         <SettingsPage />
       ) : (
