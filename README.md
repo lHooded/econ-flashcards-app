@@ -29,6 +29,28 @@ review events, and exam settings; scheduler state is not persisted.
 - Recall cards retain `Forgot`, `Struggled`, and `Got it` self-ratings. Authored MCQs
   use objective grading and retain the failed-save retry flow and exact retry payload.
 
+### Focused study
+
+The Study page has one small, optional focus scope. **Smart** is the recommended
+default and keeps the ordinary Exam-SRS candidate pool: all unseen or due cards.
+**Needs work** restricts normal study to due Relearning, Weak, and Learning cards;
+**New** selects unseen cards; **Due** selects scheduled seen reviews without introducing
+new cards; **Calculations**, **MCQs**, and **High yield** restrict by canonical card
+content, authored choices, and the existing `high-yield` tag respectively. Exam-SRS
+still decides the order inside every pool, so focused study does not create a second
+scheduler or a second score.
+
+Any preset can combine with an independent chapter restriction, including the explicit
+`Chapter 0 · Mixed exam discrimination` option. Smart / All chapters keeps the normal
+automatic Chapter 0 unseen-card gate; explicitly choosing Chapter 0 bypasses only that
+candidate-selection gate and leaves due dates, evidence, intervals, and priorities
+unchanged. Study Ahead remains an explicit action and stays inside the active focus.
+
+Focus state is represented in the hash (for example
+`#/study?preset=calculations&chapter=8`) for reload-safe GitHub Pages navigation. It is
+not written to review history or backups; every focused review uses the same existing
+`recall`, `mcq`, or `calculation` event mode and IndexedDB persistence rules.
+
 See [docs/EXAM_SRS.md](docs/EXAM_SRS.md) for the evidence rules, interval table,
 deadline contraction, buffer semantics, selector priorities, and limitations.
 

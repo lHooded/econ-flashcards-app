@@ -49,10 +49,17 @@ export function selectNextCardFromSnapshot(input: {
   readonly nowMs: number;
   readonly recentlyShownCardIds?: readonly string[];
   readonly studyAhead?: boolean;
+  /** Optional candidate restriction; omitted for normal full-deck study. */
+  readonly candidateCardIds?: ReadonlySet<string>;
+  /** Explicit Chapter 0 study bypasses only the automatic unseen-card gate. */
+  readonly overrideChapterZeroGate?: boolean;
 }): NextCardSelection {
   const statesById = input.scheduler.stateByCardId;
   const coverage = calculateCoverage(input.cards, input.scheduler.states);
-  const normalCandidates = input.cards
+  const candidateCards = input.cards.filter(
+    (card) => input.candidateCardIds?.has(card.id) ?? true,
+  );
+  const normalCandidates = candidateCards
     .map((card) => ({ card, state: statesById[card.id] }))
     .filter(
       (candidate): candidate is { card: Flashcard; state: ExamSrsCardState } =>
@@ -91,9 +98,13 @@ export function selectNextCardFromSnapshot(input: {
     };
   }
 
-  const nextDueAt = findNextDueAt(input.scheduler.states, input.nowMs);
+  const nextDueAt = findNextDueAt(
+    input.scheduler.states,
+    input.nowMs,
+    input.candidateCardIds,
+  );
   if (input.studyAhead) {
-    const futureCandidates = input.cards
+    const futureCandidates = candidateCards
       .map((card) => ({ card, state: statesById[card.id] }))
       .filter(
         (candidate): candidate is { card: Flashcard; state: ExamSrsCardState } =>
@@ -182,6 +193,7 @@ function priorityFor(
     readonly cards: readonly Flashcard[];
     readonly scheduler: ExamSrsSnapshot;
     readonly nowMs: number;
+    readonly overrideChapterZeroGate?: boolean;
   },
   coverage: {
     readonly chapterBonusByNumber: ReadonlyMap<number, number>;
@@ -203,7 +215,11 @@ function priorityFor(
     priority += coverage.chapterBonusByNumber.get(card.chapter) ?? 0;
   }
 
-  if (state.learningState === "unseen" && card.chapter === 0) {
+  if (
+    state.learningState === "unseen" &&
+    card.chapter === 0 &&
+    input.overrideChapterZeroGate !== true
+  ) {
     priority += coverage.mixedGatePenalty;
   }
 
@@ -323,10 +339,16 @@ function studyAheadRank(state: LearningState): number {
 function findNextDueAt(
   states: readonly ExamSrsCardState[],
   nowMs: number,
+  candidateCardIds?: ReadonlySet<string>,
 ): string | null {
   return (
     [...states]
-      .filter((state) => state.dueAt !== null && Date.parse(state.dueAt) > nowMs)
+      .filter(
+        (state) =>
+          (candidateCardIds?.has(state.cardId) ?? true) &&
+          state.dueAt !== null &&
+          Date.parse(state.dueAt) > nowMs,
+      )
       .sort((left, right) => compareTimestamp(left.dueAt, right.dueAt))[0]?.dueAt ??
     null
   );

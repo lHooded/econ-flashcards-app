@@ -5,6 +5,118 @@ import { cards } from "../data/deck";
 import { StudyCard } from "../components/StudyCard";
 
 describe("StudyCard", () => {
+  it.each([
+    ["1", "forgot"],
+    ["2", "struggled"],
+    ["3", "got_it"],
+  ] as const)(
+    "uses Space to reveal recall and %s to submit the rating",
+    async (key, rating) => {
+      const user = userEvent.setup();
+      const card = cards.find((candidate) => candidate.choices === undefined);
+      if (card === undefined) {
+        throw new Error("The canonical deck should contain a non-MCQ card.");
+      }
+      const onSubmitReview = vi.fn().mockResolvedValue(undefined);
+      const onFinish = vi.fn();
+
+      render(
+        <StudyCard card={card} onSubmitReview={onSubmitReview} onFinish={onFinish} />,
+      );
+
+      await user.keyboard(" ");
+      expect(screen.getByText(card.answer)).toBeInTheDocument();
+      await user.keyboard(key);
+
+      expect(onSubmitReview).toHaveBeenCalledWith(expect.objectContaining({ rating }));
+      expect(onFinish).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("uses number keys to choose an authored MCQ and Enter to reveal and advance", async () => {
+    const user = userEvent.setup();
+    const card = cards.find((candidate) => candidate.choices !== undefined);
+    if (
+      card === undefined ||
+      card.choices === undefined ||
+      card.correctChoice === undefined
+    ) {
+      throw new Error("The canonical deck should contain an authored MCQ.");
+    }
+    const onSubmitReview = vi.fn().mockResolvedValue(undefined);
+    const onFinish = vi.fn();
+
+    render(
+      <StudyCard card={card} onSubmitReview={onSubmitReview} onFinish={onFinish} />,
+    );
+
+    await user.keyboard(String(card.correctChoice + 1));
+    expect(screen.getByLabelText(card.choices[card.correctChoice])).toBeChecked();
+    await user.keyboard("{Enter}");
+    expect(await screen.findByText("Correct")).toBeInTheDocument();
+    expect(onSubmitReview).toHaveBeenCalledTimes(1);
+
+    document.body.tabIndex = -1;
+    document.body.focus();
+    await user.keyboard("{Enter}");
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not activate shortcuts from editable controls", async () => {
+    const user = userEvent.setup();
+    const card = cards.find((candidate) => candidate.choices === undefined);
+    if (card === undefined) {
+      throw new Error("The canonical deck should contain a non-MCQ card.");
+    }
+    const onSubmitReview = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <>
+        <input aria-label="Notes" />
+        <select aria-label="Mode" defaultValue="one">
+          <option value="one">One</option>
+        </select>
+        <StudyCard card={card} onSubmitReview={onSubmitReview} onFinish={vi.fn()} />
+      </>,
+    );
+
+    await user.click(screen.getByLabelText("Notes"));
+    await user.keyboard("{Space}");
+    expect(screen.queryByText(card.answer)).not.toBeInTheDocument();
+
+    await user.click(screen.getByLabelText("Mode"));
+    await user.keyboard("{Enter}");
+    expect(screen.queryByText(card.answer)).not.toBeInTheDocument();
+    expect(onSubmitReview).not.toHaveBeenCalled();
+  });
+
+  it("cannot bypass a failed MCQ save with Enter", async () => {
+    const user = userEvent.setup();
+    const card = cards.find((candidate) => candidate.choices !== undefined);
+    if (
+      card === undefined ||
+      card.choices === undefined ||
+      card.correctChoice === undefined
+    ) {
+      throw new Error("The canonical deck should contain an authored MCQ.");
+    }
+    const onSubmitReview = vi.fn().mockRejectedValueOnce(new Error("save failed"));
+    const onFinish = vi.fn();
+
+    render(
+      <StudyCard card={card} onSubmitReview={onSubmitReview} onFinish={onFinish} />,
+    );
+
+    await user.keyboard("1");
+    await user.keyboard("{Enter}");
+    expect(await screen.findByRole("alert")).toHaveTextContent("save failed");
+
+    document.body.tabIndex = -1;
+    document.body.focus();
+    await user.keyboard("{Enter}");
+    expect(onFinish).not.toHaveBeenCalled();
+  });
+
   it("records an authored MCQ selection and objective correctness", async () => {
     const user = userEvent.setup();
     const card = cards.find((candidate) => candidate.choices !== undefined);

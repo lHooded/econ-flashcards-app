@@ -1,22 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProgress } from "../app/progressContext";
-import { cards } from "../data/deck";
+import { StudyFocusControls } from "../components/StudyFocusControls";
+import { StudyCard, type StudyCardPhase } from "../components/StudyCard";
+import { cards, deck } from "../data/deck";
 import {
   DEFAULT_APP_SETTINGS,
   sortReviewEventsChronologically,
   type NewReviewEvent,
   type ReviewEvent,
 } from "../domain/progress";
-import { StudyCard } from "../components/StudyCard";
+import { getStudyReason } from "../study/examSrs/selector";
+import { getScopedStatusMessage, selectScopedNextCard } from "../study/scopedSelector";
+import {
+  buildStudyHash,
+  DEFAULT_STUDY_SCOPE,
+  getStudyScopeLabel,
+  type StudyScope,
+} from "../study/studyScope";
 import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
-import { getStudyReason, selectNextCardFromSnapshot } from "../study/examSrs/selector";
 import { formatLocalDateTime } from "../utils/date";
 import { useNow } from "../utils/useNow";
 
 const RECENT_CARD_LIMIT = 3;
 const EMPTY_REVIEWS: readonly ReviewEvent[] = [];
 
-export function StudyPage() {
+interface StudyPageProps {
+  readonly scope?: StudyScope;
+}
+
+export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
   const { snapshot, recordReview } = useProgress();
   const nowMs = useNow(30 * 1000);
   const [currentCardId, setCurrentCardId] = useState<string | null>(null);
@@ -24,6 +36,8 @@ export function StudyPage() {
   const [pendingReviewEvents, setPendingReviewEvents] = useState<ReviewEvent[]>([]);
   const [sessionCount, setSessionCount] = useState(0);
   const [studyAhead, setStudyAhead] = useState(false);
+  const currentCardPhase = useRef<StudyCardPhase>("unanswered");
+  const previousScopeKey = useRef(scopeKeyFor(scope));
 
   const settings = snapshot?.settings ?? DEFAULT_APP_SETTINGS;
   const persistedReviews = snapshot?.reviewEvents ?? EMPTY_REVIEWS;
@@ -38,16 +52,17 @@ export function StudyPage() {
     () => deriveExamSrsSnapshot(cards, effectiveReviews, settings, nowMs),
     [effectiveReviews, nowMs, settings],
   );
-  const nextCard = useMemo(
+  const scopedNextCard = useMemo(
     () =>
-      selectNextCardFromSnapshot({
+      selectScopedNextCard({
         cards,
         scheduler,
+        scope,
         nowMs,
         recentlyShownCardIds: recentCardIds,
         studyAhead,
       }),
-    [nowMs, recentCardIds, scheduler, studyAhead],
+    [nowMs, recentCardIds, scheduler, scope, studyAhead],
   );
 
   // Once a persisted review reaches the provider snapshot, the local event
@@ -61,23 +76,58 @@ export function StudyPage() {
   }, [persistedReviews]);
 
   useEffect(() => {
-    if (currentCardId === null && nextCard.selection !== null) {
-      setCurrentCardId(nextCard.selection.card.id);
+    const nextScopeKey = scopeKeyFor(scope);
+    if (previousScopeKey.current === nextScopeKey) {
+      return;
     }
-  }, [currentCardId, nextCard.selection]);
+
+    previousScopeKey.current = nextScopeKey;
+    setStudyAhead(false);
+
+    // A recall card that is merely revealed has not produced a persisted review
+    // yet, so it can be replaced. An authored MCQ has a pending save as soon as
+    // its result is revealed; keep that result stable until it is saved and
+    // advanced, including when the save needs a retry.
+    if (
+      currentCardPhase.current === "unanswered" ||
+      currentCardPhase.current === "revealed"
+    ) {
+      setCurrentCardId(null);
+    }
+  }, [scope]);
+
+  useEffect(() => {
+    if (currentCardId === null && scopedNextCard.selection !== null) {
+      setCurrentCardId(scopedNextCard.selection.card.id);
+    }
+  }, [currentCardId, scopedNextCard.selection]);
+
+  const handleCardPhaseChange = useCallback((phase: StudyCardPhase) => {
+    currentCardPhase.current = phase;
+  }, []);
+
+  const changeScope = useCallback((nextScope: StudyScope) => {
+    const nextHash = buildStudyHash(nextScope).slice(1);
+    if (window.location.hash !== nextHash) {
+      // Hash navigation updates the route without a full document load and is
+      // safe for static GitHub Pages hosting.
+      window.location.hash = nextHash;
+    }
+  }, []);
 
   if (snapshot === null) {
     return null;
   }
 
-  const displayCardId = currentCardId ?? nextCard.selection?.card.id ?? null;
+  const displayCardId = currentCardId ?? scopedNextCard.selection?.card.id ?? null;
   const currentCard = cards.find((card) => card.id === displayCardId);
   const currentState = currentCard
     ? scheduler.stateByCardId[currentCard.id]
     : undefined;
   const currentReason = currentState
     ? getStudyReason(currentState, nowMs, studyAhead && !currentState.isDue)
-    : nextCard.selection?.reason;
+    : scopedNextCard.selection?.reason;
+  const focusLabel = getStudyScopeLabel(scope, deck.metadata.chapterNames);
 
   const submitReview = async (input: Omit<NewReviewEvent, "cardId">): Promise<void> => {
     if (currentCard === undefined) {
@@ -103,15 +153,23 @@ export function StudyPage() {
       return;
     }
 
+    currentCardPhase.current = "unanswered";
     // Do not calculate a queue here. Clearing the displayed card lets the next
     // render select from the newly persisted history and recent-card guard.
     setCurrentCardId(null);
   };
 
   const studyAheadAnyway = () => {
+    if (scopedNextCard.nextDueAt === null) {
+      return;
+    }
+
     setStudyAhead(true);
+    currentCardPhase.current = "unanswered";
     setCurrentCardId(null);
   };
+
+  const showEmptyState = currentCard === undefined && scopedNextCard.selection === null;
 
   return (
     <div className="page-stack study-page">
@@ -130,10 +188,18 @@ export function StudyPage() {
         </div>
       </section>
 
+      <StudyFocusControls
+        scope={scope}
+        counts={scopedNextCard.counts}
+        chapterNames={deck.metadata.chapterNames}
+        onScopeChange={changeScope}
+      />
+
       {currentCard ? (
         <>
           <div className="study-status-row" aria-live="polite">
-            <span className="study-reason">{currentReason}</span>
+            <span className="study-focus-status">Focus: {focusLabel}</span>
+            <span className="study-reason">Reason: {currentReason}</span>
             <span className="study-phase">
               {scheduler.phase === "cram"
                 ? "Before study deadline"
@@ -149,28 +215,61 @@ export function StudyPage() {
             key={currentCard.id}
             onSubmitReview={submitReview}
             onFinish={finishCard}
+            onPhaseChange={handleCardPhaseChange}
           />
         </>
-      ) : (
+      ) : showEmptyState ? (
         <section className="empty-study callout callout-accent">
           <div>
-            <p className="section-kicker">Caught up</p>
-            <h2>You’re caught up for now.</h2>
-            {nextCard.nextDueAt !== null ? (
-              <p>Next scheduled review: {formatLocalDateTime(nextCard.nextDueAt)}.</p>
-            ) : (
-              <p>There are no scheduled reviews yet.</p>
-            )}
-            <p>
-              Spacing is still useful, but you can choose to study ahead whenever you
-              have extra time.
+            <p className="section-kicker">
+              {scopedNextCard.status === "caught_up" ? "Caught up" : "Study focus"}
             </p>
+            <h2>
+              {getScopedStatusMessage(
+                scopedNextCard.status,
+                scopedNextCard.emptyReason,
+                scope.preset,
+              )}
+            </h2>
+            {scopedNextCard.status === "caught_up" ? (
+              scopedNextCard.nextDueAt !== null ? (
+                <p>
+                  Next matching review: {formatLocalDateTime(scopedNextCard.nextDueAt)}.
+                </p>
+              ) : (
+                <p>There are no scheduled reviews in this focus yet.</p>
+              )
+            ) : scopedNextCard.emptyReason === "no_unseen_cards" ? (
+              <p>Every card matching this chapter and content focus has been seen.</p>
+            ) : scopedNextCard.emptyReason === "no_matching_cards" ? (
+              <p>Try another preset or chapter to find matching canonical cards.</p>
+            ) : (
+              <p>No cards are currently in the selected learning state.</p>
+            )}
+            {scopedNextCard.status === "caught_up" &&
+              scopedNextCard.nextDueAt !== null && (
+                <p>
+                  Spacing is still useful, but you can choose to study ahead whenever
+                  you have extra time.
+                </p>
+              )}
           </div>
-          <button className="primary-button" type="button" onClick={studyAheadAnyway}>
-            Study ahead anyway
-          </button>
+          {scopedNextCard.status === "caught_up" &&
+            scopedNextCard.nextDueAt !== null && (
+              <button
+                className="primary-button"
+                type="button"
+                onClick={studyAheadAnyway}
+              >
+                Study ahead anyway
+              </button>
+            )}
         </section>
-      )}
+      ) : null}
     </div>
   );
+}
+
+function scopeKeyFor(scope: StudyScope): string {
+  return `${scope.preset}:${scope.chapter === null ? "all" : scope.chapter}`;
 }
