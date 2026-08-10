@@ -65,7 +65,9 @@ Questions are mapped back to canonical flashcards and include per-choice rationa
 and provenance. Graphs render locally as responsive SVG and tables use semantic HTML;
 distractors are statically authored and validated. There is no external chart service,
 runtime LLM generation, API call, or random distractor synthesis. The mock-exam UI and
-exam-performance persistence are intentionally reserved for a later phase.
+exam-performance persistence are intentionally reserved for a later phase. Because
+multiple representations may share a canonical concept, a future mock attempt must
+select at most one question for each `reviewCardId`.
 
 ## Development
 

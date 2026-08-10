@@ -40,7 +40,9 @@ describe("exam question bank", () => {
       stimulusCount: 30,
       graphCount: 20,
       tableCount: 10,
-      uniqueReviewCardIds: 161,
+      uniqueReviewCardIds: 158,
+      reviewCardsWithMultipleQuestions: 3,
+      maximumQuestionsPerReviewCard: 2,
     });
     expect(examQuestionStats.byChapterStimulus).toEqual({
       "0": 0,
@@ -110,7 +112,7 @@ describe("exam question bank", () => {
     );
   });
 
-  it("rejects duplicate question IDs and duplicate review-card mappings", () => {
+  it("rejects duplicate question IDs but allows controlled review-card variants", () => {
     const duplicateQuestion = clonedBank();
     duplicateQuestion[1].id = duplicateQuestion[0].id;
     expect(() =>
@@ -122,7 +124,20 @@ describe("exam question bank", () => {
     duplicateReviewCard[1].sourceCardIds = [duplicateReviewCard[0].reviewCardId];
     expect(() =>
       validateExamQuestionBank(duplicateReviewCard, { canonicalCardIds }),
-    ).toThrow(/duplicate reviewCardId/);
+    ).not.toThrow();
+
+    const tooManyVariants = clonedBank().slice(0, 3);
+    const sharedReviewCardId = tooManyVariants[0].reviewCardId as string;
+    for (const question of tooManyVariants) {
+      question.reviewCardId = sharedReviewCardId;
+      question.sourceCardIds = [sharedReviewCardId];
+    }
+    expect(() =>
+      validateExamQuestionBank(
+        tooManyVariants,
+        strictOptions({ maximumQuestionsPerReviewCard: 2 }),
+      ),
+    ).toThrow(/maximum is 2/);
   });
 
   it("detects chapter and mixed-pool quota failures", () => {
@@ -208,6 +223,26 @@ describe("exam question bank", () => {
         );
       }
     }
+  });
+
+  it("keeps stimulus provenance attached to the directly tested canonical concepts", () => {
+    const expectedMappings = {
+      "auth-stim-ch02-001": "ch02-027",
+      "auth-stim-ch03-002": "ch03-020",
+      "auth-stim-ch04-001": "ch04-016",
+      "auth-stim-ch05-001": "ch05-007",
+      "auth-stim-ch08-003": "ch08-016",
+      "auth-stim-ch09-003": "ch09-021",
+    } as const;
+    for (const [questionId, reviewCardId] of Object.entries(expectedMappings)) {
+      const question = examQuestions.find((candidate) => candidate.id === questionId);
+      expect(question?.reviewCardId).toBe(reviewCardId);
+      expect(question?.sourceCardIds).toContain(reviewCardId);
+    }
+    const supplyShock = examQuestions.find(
+      (question) => question.id === "auth-stim-ch08-002",
+    );
+    expect(supplyShock?.sourceCardIds).toEqual(["ch08-023", "ch08-014"]);
   });
 
   it.each([
@@ -372,5 +407,47 @@ describe("exam question bank", () => {
     }
     expect(fxDemand.points.at(-1)!.y).toBeLessThan(fxDemand.points[0].y);
     expect(fxSupply.points.at(-1)!.y).toBeGreaterThan(fxSupply.points[0].y);
+  });
+
+  it("preserves the course horizontal short-run inflation-line convention", () => {
+    const question = examQuestions.find(
+      (candidate) => candidate.id === "auth-stim-ch08-002",
+    );
+    if (question?.stimulus?.type !== "econ_graph") {
+      throw new Error("Expected the short-run inflation-output graph.");
+    }
+    const ad = question.stimulus.curves.find((curve) => curve.id === "AD");
+    const pi0 = question.stimulus.curves.find((curve) => curve.id === "pi0");
+    const pi1 = question.stimulus.curves.find((curve) => curve.id === "pi1");
+    if (ad === undefined || pi0 === undefined || pi1 === undefined) {
+      throw new Error("Expected AD, pi0 and pi1 curves.");
+    }
+    expect(pi0.points.every((point) => point.y === pi0.points[0].y)).toBe(true);
+    expect(pi1.points.every((point) => point.y === pi1.points[0].y)).toBe(true);
+    expect(pi1.points[0].y).toBeLessThan(pi0.points[0].y);
+    expect(ad.points.at(-1)!.y).toBeLessThan(ad.points[0].y);
+
+    const e0 = question.stimulus.points?.find((point) => point.id === "E0");
+    const e1 = question.stimulus.points?.find((point) => point.id === "E1");
+    if (e0 === undefined || e1 === undefined) {
+      throw new Error("Expected both marked equilibria.");
+    }
+    expect(isPointOnCurve(e0, ad, 0.01)).toBe(true);
+    expect(isPointOnCurve(e1, ad, 0.01)).toBe(true);
+    expect(e1.y).toBeLessThan(e0.y);
+    expect(e1.x).toBeGreaterThan(e0.x);
+    expect(question.stimulus.title).not.toMatch(/favourable|supply shock/i);
+  });
+
+  it("uses the course real-rate convention for the PRF graph", () => {
+    const question = examQuestions.find(
+      (candidate) => candidate.id === "auth-stim-ch07-002",
+    );
+    if (question?.stimulus?.type !== "econ_graph") {
+      throw new Error("Expected the policy reaction-function graph.");
+    }
+    expect(question.stimulus.yAxis.label).toBe("Real interest rate, r (%)");
+    expect(question.stimulus.description).toContain("real interest rate");
+    expect(question.stem).toContain("real interest rate");
   });
 });

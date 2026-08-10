@@ -67,18 +67,18 @@
     "difficulty": 2,
     "stem": "Which marked observation is below the displayed potential-output line while output is falling relative to the previous year?",
     "choices": [
-      "The observation labelled E",
-      "The observation labelled B",
-      "The observation labelled A",
-      "Neither marked observation"
+      "The observation labelled B, because it is the last observation and output is above potential.",
+      "The observation labelled A, because it is below potential and follows a higher output observation.",
+      "The observation labelled B, because it follows a lower observation and is therefore in decline.",
+      "Neither marked observation, because a below-potential observation alone cannot identify the position described."
     ],
-    "correctChoice": 2,
+    "correctChoice": 1,
     "explanation": "A is below the horizontal Y* line and follows a higher output observation, so it is the marked observation with both properties.",
     "choiceRationales": [
-      "E is not one of the marked observations in the graph.",
-      "B is above Y*, so it does not meet the below-potential condition.",
-      "A is below Y* and the output line falls from the preceding observation into A.",
-      "The graph does show one observation satisfying both conditions."
+      "B is above the potential-output line, so this choice misreads the vertical position of the final observation.",
+      "A is below Y* and the output line falls from the preceding observation into A, so it satisfies both conditions.",
+      "B is not below Y*; it is above the reference line, so this confuses the direction of the output gap with the recent movement.",
+      "A satisfies both conditions. A single observation need not establish every feature of a full recession definition, but it does identify the graph position asked for here."
     ],
     "reviewCardId": "ch01-025",
     "sourceCardIds": ["ch01-025"],
@@ -198,8 +198,8 @@
       "The graph shows a horizontal wage floor, not a rightward shift of labour demand.",
       "The graph does not show a leftward supply shift, and that would not describe the displayed intervention."
     ],
-    "reviewCardId": "ch02-023",
-    "sourceCardIds": ["ch02-023", "ch02-025"],
+    "reviewCardId": "ch02-027",
+    "sourceCardIds": ["ch02-027", "ch02-023"],
     "tags": ["exam-bank", "stimulus", "graph", "labour-market", "wage-floor"],
     "provenance": "authored_from_flashcards",
     "stimulus": {
@@ -291,7 +291,7 @@
     "provenance": "authored_from_flashcards",
     "stimulus": {
       "type": "econ_graph",
-      "title": "A labour-demand shift",
+      "title": "Labour market equilibria",
       "description": "An upward-sloping supply curve S is shown with two downward-sloping demand curves D1 and D2. D2 lies to the right of D1. Equilibria E1 and E2 are marked at the intersections of S with D1 and D2.",
       "xAxis": {
         "label": "Employment",
@@ -494,13 +494,13 @@
       "The reference line fixes r at r0, so the change is not a movement caused by a higher real interest rate.",
       "At the marked rate, I2 is to the left of I1, so the quantity of investment is lower, not higher."
     ],
-    "reviewCardId": "ch03-019",
-    "sourceCardIds": ["ch03-019"],
+    "reviewCardId": "ch03-020",
+    "sourceCardIds": ["ch03-020", "ch03-019"],
     "tags": ["exam-bank", "stimulus", "graph", "investment", "user-cost"],
     "provenance": "authored_from_flashcards",
     "stimulus": {
       "type": "econ_graph",
-      "title": "Investment-demand shift at a fixed real rate",
+      "title": "Investment and the real interest rate",
       "description": "Two downward-sloping investment-demand curves I1 and I2 are shown, with I2 below and to the left of I1. A horizontal dashed reference line labelled r0 crosses both curves at points A and B.",
       "xAxis": {
         "label": "Planned investment",
@@ -622,8 +622,8 @@
       "The 45-degree line represents Y=PAE; it does not fix autonomous spending at 45.",
       "The income-expenditure diagram uses output and planned expenditure axes, so a price axis is not needed for this inference."
     ],
-    "reviewCardId": "ch04-015",
-    "sourceCardIds": ["ch04-015", "ch04-016"],
+    "reviewCardId": "ch04-016",
+    "sourceCardIds": ["ch04-016", "ch04-015"],
     "tags": ["exam-bank", "stimulus", "graph", "PAE", "45-degree-line"],
     "provenance": "authored_from_flashcards",
     "stimulus": {
@@ -715,7 +715,7 @@
     "provenance": "authored_from_flashcards",
     "stimulus": {
       "type": "econ_graph",
-      "title": "PAE above the 45-degree line",
+      "title": "Income-expenditure diagram",
       "description": "A 45-degree line and an upward-sloping PAE curve are shown. The marked point A lies on the PAE curve at an output coordinate of 70 and a planned-expenditure coordinate of 82, above the 45-degree line.",
       "xAxis": {
         "label": "Output, Y",
@@ -820,8 +820,8 @@
       "The displayed PAE shift is upward, and the question does not impose an immediate offsetting tax increase.",
       "This matches the upward PAE shift and the multiplier mechanism in the three-sector model."
     ],
-    "reviewCardId": "ch05-016",
-    "sourceCardIds": ["ch05-016", "ch05-005"],
+    "reviewCardId": "ch05-007",
+    "sourceCardIds": ["ch05-007", "ch05-005", "ch05-016"],
     "tags": ["exam-bank", "stimulus", "graph", "fiscal-policy", "PAE", "multiplier"],
     "provenance": "authored_from_flashcards",
     "stimulus": {
@@ -1162,7 +1162,7 @@
       "This overstates the reserve share of Bank B’s deposits."
     ],
     "reviewCardId": "ch06-020",
-    "sourceCardIds": ["ch06-020", "ch06-016"],
+    "sourceCardIds": ["ch06-020"],
     "tags": ["exam-bank", "stimulus", "table", "banking", "reserves"],
     "provenance": "authored_from_flashcards",
     "stimulus": {
@@ -1277,20 +1277,20 @@
     "topic": "Policy reaction function shift",
     "style": "concept",
     "difficulty": 2,
-    "stem": "The policy reaction function shifts upward from PRF0 to PRF1. What does this mean at a fixed inflation rate?",
+    "stem": "The policy reaction function shifts upward from PRF0 to PRF1. What does this mean at a fixed inflation rate for the real interest rate and policy stance?",
     "choices": [
-      "The central bank chooses a lower nominal policy rate.",
+      "The central bank chooses a lower real interest rate and adopts a more expansionary stance.",
       "The inflation rate must fall before the central bank changes its rate.",
       "The economy moves along PRF0 because the inflation rate is unchanged.",
-      "The central bank chooses a higher nominal policy rate at every displayed inflation rate."
+      "The central bank chooses a higher real interest rate at every displayed inflation rate, adopting a more contractionary stance."
     ],
     "correctChoice": 3,
-    "explanation": "An upward exogenous shift of the policy reaction function raises the policy rate selected at any given inflation rate.",
+    "explanation": "An upward exogenous shift of the course policy reaction function raises the policy-relevant real interest rate selected at any given inflation rate. That is a contractionary monetary-policy shift.",
     "choiceRationales": [
-      "An upward shift means a higher, not lower, selected nominal rate at the same inflation rate.",
+      "An upward shift means a higher, not lower, selected real interest rate at the same inflation rate.",
       "The graph describes a change in the rule, not a required prior movement in inflation.",
       "The shift from PRF0 to PRF1 is not a movement along PRF0.",
-      "The vertical comparison at a common inflation rate shows a higher policy rate under PRF1."
+      "The vertical comparison at a common inflation rate shows a higher real interest rate under PRF1, which is contractionary."
     ],
     "reviewCardId": "ch07-027",
     "sourceCardIds": ["ch07-027", "ch07-022"],
@@ -1298,8 +1298,8 @@
     "provenance": "authored_from_flashcards",
     "stimulus": {
       "type": "econ_graph",
-      "title": "An upward policy-reaction-function shift",
-      "description": "Two upward-sloping policy reaction functions PRF0 and PRF1 relate inflation to the nominal policy rate. PRF1 lies above PRF0. A dashed vertical line marks inflation of 4% and intersects both functions.",
+      "title": "Policy reaction functions",
+      "description": "Two upward-sloping policy reaction functions PRF0 and PRF1 relate inflation to the real interest rate. PRF1 lies above PRF0. A dashed vertical line marks inflation of 4% and intersects both functions.",
       "xAxis": {
         "label": "Inflation, π (%)",
         "domain": [0, 8],
@@ -1311,7 +1311,7 @@
         "showTickLabels": true
       },
       "yAxis": {
-        "label": "Nominal policy rate, i (%)",
+        "label": "Real interest rate, r (%)",
         "domain": [0, 14],
         "ticks": [
           { "value": 0, "label": "0" },
@@ -1422,7 +1422,7 @@
     "provenance": "authored_from_flashcards",
     "stimulus": {
       "type": "econ_graph",
-      "title": "A leftward AD shift",
+      "title": "Aggregate-demand curves AD0 and AD1",
       "description": "Two downward-sloping aggregate-demand curves AD0 and AD1 are shown, with AD1 to the left and below AD0. A horizontal dashed line marks a common inflation rate and intersects AD0 at A and AD1 at B.",
       "xAxis": {
         "label": "Output, Y",
@@ -1487,7 +1487,7 @@
     "topic": "Favourable supply shock",
     "style": "concept",
     "difficulty": 3,
-    "stem": "What economic change is represented by the shift from SRAS0 to SRAS1 in the graph?",
+    "stem": "What economic change is represented by the shift from π0 to π1 in the graph?",
     "choices": [
       "A favourable supply shock: inflation falls and output rises at the new short-run intersection.",
       "A negative demand shock: inflation and output both fall along an unchanged SRAS curve.",
@@ -1495,21 +1495,21 @@
       "An inflation-target increase that shifts the 45-degree line upward."
     ],
     "correctChoice": 0,
-    "explanation": "SRAS1 is below/right of SRAS0. With AD unchanged, the new intersection has lower inflation and slightly higher output, which is the displayed favourable supply shock.",
+    "explanation": "The graph uses the course's very-short-run convention: the short-run inflation line is horizontal at inherited inflation. The shift from π0 to the lower line π1 leaves the unchanged downward-sloping AD curve intersecting at lower inflation and higher output, which represents a favourable supply shock.",
     "choiceRationales": [
-      "The supply curve shifts down/right while AD is unchanged, producing the displayed lower inflation and higher output.",
-      "A demand shock would shift AD, not SRAS; the graph shows two supply curves.",
-      "Potential output is shown by a vertical reference line and is not the curve that shifts here.",
-      "Neither an inflation-target change nor a 45-degree line belongs to this AD-AS graph."
+      "The lower horizontal short-run inflation line, with unchanged AD, produces the displayed lower inflation and higher output.",
+      "A negative demand shock would move AD, not replace the horizontal short-run inflation line, and would lower output at a given inflation line.",
+      "A change in potential output would affect the potential-output reference, not create the lower inherited-inflation line shown here.",
+      "The 45-degree line is part of the PAE diagram, not this inflation-output diagram; the graph instead shows AD and short-run inflation lines."
     ],
     "reviewCardId": "ch08-023",
-    "sourceCardIds": ["ch08-023", "ch08-017"],
+    "sourceCardIds": ["ch08-023", "ch08-014"],
     "tags": ["exam-bank", "stimulus", "graph", "AD-AS", "supply-shock"],
     "provenance": "authored_from_flashcards",
     "stimulus": {
       "type": "econ_graph",
-      "title": "AD-AS response to a favourable supply shock",
-      "description": "The graph has output on the horizontal axis and inflation on the vertical axis. A downward-sloping AD curve intersects two upward-sloping short-run aggregate-supply curves SRAS0 and SRAS1. SRAS1 lies below SRAS0. Equilibria E0 and E1 are marked, and a vertical dashed line labelled Y* is shown at output 50.",
+      "title": "Short-run inflation-output diagram",
+      "description": "The graph has output on the horizontal axis and inflation on the vertical axis. A downward-sloping curve labelled AD crosses a horizontal line labelled π0 at E0 and a lower horizontal line labelled π1 at E1. E1 lies to the right of E0.",
       "xAxis": {
         "label": "Output, Y",
         "domain": [0, 100],
@@ -1542,38 +1542,29 @@
           "labelAt": { "x": 72, "y": 2.8 }
         },
         {
-          "id": "SRAS0",
-          "label": "SRAS0",
+          "id": "pi0",
+          "label": "π0",
           "points": [
-            { "x": 10, "y": 1 },
-            { "x": 90, "y": 9 }
+            { "x": 0, "y": 5 },
+            { "x": 100, "y": 5 }
           ],
           "lineStyle": "dashed",
-          "labelAt": { "x": 73, "y": 7.3 }
+          "labelAt": { "x": 82, "y": 5.35 }
         },
         {
-          "id": "SRAS1",
-          "label": "SRAS1",
+          "id": "pi1",
+          "label": "π1",
           "points": [
-            { "x": 10, "y": 0 },
-            { "x": 90, "y": 8 }
+            { "x": 0, "y": 3.5 },
+            { "x": 100, "y": 3.5 }
           ],
           "lineStyle": "solid",
-          "labelAt": { "x": 73, "y": 6.3 }
+          "labelAt": { "x": 82, "y": 3.85 }
         }
       ],
       "points": [
         { "id": "E0", "label": "E0", "x": 50, "y": 5 },
-        { "id": "E1", "label": "E1", "x": 55, "y": 4.5 }
-      ],
-      "referenceLines": [
-        {
-          "id": "potential",
-          "orientation": "vertical",
-          "value": 50,
-          "label": "Y*",
-          "lineStyle": "dashed"
-        }
+        { "id": "E1", "label": "E1", "x": 65, "y": 3.5 }
       ]
     }
   },
@@ -1593,8 +1584,8 @@
       "The table contains one negative and one positive output gap, so at least one row qualifies.",
       "Row A has (98−100)/100 = −2%, so it is the row with a negative gap."
     ],
-    "reviewCardId": "ch08-012",
-    "sourceCardIds": ["ch08-012", "ch08-016"],
+    "reviewCardId": "ch08-016",
+    "sourceCardIds": ["ch08-016", "ch08-012"],
     "tags": ["exam-bank", "stimulus", "table", "output-gap", "inflation"],
     "provenance": "authored_from_flashcards",
     "stimulus": {
@@ -1741,7 +1732,7 @@
     "provenance": "authored_from_flashcards",
     "stimulus": {
       "type": "econ_graph",
-      "title": "An overvalued AUD peg",
+      "title": "AUD market with a fixed exchange rate",
       "description": "The vertical axis measures e in USD per AUD. A downward-sloping AUD-demand curve D and an upward-sloping AUD-supply curve S intersect at e=0.60. A horizontal dashed fixed-rate line labelled e_bar is above the intersection at e=0.75.",
       "xAxis": {
         "label": "Quantity of AUD",
@@ -1814,8 +1805,8 @@
       "Multiplying 0.65 USD/AUD by 0.92 EUR/USD gives approximately 0.60 EUR/AUD.",
       "This is close to an inversion and does not use the quote directions as displayed."
     ],
-    "reviewCardId": "ch09-020",
-    "sourceCardIds": ["ch09-020"],
+    "reviewCardId": "ch09-021",
+    "sourceCardIds": ["ch09-021"],
     "tags": ["exam-bank", "stimulus", "table", "exchange-rate", "cross-rate"],
     "provenance": "authored_from_flashcards",
     "stimulus": {

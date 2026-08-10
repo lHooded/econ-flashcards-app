@@ -36,6 +36,7 @@ const validatedBank = inspectExamQuestionBank(
     minimumGraphs: 20,
     minimumTables: 10,
     minimumChapterStimulus: 2,
+    maximumQuestionsPerReviewCard: 2,
   },
 );
 

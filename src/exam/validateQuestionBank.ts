@@ -26,6 +26,7 @@ export interface QuestionBankValidationOptions {
   readonly minimumGraphs?: number;
   readonly minimumTables?: number;
   readonly minimumChapterStimulus?: number;
+  readonly maximumQuestionsPerReviewCard?: number;
 }
 
 export interface ExamQuestionBankStats {
@@ -42,6 +43,8 @@ export interface ExamQuestionBankStats {
   readonly graphCount: number;
   readonly tableCount: number;
   readonly uniqueReviewCardIds: number;
+  readonly reviewCardsWithMultipleQuestions: number;
+  readonly maximumQuestionsPerReviewCard: number;
 }
 
 export interface ExamQuestionBankValidationResult {
@@ -105,12 +108,17 @@ export function getExamQuestionBankStats(
   let stimulusCount = 0;
   let graphCount = 0;
   let tableCount = 0;
+  const reviewCardCounts = new Map<string, number>();
 
   for (const question of questions) {
     byChapter[String(question.chapter)] += 1;
     byStyle[question.style] += 1;
     byDifficulty[question.difficulty] += 1;
     byPosition[positionLabel(question.correctChoice)] += 1;
+    reviewCardCounts.set(
+      question.reviewCardId,
+      (reviewCardCounts.get(question.reviewCardId) ?? 0) + 1,
+    );
     if (question.style === "calculation") calculationCount += 1;
     if (question.stimulus !== undefined) {
       stimulusCount += 1;
@@ -135,8 +143,11 @@ export function getExamQuestionBankStats(
     stimulusCount,
     graphCount,
     tableCount,
-    uniqueReviewCardIds: new Set(questions.map((question) => question.reviewCardId))
-      .size,
+    uniqueReviewCardIds: reviewCardCounts.size,
+    reviewCardsWithMultipleQuestions: [...reviewCardCounts.values()].filter(
+      (count) => count > 1,
+    ).length,
+    maximumQuestionsPerReviewCard: Math.max(0, ...reviewCardCounts.values()),
   };
 }
 
@@ -228,7 +239,7 @@ function validateBankRecords(
   options: QuestionBankValidationOptions,
 ): void {
   const ids = new Set<string>();
-  const reviewCardIds = new Set<string>();
+  const reviewCardCounts = new Map<string, number>();
   const stems = new Set<string>();
   const authoredChoiceSets = new Map<string, string>();
 
@@ -240,12 +251,10 @@ function validateBankRecords(
     }
     ids.add(question.id);
 
-    if (reviewCardIds.has(question.reviewCardId)) {
-      throw new Error(
-        `Exam question bank validation failed: duplicate reviewCardId "${question.reviewCardId}".`,
-      );
-    }
-    reviewCardIds.add(question.reviewCardId);
+    reviewCardCounts.set(
+      question.reviewCardId,
+      (reviewCardCounts.get(question.reviewCardId) ?? 0) + 1,
+    );
 
     const normalizedStem = normalizeText(question.stem);
     if (stems.has(normalizedStem)) {
@@ -264,6 +273,15 @@ function validateBankRecords(
         );
       }
       authoredChoiceSets.set(choiceSet, question.id);
+    }
+  }
+
+  const maximumQuestionsPerReviewCard = options.maximumQuestionsPerReviewCard ?? 2;
+  for (const [reviewCardId, count] of reviewCardCounts) {
+    if (count > maximumQuestionsPerReviewCard) {
+      throw new Error(
+        `Exam question bank validation failed: reviewCardId "${reviewCardId}" maps to ${count} questions; maximum is ${maximumQuestionsPerReviewCard}.`,
+      );
     }
   }
 

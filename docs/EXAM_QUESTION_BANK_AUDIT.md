@@ -43,9 +43,12 @@ the style and four choice rationales without modifying the canonical JSON.
 The 100 original authored questions remain in
 `exam_questions/MACRO1_exam_questions.json`. The 30 additional stimulus questions are
 in `exam_questions/MACRO1_exam_stimulus_questions.json`. All 130 authored questions
-have `provenance: "authored_from_flashcards"`; each has one globally unique
-`reviewCardId`, and that ID is included in `sourceCardIds`. The combined bank has no
-review-card mapping exceptions.
+have `provenance: "authored_from_flashcards"`; each maps one primary
+`reviewCardId`—the canonical concept most directly tested by a miss—and includes it
+in `sourceCardIds`. Multiple representations of one concept are allowed and are
+controlled at a maximum of two questions per review card. The future mock selector,
+which is deliberately not implemented here, must select at most one question for a
+given `reviewCardId` in a single attempt.
 
 ## Canonical 349-card inventory
 
@@ -97,7 +100,9 @@ The 31 valid authored MCQs are the 30 existing mixed Chapter 0 cards plus
 | New authored questions | 130 |
 | Additional stimulus questions | 30 |
 | Mixed questions (Chapter 0) | 30 |
-| Unique `reviewCardId` values | 161 |
+| Unique `reviewCardId` values | 158 |
+| Review cards with multiple questions | 3 |
+| Maximum questions per `reviewCardId` | 2 |
 | Calculation-style questions | 37 |
 | Graph stimuli | 20 |
 | Table stimuli | 10 |
@@ -118,12 +123,52 @@ The 31 valid authored MCQs are the 30 existing mixed Chapter 0 cards plus
 | 10 | 13 | 2 graphs, 1 table | Production function, capital deepening, growth accounting |
 | 0 | 30 | 0 | Existing canonical cross-model and cross-chapter questions retained unchanged |
 
-The additional questions use previously unused canonical review cards. Every Chapter
-1–10 has three stimulus questions, exceeding the minimum of two per chapter. The
-graphs demonstrate labour supply/demand, saving/investment, PAE, bond and money
-markets, ES balances, PRF, AD-AS, foreign exchange and production functions. Tables
-cover GDP deflators, labour statistics, Fisher calculations, multipliers, debt,
-bank reserves, ES transactions, output gaps, cross rates and growth accounting.
+Every Chapter 1–10 has three stimulus questions, exceeding the minimum of two per
+chapter. The graphs demonstrate labour supply/demand, saving/investment, PAE, bond
+and money markets, ES balances, PRF, AD-AS, foreign exchange and production
+functions. Tables cover GDP deflators, labour statistics, Fisher calculations,
+multipliers, debt, bank reserves, ES transactions, output gaps, cross rates and
+growth accounting. Stimulus variants may intentionally share a review card with an
+existing text question when that is the concept actually tested.
+
+### Stimulus mapping audit
+
+This table is the semantic provenance audit for all 30 stimulus questions. Supporting
+cards remain in each JSON record where the graph, table, convention or calculation
+genuinely uses them.
+
+| Question | Primary card | Canonical topic |
+| --- | --- | --- |
+| `auth-stim-ch01-001` | `ch01-019` | Inflation |
+| `auth-stim-ch01-002` | `ch01-025` | Business cycle |
+| `auth-stim-ch01-003` | `ch01-017` | GDP deflator |
+| `auth-stim-ch02-001` | `ch02-027` | Wage floor |
+| `auth-stim-ch02-002` | `ch02-025` | Labour demand shift |
+| `auth-stim-ch02-003` | `ch02-004` | Unemployment rate |
+| `auth-stim-ch03-001` | `ch03-028` | Closed-economy equilibrium |
+| `auth-stim-ch03-002` | `ch03-020` | Investment demand |
+| `auth-stim-ch03-003` | `ch03-005` | Ex-post vs expected real rate |
+| `auth-stim-ch04-001` | `ch04-016` | PAE shift |
+| `auth-stim-ch04-002` | `ch04-006` | Disequilibrium inventories |
+| `auth-stim-ch04-003` | `ch04-022` | Open-economy multiplier |
+| `auth-stim-ch05-001` | `ch05-007` | Government spending multiplier |
+| `auth-stim-ch05-002` | `ch05-026` | Debt stabilisation |
+| `auth-stim-ch05-003` | `ch05-024` | Debt-to-GDP ratio |
+| `auth-stim-ch06-001` | `ch06-004` | Bond price and interest rate |
+| `auth-stim-ch06-002` | `ch06-012` | Money demand |
+| `auth-stim-ch06-003` | `ch06-020` | Reserve-deposit ratio |
+| `auth-stim-ch07-001` | `ch07-009` | Reserve demand |
+| `auth-stim-ch07-002` | `ch07-027` | PRF shift |
+| `auth-stim-ch07-003` | `ch07-013` | Government payments and ESAs |
+| `auth-stim-ch08-001` | `ch08-008` | AD shift |
+| `auth-stim-ch08-002` | `ch08-023` | Favourable supply shock |
+| `auth-stim-ch08-003` | `ch08-016` | Inflation dynamics |
+| `auth-stim-ch09-001` | `ch09-031` | FX shift |
+| `auth-stim-ch09-002` | `ch09-036` | Overvalued peg |
+| `auth-stim-ch09-003` | `ch09-021` | Cross rate |
+| `auth-stim-ch10-001` | `ch10-011` | Diminishing marginal product |
+| `auth-stim-ch10-002` | `ch10-015` | Capital deepening |
+| `auth-stim-ch10-003` | `ch10-025` | Growth accounting |
 
 ## Style distribution
 
@@ -156,8 +201,8 @@ graph reading is not automatically treated as advanced.
 | Correct position | Unified | Additional stimuli |
 | --- | ---: | ---: |
 | A | 41 | 7 |
-| B | 40 | 8 |
-| C | 41 | 8 |
+| B | 41 | 9 |
+| C | 40 | 7 |
 | D | 39 | 7 |
 
 The unified maximum-minus-minimum position count is 2. Positions remain static and
@@ -168,9 +213,10 @@ are not randomised at runtime.
 `src/exam/validateQuestionBank.ts` validates individual questions and whole-bank
 invariants. It fails loudly for malformed IDs, chapters, styles, difficulty values,
 stems, choices, rationales, correct indexes, tags, provenance, unknown canonical
-cards, missing review mappings, duplicate question IDs, duplicate review-card IDs,
-duplicate normalised choices, duplicate normalised stems and duplicate authored
-choice sets.
+cards, missing review mappings, duplicate question IDs, more than two questions
+mapped to one review card, duplicate normalised choices, duplicate normalised stems
+and duplicate authored choice sets. Duplicate `reviewCardId` values are intentional
+and reported rather than rejected.
 
 The stimulus validator additionally enforces:
 
@@ -190,7 +236,8 @@ The bank-level validator enforces:
 - at least 20 graph stimuli and 10 table stimuli;
 - at least two stimulus questions in every Chapter 1–10;
 - at least 10 chapter-specific questions in every Chapter 1–10 and at least 30 mixed;
-- unique question IDs and globally unique review-card mappings;
+- unique question IDs;
+- review-card variant cap of two, with duplicate-group and maximum-variant statistics;
 - answer-position imbalance no greater than 3;
 - the configured difficulty ranges; and
 - deterministic lexical-overlap warnings for high stem similarity.
@@ -232,9 +279,11 @@ Chapter 9 stimuli: 3
 Chapter 10 stimuli: 3
 Styles: concept 41 / scenario 43 / calculation 37 / model 30 / sequence 10
 Difficulty: 1 53 / 2 81 / 3 27
-Correct positions: A 41 / B 40 / C 41 / D 39
+Correct positions: A 41 / B 41 / C 40 / D 39
 Calculation questions: 37
-Unique reviewCardId: 161
+Unique reviewCardId: 158
+Review cards with multiple questions: 3
+Maximum questions per reviewCardId: 2
 Warnings: none
 ```
 
@@ -246,19 +295,44 @@ quality, distractor plausibility, source-card consistency, model closure, signs 
 units, arithmetic, wording cues, semantic duplication, graph scale and table units.
 Particular scrutiny was given to:
 
-- whether marked PAE, saving-investment, FX and AD-AS equilibria lie on the displayed
-  curves;
+- whether marked PAE, saving-investment, FX and AD equilibria lie on the displayed
+  curves, and whether the repaired horizontal inflation-line intersections are
+  geometrically valid;
 - USD/AUD quotation direction, fixed-peg intervention, cross-rate units and ES-balance
   transaction signs;
 - 45-degree geometry, curve-shift versus movement wording, wage-floor quantities,
-  bond-price/yield direction and money-demand direction; and
+  bond-price/yield direction, money-demand direction and the real-rate PRF
+  convention; and
 - production-function concavity, capital-deepening interpretation and growth-accounting
   weights.
 
-A blind-answer pass was performed for the 30 new questions using stem plus stimulus
-description/table/graph labels and choices without consulting the stored key. The
-independently selected answers matched all 30 keys. The earlier PR #4 blind pass over
-the original 100 authored questions also remains documented in this audit history.
+A stimulus-aware blind-answer pass was performed after this hardening pass for all 30
+stimulus questions using the stem, declarative graph/table data (including rendered
+labels/captions) and choices without consulting `correctChoice`. The independently
+selected answers matched all 30 keys. The pass also checked that titles, captions,
+notes and accessible descriptions did not add the economic inference being tested.
+The earlier PR #4 blind pass over the original 100 authored questions also remains
+documented in this audit history.
+
+The mapping pass corrected the wage-floor, investment-demand, PAE-shift,
+government-spending-multiplier, output-gap/inflation, and cross-rate primaries. It
+also removed source-card IDs that were only adjacent rather than genuinely used.
+The Chapter 8 supply-shock graph now uses the course's horizontal inherited-
+inflation lines, and the PRF graph now labels the course's real policy rate.
+
+The all-20-graph course-convention pass checked axes, orientation, notation,
+equilibrium geometry and model closure. In particular, the PAE figures use PAE and
+the 45-degree identity rather than an AE shortcut; saving/investment uses the closed-
+economy real-rate market; Chapter 7 uses ES balances, the cash-rate corridor and the
+real-rate PRF; Chapter 8 uses the course horizontal short-run inflation lines; and
+Chapter 9 uses e = USD/AUD with the corresponding appreciation and peg-intervention
+directions. The distractor pass also replaced the impossible unmarked “E” option in
+`auth-stim-ch01-002` with graph-reading errors that refer to the marked observations.
+
+The title/caption leakage pass neutralised answer-bearing labels including the
+labour-demand-shift, investment-shift, PAE-disequilibrium, PRF-shift, AD-shift,
+supply-shock and overvalued-peg titles. Captions and notes that only identify the
+data or state a necessary calculation convention were retained.
 
 For visual QA, a temporary local gallery rendered all 20 graphs and 10 tables. I
 inspected the graph set in the desktop preview and checked every stimulus at a
@@ -290,10 +364,12 @@ part of this PR.
 
 The exam-bank tests cover loading and determinism, malformed four-choice data, invalid
 answer indexes, duplicate choices, unknown review/source cards, missing review
-mappings, duplicate question IDs, duplicate review-card mappings, chapter/mixed
-quotas, graph/table/per-chapter stimulus quotas, answer-position imbalance,
-canonical-adapter fidelity, malformed graph/table structures and representative
-economics geometry. Renderer tests cover graph SVG primitives, labels, styles,
-accessibility, annotations, semantic table structure and the no-stimulus case.
+mappings, duplicate question IDs, allowed review-card variants and the two-question
+variant cap, chapter/mixed quotas, graph/table/per-chapter stimulus quotas,
+answer-position imbalance, canonical-adapter fidelity, corrected stimulus mappings,
+course-specific horizontal inflation-line and real-rate PRF geometry, malformed
+graph/table structures and representative economics geometry. Renderer tests cover
+graph SVG primitives, labels, styles, accessibility, annotations, semantic table
+structure and the no-stimulus case.
 
-The final local suite is 15 test files and 109 tests.
+The final local suite is 15 test files and 112 tests.

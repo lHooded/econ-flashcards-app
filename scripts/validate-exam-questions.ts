@@ -31,6 +31,12 @@ console.log(
 );
 console.log(`Calculation questions: ${examQuestionStats.calculationCount}`);
 console.log(`Unique reviewCardId: ${examQuestionStats.uniqueReviewCardIds}`);
+console.log(
+  `Review cards with multiple questions: ${examQuestionStats.reviewCardsWithMultipleQuestions}`,
+);
+console.log(
+  `Maximum questions per reviewCardId: ${examQuestionStats.maximumQuestionsPerReviewCard}`,
+);
 
 if (examQuestionValidationWarnings.length === 0) {
   console.log("Warnings: none");
