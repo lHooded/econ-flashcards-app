@@ -54,6 +54,21 @@ not written to review history or backups; every focused review uses the same exi
 See [docs/EXAM_SRS.md](docs/EXAM_SRS.md) for the evidence rules, interval table,
 deadline contraction, buffer semantics, selector priorities, and limitations.
 
+## Static exam-question bank
+
+The repository also contains a separate, immutable multiple-choice exam bank for
+later realistic mock-exam work. Questions live in
+[exam_questions/MACRO1_exam_questions.json](exam_questions/MACRO1_exam_questions.json)
+alongside the declarative graph/table stimuli in
+[exam_questions/MACRO1_exam_stimulus_questions.json](exam_questions/MACRO1_exam_stimulus_questions.json).
+Questions are mapped back to canonical flashcards and include per-choice rationales
+and provenance. Graphs render locally as responsive SVG and tables use semantic HTML;
+distractors are statically authored and validated. There is no external chart service,
+runtime LLM generation, API call, or random distractor synthesis. The mock-exam UI and
+exam-performance persistence are intentionally reserved for a later phase. Because
+multiple representations may share a canonical concept, a future mock attempt must
+select at most one question for each `reviewCardId`.
+
 ## Development
 
 ```bash
@@ -68,6 +83,7 @@ local timezone for the `datetime-local` exam setting.
 
 ```bash
 npm run validate:deck
+npm run validate:exam-questions
 npm run typecheck
 npm run lint
 npm run format:check
@@ -136,6 +152,11 @@ context rather than talking to IndexedDB directly.
 Mock exams, generated distractors, integrations, accounts, cloud sync, notifications,
 daily quotas, numeric-answer parsing, FSRS, SM-2, and projected scores are intentionally
 out of scope.
+
+The reusable stimulus domain under `src/stimulus` and `src/components/stimulus` is
+bundled content infrastructure only. It is not wired into ordinary Study mode; the
+later mock-exam UI can render a question’s optional `question.stimulus` without
+knowing whether it is a graph, table, or absent.
 
 No malformed economics records were found in the supplied 349-card JSON. The 31
 authored MCQs have valid zero-based correct-choice indexes, and the 318 non-MCQ cards
