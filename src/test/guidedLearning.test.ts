@@ -217,11 +217,12 @@ describe("Guided checks reuse Exam-SRS evidence", () => {
   });
 
   it("keeps weak self-rated evidence on a real canonical recall card", () => {
-    const weakCard = cards.find((card) => card.id === "ch03-010");
+    const weakCard = cards.find((card) => card.id === "ch06-015");
+    expect(weakCard?.kind).toBe("recall");
     expect(weakCard?.choices).toBeUndefined();
     const weak = canonicalStudyReview(
-      "weak-stock-flow",
-      "ch03-010",
+      "weak-asset",
+      "ch06-015",
       "2026-08-10T23:00:00.000Z",
       "weak",
     );
@@ -232,7 +233,7 @@ describe("Guided checks reuse Exam-SRS evidence", () => {
         rating: "struggled",
       }),
     );
-    const weakState = deriveCardState("ch03-010", [weak], NO_EXAM, NOW);
+    const weakState = deriveCardState("ch06-015", [weak], NO_EXAM, NOW);
     expect(weakState.learningState).toBe("weak");
     expect(Date.parse(weakState.dueAt!) - Date.parse(weak.reviewedAt)).toBe(
       EXAM_SRS_INTERVALS.weakSuccessMs,
@@ -378,24 +379,24 @@ describe("Guided concept readiness and progression", () => {
 
   it("allows a legitimate weak canonical recall to progress to a dependent branch", () => {
     const dependentCard = cards.filter((card) => card.id === "ch10-017");
-    const assetEvidence = canonicalStudyReview(
-      "asset-positive",
-      "ch03-022",
+    const weakAsset = canonicalStudyReview(
+      "asset-weak",
+      "ch06-015",
+      "2026-08-10T20:00:00.000Z",
+      "weak",
+    );
+    const stockEvidence = canonicalStudyReview(
+      "stock-positive",
+      "ch03-010",
       "2026-08-10T20:00:00.000Z",
       "strong",
     );
-    const weakStockFlow = canonicalStudyReview(
-      "stock-flow-weak",
-      "ch03-010",
-      "2026-08-10T23:00:00.000Z",
+    const reviews = [weakAsset, stockEvidence];
+    expect(isConceptIntroducedEnough("asset", reviews)).toBe(true);
+    expect(isConceptIntroducedEnough("flow", reviews)).toBe(true);
+    expect(deriveCardState("ch06-015", [weakAsset], NO_EXAM, NOW).learningState).toBe(
       "weak",
     );
-    const reviews = [assetEvidence, weakStockFlow];
-    expect(isConceptIntroducedEnough("stock", reviews)).toBe(true);
-    expect(isConceptIntroducedEnough("flow", reviews)).toBe(true);
-    expect(
-      deriveCardState("ch03-010", [weakStockFlow], NO_EXAM, NOW).learningState,
-    ).toBe("weak");
 
     const lesson = selectGuidedNextStep({
       cards: dependentCard,

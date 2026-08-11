@@ -228,10 +228,11 @@ After positive evidence, Guided Cram can introduce inflation and then present
 the relevant canonical card. A correct percentage calculation is an objective
 calculation success (`rating: null`) and a failed percentage calculation is an
 objective failure that returns on the short failure interval. A canonical
-recall card such as the stock/flow card can produce a legitimate `Struggled`
-rating and return in about 45 minutes; that weak canonical evidence can unlock
-the next dependent idea while its review remains scheduled. Another due item
-or an independent new branch can appear between a failure and its retry.
+recall card such as the bank-balance-sheet card can produce a legitimate
+`Struggled` rating for the asset concept and return in about 45 minutes; that
+weak canonical evidence can unlock the dependent capital idea while its review
+remains scheduled. Another due item or an independent new branch can appear
+between a failure and its retry.
 
 ## Offline and persistence contract
 
