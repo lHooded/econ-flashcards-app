@@ -2895,4 +2895,53 @@ export const courseRecordsD = [
       T(281, "Convergence discussion."),
     ],
   }),
+  c({
+    id: "trade-weighted-index",
+    name: "Trade-weighted index",
+    aliases: ["TWI", "trade weighted index", "real TWI"],
+    searchTerms: [
+      "currency index weighted by trading partners",
+      "real trade-weighted exchange rate",
+      "TWI and net exports",
+    ],
+    chapters: [9],
+    tags: ["chapter-9", "international", "exchange-rate", "high-yield"],
+    summary:
+      "A trade-weighted index summarises the domestic currency’s value against a basket of important trading partners; a real TWI also accounts for relative price levels.",
+    intuition:
+      "It is a broad competitiveness measure rather than a single bilateral quote: a higher real TWI means domestic goods are more expensive relative to the weighted foreign basket on average.",
+    explanation: [
+      "The weights reflect the importance of trading partners, so the index can move differently from any one bilateral exchange rate. The real version combines exchange rates with relative prices and is useful for interpreting international competitiveness.",
+      "Under the course convention, a rise in the real TWI is a real appreciation. Other things equal, exports become harder to sell and imports more attractive, tending to reduce net exports. Relative inflation can move the real TWI even when nominal exchange rates are unchanged.",
+    ],
+    whyItMatters:
+      "It converts the bilateral real-exchange-rate and PPP ideas into the broad trade-competitiveness measure used in current course material.",
+    prerequisites: [
+      "real-exchange-rate",
+      "foreign-exchange-market",
+      "purchasing-power-parity",
+      "net-exports",
+    ],
+    relatedConcepts: [
+      "real-appreciation",
+      "relative-ppp",
+      "trade-balance",
+      "current-account",
+      "exchange-rate",
+    ],
+    mechanism: [
+      "weight bilateral exchange rates by trading-partner importance",
+      "include relative prices for a real TWI",
+      "interpret a higher real TWI as real appreciation",
+      "infer weaker export competitiveness and lower net exports, other things equal",
+    ],
+    sourceRefs: [
+      L("lecture-w8-l2", 20, "Real TWI and net exports."),
+      T(256, "Real TWI and net exports."),
+    ],
+    misconceptions: [
+      "A TWI is not the same as the AUD/USD bilateral quote.",
+      "A higher real TWI is not a claim that exports must fall in every period; the net-export direction is ceteris paribus.",
+    ],
+  }),
 ] as const;

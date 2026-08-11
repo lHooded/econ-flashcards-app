@@ -108,6 +108,10 @@ export function HomePage() {
           <strong>Guided Cram</strong>
           <span>Prerequisites + retrieval + deadline-aware review</span>
         </a>
+        <a href="#/high-yield">
+          <strong>High-Yield Cram</strong>
+          <span>Evidence-backed final priorities shaped by your progress</span>
+        </a>
         <a href="#/mock">
           <strong>Full mock exam</strong>
           <span>Realistic 60-question simulation</span>
@@ -119,11 +123,7 @@ export function HomePage() {
       </section>
 
       <section className="stat-grid" aria-label="Exam-SRS progress">
-        <StatCard
-          label="Total cards"
-          value={summary.total}
-          detail="349-card canonical deck"
-        />
+        <StatCard label="Total cards" value={summary.total} detail="Canonical deck" />
         <StatCard
           label="Unseen"
           value={summary.unseen}

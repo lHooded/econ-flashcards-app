@@ -2428,5 +2428,215 @@
     "sourceCardIds": ["ch10-029"],
     "tags": ["exam-bank", "convergence", "catch-up-growth", "innovation"],
     "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-011",
+    "chapter": 6,
+    "topic": "Money destruction",
+    "style": "sequence",
+    "difficulty": 2,
+    "stem": "A borrower repays $20,000 of principal from a deposit account at the same bank. In the simplified course balance-sheet model, which immediate result is correct?",
+    "choices": [
+      "The bank's loan asset and deposit liability both fall by $20,000, so the corresponding deposit money is destroyed.",
+      "The bank's loan asset and deposit liability both rise by $20,000, so the money stock expands.",
+      "The bank's reserves rise by $20,000 while the borrower's deposit is unchanged.",
+      "Only bank equity falls; the loan and deposit entries are unaffected by repayment."
+    ],
+    "correctChoice": 0,
+    "explanation": "Repayment reverses the principal part of the original loan-and-deposit entry. The bank receives the borrower’s deposit and reduces the loan asset and deposit liability together, removing the corresponding deposit money in the simplified model.",
+    "choiceRationales": [
+      "This is the reverse of the bank money-creation entry: both the loan asset and matching deposit liability decline.",
+      "This describes new lending, not repayment of an existing principal balance.",
+      "A same-bank principal repayment is not automatically a new reserve inflow; it cancels the loan/deposit pair.",
+      "Equity is not the only affected entry: the loan asset and deposit liability are the central balance-sheet changes."
+    ],
+    "reviewCardId": "ch06-032",
+    "sourceCardIds": ["ch06-032", "ch06-015", "ch06-017"],
+    "tags": ["exam-bank", "money", "banking", "repayment", "sequence"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch06-012",
+    "chapter": 6,
+    "topic": "Bank risk chain",
+    "style": "scenario",
+    "difficulty": 3,
+    "stem": "A bank has $1,000 of loans, $100 of reserves, $1,000 of deposits and $100 of equity. A shock reduces the value of its risky loans by $120. Which policy interpretation is most consistent with the course model?",
+    "choices": [
+      "Equity falls to -$20, so the bank is insolvent; deposit insurance can reduce run incentives but strengthens the case for prudential capital regulation.",
+      "Equity rises to $220, so deposit insurance is unnecessary and capital regulation should be relaxed.",
+      "The bank is merely illiquid because loan losses do not affect solvency; a reserve injection completely removes the capital problem.",
+      "The bank remains solvent because deposits are liabilities of households rather than liabilities of the bank."
+    ],
+    "correctChoice": 0,
+    "explanation": "After the loan loss, assets are $880 of loans plus $100 of reserves, or $980, against $1,000 of deposits. Equity is therefore -$20 and the bank is insolvent. Deposit insurance can reduce incentives for a run, but that safety net can create moral hazard, so capital and risk regulation remain relevant.",
+    "choiceRationales": [
+      "The loss exceeds the original equity buffer, producing negative equity; insurance and prudential regulation address different parts of the risk chain.",
+      "A loss reduces, rather than increases, the residual equity claim.",
+      "The asset loss changes net worth and therefore solvency; liquidity support cannot by itself make an insolvent balance sheet sound.",
+      "Deposits are liabilities from the commercial bank’s perspective, regardless of their asset status for depositors."
+    ],
+    "reviewCardId": "ch06-025",
+    "sourceCardIds": [
+      "ch06-015",
+      "ch06-019",
+      "ch06-021",
+      "ch06-022",
+      "ch06-024",
+      "ch06-025"
+    ],
+    "tags": [
+      "exam-bank",
+      "banking",
+      "leverage",
+      "solvency",
+      "deposit-insurance",
+      "prudential-regulation"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-011",
+    "chapter": 7,
+    "topic": "Cash rate and short-term securities",
+    "style": "sequence",
+    "difficulty": 3,
+    "stem": "The RBA raises its cash-rate target and expected inflation is unchanged. What is the most appropriate short-run chain for an existing fixed-payment Treasury bill?",
+    "choices": [
+      "Required short-term return rises → demand for the existing bill rises → its price rises → its yield falls.",
+      "Required short-term return rises → demand for the existing bill falls → its price falls → its yield rises.",
+      "The cash-rate target rises → the bill’s fixed payment rises automatically → its price and yield both rise.",
+      "The cash-rate target rises → the bill becomes money → its price is determined only by reserve demand."
+    ],
+    "correctChoice": 1,
+    "explanation": "The expectations/term-structure link connects the overnight cash rate to comparable short-term returns. With the bill’s promised payment fixed, a higher required return makes the existing bill less attractive at its old price. Its price falls and its yield rises.",
+    "choiceRationales": [
+      "A higher required return makes the old fixed-payment bill less attractive unless its price falls.",
+      "This applies the inverse price-yield relationship after linking the policy rate to the short-term required return.",
+      "A policy-rate change does not rewrite the promised payment on an already-issued fixed-payment security.",
+      "A Treasury bill is a security, not a reserve balance; RBA reserve operations are a separate market mechanism."
+    ],
+    "reviewCardId": "ch07-029",
+    "sourceCardIds": ["ch07-029", "ch07-005", "ch07-018", "ch06-004"],
+    "tags": [
+      "exam-bank",
+      "cash-rate",
+      "Treasury-bill",
+      "bond-price",
+      "bond-yield",
+      "sequence"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch07-012",
+    "chapter": 7,
+    "topic": "PRF deflation and the ZLB",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "A policy reaction function would recommend a nominal rate of -1% during a deflation episode. The effective lower bound prevents the RBA from setting below 0%, and expected inflation is -2%. Using the Fisher approximation, what real rate actually results?",
+    "choices": ["-2%", "0%", "+1%", "+2%"],
+    "correctChoice": 3,
+    "explanation": "At the lower bound the nominal rate is 0%. With expected inflation of -2%, the Fisher relation r ≈ i − πᵉ gives r ≈ 0% − (-2%) = +2%. Deflation can therefore leave the real rate positive even when the nominal policy rate cannot fall further.",
+    "choiceRationales": [
+      "This treats the negative inflation rate as if it were the nominal rate and ignores the lower bound.",
+      "Zero is the nominal rate at the bound, not the implied real rate.",
+      "The unconstrained policy recommendation is not the feasible nominal rate once the lower bound binds.",
+      "The feasible nominal rate is 0%, and subtracting negative expected inflation adds two percentage points."
+    ],
+    "reviewCardId": "ch07-025",
+    "sourceCardIds": ["ch07-025", "ch07-023", "ch03-006", "ch03-008"],
+    "tags": ["exam-bank", "PRF", "deflation", "ZLB", "Fisher", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-011",
+    "chapter": 9,
+    "topic": "Trade-weighted index",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "The real trade-weighted index rises while relative trading-partner output is unchanged. Under the course convention, which interpretation is best?",
+    "choices": [
+      "The domestic currency has experienced a real depreciation against every trading partner, so exports must rise.",
+      "A higher real TWI proves that the current account is in surplus.",
+      "The domestic currency has experienced a real appreciation against the weighted basket, tending to reduce net exports other things equal.",
+      "The index is a single bilateral quote, so it identifies only the AUD/USD movement."
+    ],
+    "correctChoice": 2,
+    "explanation": "A real TWI aggregates bilateral exchange rates using trading-partner weights and incorporates relative prices. Under the course convention, a rise means domestic goods are more expensive relative to the weighted foreign basket, which tends to reduce export competitiveness and net exports, holding other factors constant.",
+    "choiceRationales": [
+      "It reverses the direction: a higher real TWI is an appreciation under the stated convention.",
+      "Net exports and the current account also depend on income, saving, investment and other flows; the index alone cannot prove a surplus.",
+      "This is the broad competitiveness interpretation of a higher real TWI in the current course material.",
+      "A TWI is deliberately broader than one bilateral exchange-rate quote."
+    ],
+    "reviewCardId": "ch09-041",
+    "sourceCardIds": ["ch09-041", "ch09-022", "ch09-026", "ch09-028"],
+    "tags": ["exam-bank", "TWI", "real-exchange-rate", "PPP", "net-exports"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-012",
+    "chapter": 9,
+    "topic": "Fixed exchange-rate pressure",
+    "style": "sequence",
+    "difficulty": 3,
+    "stem": "A fixed domestic currency is set above its market-clearing value and investors expect a devaluation. Which chain is most consistent with the course model?",
+    "choices": [
+      "Excess demand for the domestic currency → the central bank sells it for foreign reserves → reserves fall and the peg becomes overvalued.",
+      "Excess supply of the domestic currency → the central bank buys it with foreign reserves → reserves fall and continued pressure can become a speculative attack.",
+      "Excess supply of the domestic currency → the central bank buys foreign currency with domestic money → reserves fall and the currency appreciates automatically.",
+      "The peg is undervalued → the central bank buys domestic currency → reserves rise and no defence cost occurs."
+    ],
+    "correctChoice": 1,
+    "explanation": "An overvalued peg is above the flexible-market value, so private supply of the domestic currency exceeds demand. To maintain the peg the central bank buys domestic currency and pays with foreign reserves. If expectations of devaluation intensify, reserve losses and the cost of defence can feed a speculative attack.",
+    "choiceRationales": [
+      "The intervention direction is reversed for an overvalued peg.",
+      "This follows the overvalued-peg intervention direction and the reserve-depletion mechanism.",
+      "Buying foreign currency is the intervention associated with an undervalued domestic currency, not an overvalued peg.",
+      "The premises describe an overvalued, not undervalued, peg, and defence uses scarce reserves."
+    ],
+    "reviewCardId": "ch09-038",
+    "sourceCardIds": ["ch09-035", "ch09-036", "ch09-038", "ch09-039"],
+    "tags": [
+      "exam-bank",
+      "fixed-exchange-rate",
+      "overvalued-peg",
+      "speculative-attack",
+      "sequence"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch02-011",
+    "chapter": 2,
+    "topic": "Wage-floor policy comparison",
+    "style": "model_discrimination",
+    "difficulty": 3,
+    "stem": "A binding real-wage floor is above the competitive equilibrium wage. Which comparison is most consistent with the simple labour-market model?",
+    "choices": [
+      "Both policies necessarily shift labour demand right, so both reduce unemployment by the same mechanism.",
+      "Capital investment shifts labour supply right, while a participation policy shifts labour demand right.",
+      "Capital investment that raises worker productivity can shift labour demand right and reduce unemployment, while a participation policy that shifts labour supply right can increase the surplus of labour at the unchanged floor.",
+      "Neither policy affects unemployment because a binding wage floor fixes employment at the competitive quantity."
+    ],
+    "correctChoice": 2,
+    "explanation": "Productivity or capital that raises the marginal product of labour shifts labour demand outward. At a binding floor this can increase employment demanded. A policy that brings more people into the labour force shifts labour supply outward; at the fixed floor, that can increase the gap between labour supplied and labour demanded.",
+    "choiceRationales": [
+      "Participation changes labour supply, not labour demand, so the mechanisms are not the same.",
+      "The directions of the two policy shifts are reversed in this choice.",
+      "This distinguishes a demand-side productivity shift from a supply-side participation shift under a binding floor.",
+      "A binding floor does not make employment invariant: shifts in either side of the market change quantities demanded or supplied."
+    ],
+    "reviewCardId": "ch02-026",
+    "sourceCardIds": ["ch02-025", "ch02-026", "ch02-027"],
+    "tags": [
+      "exam-bank",
+      "wage-floor",
+      "labour-demand",
+      "labour-supply",
+      "productivity"
+    ],
+    "provenance": "authored_from_flashcards"
   }
 ]

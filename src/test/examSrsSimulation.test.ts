@@ -200,7 +200,7 @@ describe("Exam-SRS simulations", () => {
     expect(afterRelearningInterval.selection?.card.id).toBe("failed");
   });
 
-  it("walks the real 349-card deck through full initial coverage without deadlock", () => {
+  it("walks the current canonical deck through full initial coverage without deadlock", () => {
     const reviews: ReviewEvent[] = [];
     const settings = { examAt: null, studyBufferHours: 24 } as const;
     let at = Date.parse("2026-08-01T00:00:00.000Z");

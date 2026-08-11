@@ -84,6 +84,8 @@ function Application() {
         <KnowledgePage initialConceptId={conceptId} />
       ) : route === "/guided" ? (
         <GuidedCramPage initialConceptId={conceptId} />
+      ) : route === "/high-yield" ? (
+        <GuidedCramPage initialConceptId={conceptId} mode="high-yield" />
       ) : (
         <HomePage />
       )}

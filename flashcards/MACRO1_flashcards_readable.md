@@ -5395,3 +5395,42 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 
 *Tags: mixed, mcq, policy-sequence*
+
+
+### ch06-032 — Money destruction · sequence · D2
+
+**Q:** Which bank operations destroy deposit money, and how does default differ from repayment?
+
+**Answer:** Repayment reduces the borrower’s loan and matching deposit; a qualifying write-off removes the bank asset and corresponding equity, while an interbank transfer only changes who holds the deposit.
+
+**Explanation:** New lending creates a loan asset and deposit liability. When principal is repaid, the corresponding deposit money is extinguished. A default/write-off is a loss-allocation event that reduces the bank’s asset and equity; it is not the same as a normal repayment.
+
+**Common trap:** Do not label every payment between bank customers as money destruction: transfers change ownership, while repayment removes the deposit claim from the balance sheet.
+
+**Tags:** chapter6, money, banking, reverse-mechanism
+
+
+### ch07-029 — Cash rate and short-term securities · sequence · D2
+
+**Q:** Trace a contractionary cash-rate increase through the required return on a short-term security and its market price.
+
+**Answer:** The required return rises, demand for the existing fixed-payment security falls, its price falls, and its yield rises.
+
+**Explanation:** The cash rate anchors very short market rates. With expectations and risk premia held fixed for the comparison, a higher required return makes an existing Treasury bill or bond less attractive at its old price; price adjusts down until yield matches the required return.
+
+**Common trap:** Do not say that a higher required return raises the price of an existing fixed-payment security; price and yield move inversely.
+
+**Tags:** chapter7, monetary, cash-rate, bond, mechanism
+
+
+### ch09-041 — Trade-weighted index · scenario · D2
+
+**Q:** A real trade-weighted index for the Australian dollar rises while partner-country inflation is unchanged. What is the safest course interpretation?
+
+**Answer:** The AUD has experienced a real appreciation against the weighted trading-partner basket, reducing price competitiveness other things equal.
+
+**Explanation:** A TWI aggregates exchange-rate movements across trading partners using trade weights. Interpreting the real index also requires relative prices; a higher real TWI means Australian goods are relatively more expensive in the course convention.
+
+**Common trap:** Do not interpret a nominal bilateral movement as the whole TWI, or ignore inflation when the question specifies a real index.
+
+**Tags:** chapter9, exchange-rate, real-exchange-rate, trade-weighted-index, PPP

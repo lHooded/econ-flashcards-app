@@ -44,6 +44,9 @@ jobs:
       - name: Validate Guided Cram learning checks
         run: npm run validate:guided-learning
 
+      - name: Validate High-Yield Cram evidence blueprint
+        run: npm run validate:exam-yield
+
       - name: Validate production sync configuration fixtures
         env:
           SYNC_APP_URL: https://macro.example.com/

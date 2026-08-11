@@ -1560,5 +1560,37 @@
   {
     "cardId": "ch10-030",
     "conceptIds": ["economic-growth", "productivity", "institutions-property-rights"]
+  },
+  {
+    "cardId": "ch06-032",
+    "conceptIds": [
+      "money-destruction",
+      "money-creation",
+      "bank-lending",
+      "bank-balance-sheet",
+      "deposit",
+      "money-stock"
+    ]
+  },
+  {
+    "cardId": "ch07-029",
+    "conceptIds": [
+      "cash-rate-security-transmission",
+      "cash-rate",
+      "bond-price",
+      "bond-yield",
+      "yield-curve",
+      "expectations-hypothesis"
+    ]
+  },
+  {
+    "cardId": "ch09-041",
+    "conceptIds": [
+      "trade-weighted-index",
+      "real-exchange-rate",
+      "real-appreciation",
+      "purchasing-power-parity",
+      "net-exports"
+    ]
   }
 ]

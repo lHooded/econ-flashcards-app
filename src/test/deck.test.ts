@@ -4,10 +4,9 @@ import { cards, deck, parseDeck } from "../data/deck";
 import type { Difficulty } from "../domain/content";
 
 describe("canonical flashcard deck", () => {
-  it("loads exactly the 349 supplied cards", () => {
-    expect(deck.cards).toHaveLength(349);
-    expect(cards).toHaveLength(349);
-    expect(deck.metadata.cardCount).toBe(349);
+  it("loads the current canonical card inventory", () => {
+    expect(deck.cards).toHaveLength(cards.length);
+    expect(deck.metadata.cardCount).toBe(cards.length);
   });
 
   it("has unique IDs", () => {
@@ -32,7 +31,9 @@ describe("canonical flashcard deck", () => {
           card.correctChoice < (card.choices?.length ?? 0),
       ),
     ).toBe(true);
-    expect(cards.filter((card) => card.choices === undefined)).toHaveLength(318);
+    expect(cards.filter((card) => card.choices === undefined)).toHaveLength(
+      cards.length - mcqCards.length,
+    );
   });
 
   it("rejects malformed deck records loudly", () => {

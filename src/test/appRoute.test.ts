@@ -86,6 +86,19 @@ describe("hash routing", () => {
     });
   });
 
+  it("supports the additional High-Yield Cram route without changing Guided", () => {
+    expect(parseHashLocation("#/high-yield")).toMatchObject({
+      route: "/high-yield",
+      conceptId: null,
+    });
+    expect(
+      parseHashLocation("#/high-yield?concept=trade-weighted-index"),
+    ).toMatchObject({
+      route: "/high-yield",
+      conceptId: "trade-weighted-index",
+    });
+  });
+
   it("captures a pairing secret from the fragment and removes it from the visible URL", () => {
     const code = serializePairingCredential(createSyncGroupCredentials());
     window.history.replaceState({}, "", `/#/settings?pair=${encodeURIComponent(code)}`);

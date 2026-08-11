@@ -12,7 +12,8 @@ export type AppRoute =
   | "/mock/attempt"
   | "/practice"
   | "/knowledge"
-  | "/guided";
+  | "/guided"
+  | "/high-yield";
 
 export interface ParsedHashLocation {
   readonly route: AppRoute;
@@ -116,6 +117,17 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
     const conceptId = safeParams(query).get("concept");
     return {
       route: "/guided",
+      studyScope: DEFAULT_STUDY_SCOPE,
+      attemptId: null,
+      practiceMode: null,
+      conceptId: conceptId?.trim() || null,
+    };
+  }
+
+  if (path === "/high-yield") {
+    const conceptId = safeParams(query).get("concept");
+    return {
+      route: "/high-yield",
       studyScope: DEFAULT_STUDY_SCOPE,
       attemptId: null,
       practiceMode: null,
