@@ -240,6 +240,14 @@ export class SyncCoordinator {
     this.joining = true;
 
     try {
+      const initialState = await this.repository.loadSyncState();
+      if (initialState.syncConfig.group !== null)
+        throw new Error("This device is already connected.");
+      // Keep this causal baseline across every remote CAS retry. Reviews and
+      // mock history are intentionally re-read below, but a later Settings
+      // read must not make a concurrent Settings write look pre-existing.
+      const initialJoinSettings = initialState.settings;
+
       for (let attempt = 0; attempt < MAX_CAS_RETRIES; attempt += 1) {
         const state = await this.repository.loadSyncState();
         if (state.syncConfig.group !== null)
@@ -272,7 +280,7 @@ export class SyncCoordinator {
           credentials,
           version,
           remotePayload,
-          state.settings,
+          initialJoinSettings,
           this.now(),
           () => generation === this.generation && this.joining,
         );

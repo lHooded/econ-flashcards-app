@@ -176,6 +176,90 @@ class DeferredJoinRemote implements SyncApi {
   }
 }
 
+class ForcedConflictJoinRemote implements SyncApi {
+  public readonly firstPullGate = deferred<void>();
+  public pullCount = 0;
+  public pushAttempts = 0;
+  public successfulPushes = 0;
+  public credentials: SyncGroupCredentials | undefined;
+  public envelope: EncryptedSyncEnvelope | undefined;
+  public version = 0;
+  public conflictSettings: SyncPayloadV1["settings"] | undefined;
+  private conflictReturned = false;
+  private conflictPayload: SyncPayloadV1 | undefined;
+
+  public async create(
+    credentials: SyncGroupCredentials,
+    envelope: EncryptedSyncEnvelope,
+  ) {
+    this.credentials = credentials;
+    this.envelope = envelope;
+    this.version = 1;
+    const initialPayload = (await decryptSyncPayload(
+      envelope,
+      credentials,
+    )) as SyncPayloadV1;
+    this.conflictSettings = {
+      ...initialPayload.settings,
+      value: {
+        examAt: "2030-02-02T10:00:00.000Z",
+        studyBufferHours: 12,
+      },
+      updatedAt: "2030-02-02T10:00:00.000Z",
+    };
+    this.conflictPayload = {
+      ...initialPayload,
+      settings: this.conflictSettings,
+    };
+    return { version: this.version };
+  }
+
+  public async pull(credentials: SyncGroupCredentials) {
+    this.assert(credentials);
+    this.pullCount += 1;
+    if (this.pullCount === 1) await this.firstPullGate.promise;
+    return { version: this.version, envelope: this.envelope! };
+  }
+
+  public async push(
+    credentials: SyncGroupCredentials,
+    expectedVersion: number,
+    envelope: EncryptedSyncEnvelope,
+  ) {
+    this.assert(credentials);
+    this.pushAttempts += 1;
+    if (!this.conflictReturned) {
+      expect(expectedVersion).toBe(1);
+      this.conflictReturned = true;
+      this.version = 2;
+      this.envelope = await encryptSyncPayload(this.conflictPayload!, credentials);
+      throw new SyncApiError("conflict", "competing remote write", 409);
+    }
+    if (expectedVersion !== this.version)
+      throw new SyncApiError("conflict", "stale", 409);
+    this.successfulPushes += 1;
+    this.version += 1;
+    this.envelope = envelope;
+    return { version: this.version };
+  }
+
+  public async delete(credentials: SyncGroupCredentials): Promise<void> {
+    this.assert(credentials);
+    this.credentials = undefined;
+    this.envelope = undefined;
+    this.version = 0;
+  }
+
+  private assert(credentials: SyncGroupCredentials): void {
+    if (
+      credentials.authToken !== this.credentials?.authToken ||
+      this.envelope === undefined
+    ) {
+      throw new SyncApiError("auth", "bad auth", 401);
+    }
+  }
+}
+
 class DownRemote implements SyncApi {
   public async create(
     _credentials: SyncGroupCredentials,
@@ -488,6 +572,101 @@ describe("sync scheduling", () => {
       expect((await phoneRepository.load()).settings).toEqual(remoteSettings);
       expect(remote.pushCount).toBe(0);
       expect(phone.getStatus()).toMatchObject({ phase: "synced", connected: true });
+    } finally {
+      laptop.dispose();
+      phone.dispose();
+      laptopRepository.close();
+      phoneRepository.close();
+      await deleteDB(laptopName);
+      await deleteDB(phoneName);
+    }
+  });
+
+  it("preserves a settings write across a deferred join CAS retry", async () => {
+    const laptopName = `sync-join-cas-source-${Date.now()}`;
+    const phoneName = `sync-join-cas-race-${Date.now()}`;
+    const laptopRepository = new ProgressRepository(cardIds, laptopName);
+    const phoneRepository = new ProgressRepository(cardIds, phoneName);
+    const remote = new ForcedConflictJoinRemote();
+    const laptop = new SyncCoordinator({
+      repository: laptopRepository,
+      api: remote,
+      validCardIds: cardIds,
+      debounceMs: 0,
+      now: () => "2030-01-01T00:00:00.000Z",
+    });
+    const phone = new SyncCoordinator({
+      repository: phoneRepository,
+      api: remote,
+      validCardIds: cardIds,
+      debounceMs: 0,
+      now: () => "2026-08-11T10:00:00.000Z",
+    });
+    try {
+      await laptopRepository.resetAll();
+      await phoneRepository.resetAll();
+      const initialLocalSettings = {
+        examAt: "2030-01-15T10:00:00.000Z",
+        studyBufferHours: 24,
+      } as const;
+      const remoteSettings = {
+        examAt: "2030-02-01T10:00:00.000Z",
+        studyBufferHours: 12,
+      } as const;
+      await phoneRepository.saveSettings(initialLocalSettings);
+      const review = createReviewEvent({
+        id: "join-cas-existing-review",
+        cardId: "ch01-004",
+        reviewedAt: "2026-08-11T00:03:00.000Z",
+        mode: "recall",
+        correct: true,
+        rating: "got_it",
+        responseTimeMs: 510,
+        selectedChoice: null,
+      });
+      await phoneRepository.recordReview(review);
+      await laptopRepository.saveSettings(remoteSettings);
+      await laptop.createGroup();
+      const pairingCode = await laptop.getPairingCode();
+
+      // The first pull can only be reached after the one overall-join Settings
+      // baseline has been captured. The write below therefore occurs after
+      // join start, before the first conditional push and its forced 409.
+      const joining = phone.joinGroup(pairingCode);
+      await vi.waitFor(() => expect(remote.pullCount).toBe(1));
+      const concurrentSettings = {
+        examAt: "2030-03-01T10:00:00.000Z",
+        studyBufferHours: 4,
+      } as const;
+      await phoneRepository.saveSettings(concurrentSettings);
+      remote.firstPullGate.resolve();
+      await joining;
+
+      expect(remote.pushAttempts).toBe(3);
+      expect(remote.successfulPushes).toBe(2);
+      expect(remote.version).toBe(4);
+      expect(remote.conflictSettings).toBeDefined();
+      const local = await phoneRepository.loadSyncState();
+      const localStamp = local.syncConfig.settingsStamp!;
+      const finalRemote = (await decryptSyncPayload(
+        remote.envelope!,
+        remote.credentials!,
+      )) as SyncPayloadV1;
+      expect(local.settings).toEqual(concurrentSettings);
+      expect(localStamp.value).toEqual(concurrentSettings);
+      expect(Date.parse(localStamp.updatedAt)).toBeGreaterThan(
+        Date.parse(remote.conflictSettings!.updatedAt),
+      );
+      expect(finalRemote.settings).toEqual(localStamp);
+      expect(finalRemote.settings.value).toEqual(concurrentSettings);
+      expect(local.reviews.filter(({ id }) => id === review.id)).toHaveLength(1);
+      expect(finalRemote.reviews.filter(({ id }) => id === review.id)).toHaveLength(1);
+      expect(local.syncConfig.lastSyncedAt).not.toBeNull();
+      expect(phone.getStatus()).toMatchObject({ phase: "synced", connected: true });
+
+      const pushes = remote.pushAttempts;
+      await phone.syncNow();
+      expect(remote.pushAttempts).toBe(pushes);
     } finally {
       laptop.dispose();
       phone.dispose();
