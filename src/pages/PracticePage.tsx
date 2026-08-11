@@ -7,6 +7,7 @@ import { buildPracticeSet } from "../practice/selector";
 import type { NewReviewEvent, ReviewRating } from "../domain/progress";
 import { QuestionStimulus } from "../components/stimulus/QuestionStimulus";
 import { GeneratedCalculationLab } from "../components/calculations/GeneratedCalculationLab";
+import { KnowledgeText } from "../components/knowledge/KnowledgeText";
 
 type PracticeMode = "mcq" | "stimulus" | "written" | "calculations";
 type CalculationPracticeSubmode = "generated" | "authored";
@@ -601,7 +602,9 @@ function PracticeMcq({
         </span>
       </div>
       <QuestionStimulus stimulus={question.stimulus} />
-      <h2 className="mock-stem">{question.stem}</h2>
+      <h2 className="mock-stem">
+        <KnowledgeText text={question.stem} disclosure="preview" />
+      </h2>
       <fieldset className="choice-list">
         <legend>Select an answer, then submit to reveal feedback.</legend>
         {question.choices.map((choice, choiceIndex) => (
@@ -637,7 +640,7 @@ function PracticeMcq({
             {correct ? "Correct" : "Not quite"}
           </p>
           <p>
-            <strong>Explanation:</strong> {question.explanation}
+            <strong>Explanation:</strong> <KnowledgeText text={question.explanation} />
           </p>
           <p>
             <strong>Common trap:</strong>{" "}
@@ -647,7 +650,8 @@ function PracticeMcq({
             <summary>Show all choice rationales</summary>
             {question.choiceRationales.map((rationale, rationaleIndex) => (
               <p key={rationaleIndex}>
-                <strong>{String.fromCharCode(65 + rationaleIndex)}.</strong> {rationale}
+                <strong>{String.fromCharCode(65 + rationaleIndex)}.</strong>{" "}
+                <KnowledgeText text={rationale} />
               </p>
             ))}
           </details>
@@ -707,7 +711,9 @@ function WrittenResponse({
         <span>Written response · Chapter {card.chapter}</span>
         <span>{card.topic}</span>
       </div>
-      <h2>{card.front}</h2>
+      <h2>
+        <KnowledgeText text={card.front} disclosure="preview" />
+      </h2>
       <label className="field-label" htmlFor="written-answer">
         Your working{" "}
         <textarea
@@ -731,13 +737,15 @@ function WrittenResponse({
         <div className="reveal-panel">
           <section className="answer-block">
             <p className="section-kicker">Model answer</p>
-            <p>{card.answer}</p>
+            <p>
+              <KnowledgeText text={card.answer} />
+            </p>
           </section>
           <p>
-            <strong>Explanation:</strong> {card.explanation}
+            <strong>Explanation:</strong> <KnowledgeText text={card.explanation} />
           </p>
           <p>
-            <strong>Common trap:</strong> {card.commonTrap}
+            <strong>Common trap:</strong> <KnowledgeText text={card.commonTrap} />
           </p>
           <fieldset className="rating-list">
             <legend>Self-rate this attempt</legend>

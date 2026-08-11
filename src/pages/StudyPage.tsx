@@ -20,6 +20,8 @@ import {
 import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
 import { formatLocalDateTime } from "../utils/date";
 import { useNow } from "../utils/useNow";
+import { deriveCardPrerequisiteReadiness } from "../knowledge/mastery";
+import { KnowledgeText } from "../components/knowledge/KnowledgeText";
 
 const RECENT_CARD_LIMIT = 3;
 const EMPTY_REVIEWS: readonly ReviewEvent[] = [];
@@ -52,6 +54,10 @@ export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
     () => deriveExamSrsSnapshot(cards, effectiveReviews, settings, nowMs),
     [effectiveReviews, nowMs, settings],
   );
+  const prerequisiteReadiness = useMemo(
+    () => deriveCardPrerequisiteReadiness(cards, scheduler),
+    [scheduler],
+  );
   const scopedNextCard = useMemo(
     () =>
       selectScopedNextCard({
@@ -61,8 +67,9 @@ export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
         nowMs,
         recentlyShownCardIds: recentCardIds,
         studyAhead,
+        newCardPrerequisiteReadyByCardId: prerequisiteReadiness,
       }),
-    [nowMs, recentCardIds, scheduler, scope, studyAhead],
+    [nowMs, prerequisiteReadiness, recentCardIds, scheduler, scope, studyAhead],
   );
 
   // Once a persisted review reaches the provider snapshot, the local event
@@ -178,8 +185,7 @@ export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
           <p className="eyebrow">Exam-SRS · dynamic next-card selection</p>
           <h1>One card at a time.</h1>
           <p className="lede">
-            Every saved review changes the next choice. New cards protect coverage;
-            failures return quickly without being repeated immediately.
+            <KnowledgeText text="Every saved review changes the next choice. New cards protect coverage; failures return quickly without being repeated immediately." />
           </p>
         </div>
         <div className="session-counter" aria-live="polite">

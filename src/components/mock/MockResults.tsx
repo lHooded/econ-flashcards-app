@@ -4,6 +4,7 @@ import { analyseMockAttempt } from "../../exam/mock/analytics";
 import { scoreMockAttempt } from "../../exam/mock/scoring";
 import type { MockAttempt } from "../../exam/mock/model";
 import { QuestionStimulus } from "../stimulus/QuestionStimulus";
+import { KnowledgeText } from "../knowledge/KnowledgeText";
 
 type ResultFilter = "all" | "incorrect" | "unanswered" | "flagged" | "stimulus";
 
@@ -167,7 +168,9 @@ export function MockResults({
                 ) : (
                   <>
                     <QuestionStimulus stimulus={question.stimulus} />
-                    <h3>{question.stem}</h3>
+                    <h3>
+                      <KnowledgeText text={question.stem} />
+                    </h3>
                     <ol className="result-choice-list" type="A">
                       {question.choices.map((choice, choiceIndex) => (
                         <li
@@ -181,13 +184,18 @@ export function MockResults({
                           {state.selectedChoice === choiceIndex && <em>Your answer</em>}
                           <details>
                             <summary>Rationale</summary>
-                            <p>{question.choiceRationales[choiceIndex]}</p>
+                            <p>
+                              <KnowledgeText
+                                text={question.choiceRationales[choiceIndex]}
+                              />
+                            </p>
                           </details>
                         </li>
                       ))}
                     </ol>
                     <p>
-                      <strong>Explanation:</strong> {question.explanation}
+                      <strong>Explanation:</strong>{" "}
+                      <KnowledgeText text={question.explanation} />
                     </p>
                   </>
                 )}

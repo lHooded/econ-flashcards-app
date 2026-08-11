@@ -350,6 +350,22 @@ describe("scoped selection status and Chapter 0", () => {
 });
 
 describe("dynamic scoped scheduling", () => {
+  it("uses prerequisite readiness only inside the existing focused candidate pool", () => {
+    const cards = [card("chapter-one", 1), card("chapter-two", 2)];
+    const result = selectScopedNextCard({
+      cards,
+      scheduler: deriveExamSrsSnapshot(cards, [], NO_EXAM, NOW),
+      scope: scope("smart", 1),
+      nowMs: NOW,
+      newCardPrerequisiteReadyByCardId: new Map([
+        ["chapter-one", false],
+        ["chapter-two", true],
+      ]),
+    });
+    expect(result.selection?.card.id).toBe("chapter-one");
+    expect(result.counts.matchingCount).toBe(1);
+  });
+
   it("keeps a Chapter 9 failure and later reviews inside the Chapter 9 pool", () => {
     const cards = [card("failed-9", 9), card("unseen-9", 9), card("outside-8", 8)];
     const failureAt = NOW;

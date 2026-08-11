@@ -55,6 +55,17 @@ describe("hash routing", () => {
     expect(parseHashLocation("#/practice?mode=not-real").practiceMode).toBeNull();
   });
 
+  it("supports a hash-safe Knowledge route and concept deep link", () => {
+    expect(parseHashLocation("#/knowledge")).toMatchObject({
+      route: "/knowledge",
+      conceptId: null,
+    });
+    expect(parseHashLocation("#/knowledge?concept=real-interest-rate")).toMatchObject({
+      route: "/knowledge",
+      conceptId: "real-interest-rate",
+    });
+  });
+
   it("captures a pairing secret from the fragment and removes it from the visible URL", () => {
     const code = serializePairingCredential(createSyncGroupCredentials());
     window.history.replaceState({}, "", `/#/settings?pair=${encodeURIComponent(code)}`);

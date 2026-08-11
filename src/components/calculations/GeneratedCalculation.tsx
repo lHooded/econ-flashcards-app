@@ -9,6 +9,7 @@ import {
 import type { GeneratedCalculationInstance } from "../../calculations/model";
 import { NumericAnswerInput } from "./NumericAnswerInput";
 import { QuestionStimulus } from "../stimulus/QuestionStimulus";
+import { KnowledgeText } from "../knowledge/KnowledgeText";
 
 type GeneratedCalculationPhase = "answering" | "pending_save" | "completed";
 
@@ -147,7 +148,9 @@ export function GeneratedCalculation({
         Fresh numbers · canonical concept practice
       </p>
       <QuestionStimulus stimulus={instance.stimulus} />
-      <h2 className="mock-stem">{instance.prompt}</h2>
+      <h2 className="mock-stem">
+        <KnowledgeText text={instance.prompt} disclosure="preview" />
+      </h2>
       <NumericAnswerInput
         answer={instance.answer}
         value={input}
@@ -201,15 +204,17 @@ export function GeneratedCalculation({
             <p className="section-kicker">Worked solution</p>
             <ol>
               {instance.workedSolution.map((step) => (
-                <li key={step}>{step}</li>
+                <li key={step}>
+                  <KnowledgeText text={step} />
+                </li>
               ))}
             </ol>
           </section>
           <p>
-            <strong>Explanation:</strong> {instance.explanation}
+            <strong>Explanation:</strong> <KnowledgeText text={instance.explanation} />
           </p>
           <p className="trap-block">
-            <strong>Common trap:</strong> {instance.commonTrap}
+            <strong>Common trap:</strong> <KnowledgeText text={instance.commonTrap} />
           </p>
           <button className="primary-button" type="button" onClick={onNext}>
             Next

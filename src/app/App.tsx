@@ -8,8 +8,10 @@ import { MockPage } from "../pages/MockPage";
 import { MockAttemptPage } from "../pages/MockAttemptPage";
 import { PracticePage } from "../pages/PracticePage";
 import { StudyPage } from "../pages/StudyPage";
+import { KnowledgePage } from "../pages/KnowledgePage";
 import type { ParsedHashLocation } from "./hashRoute";
 import { capturePairingRoute } from "./pairingRoute";
+import { KnowledgeProvider } from "../knowledge/KnowledgeProvider";
 
 export type { AppRoute } from "./hashRoute";
 
@@ -57,7 +59,8 @@ function StartupError({ message }: { message: string }) {
 }
 
 function Application() {
-  const { route, studyScope, attemptId, practiceMode, pairingCode } = useHashRoute();
+  const { route, studyScope, attemptId, practiceMode, pairingCode, conceptId } =
+    useHashRoute();
   const { snapshot, isLoading, error, clearError } = useProgress();
 
   if (isLoading || snapshot === null) {
@@ -76,6 +79,8 @@ function Application() {
         <MockAttemptPage attemptId={attemptId} />
       ) : route === "/practice" ? (
         <PracticePage initialMode={practiceMode} />
+      ) : route === "/knowledge" ? (
+        <KnowledgePage initialConceptId={conceptId} />
       ) : (
         <HomePage />
       )}
@@ -86,7 +91,9 @@ function Application() {
 export function App() {
   return (
     <ProgressProvider>
-      <Application />
+      <KnowledgeProvider>
+        <Application />
+      </KnowledgeProvider>
     </ProgressProvider>
   );
 }

@@ -12,6 +12,7 @@ import {
 import type { GeneratedCalculationInstance } from "../calculations/model";
 import type { NewReviewEvent } from "../domain/progress";
 import { PracticePage } from "../pages/PracticePage";
+import { KnowledgeProvider } from "../knowledge/KnowledgeProvider";
 
 function deferred<T>() {
   let resolve!: (value: T | PromiseLike<T>) => void;
@@ -82,6 +83,28 @@ function findRuleOf70Session() {
 }
 
 describe("generated calculation UI lifecycle", () => {
+  it("renders generated calculation terminology through the shared knowledge matcher", () => {
+    const instance = getGeneratedCalculationInstance(
+      "generated-bond-price",
+      "knowledge",
+    );
+    render(
+      <KnowledgeProvider>
+        <GeneratedCalculation
+          instance={instance}
+          index={0}
+          total={1}
+          recordReview={vi.fn().mockResolvedValue(undefined)}
+          onNext={vi.fn()}
+          onNewNumbers={vi.fn()}
+        />
+      </KnowledgeProvider>,
+    );
+    expect(
+      screen.getAllByRole("button", { name: /Explain bond/i }).length,
+    ).toBeGreaterThan(0);
+  });
+
   it("starts empty, keeps the solution hidden, and objectively grades a wrong answer", async () => {
     const instance = getGeneratedCalculationInstance(
       "generated-inventory-investment",

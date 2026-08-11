@@ -38,6 +38,9 @@ jobs:
       - name: Validate generated calculations
         run: npm run validate:calculations
 
+      - name: Validate course knowledge graph
+        run: npm run validate:knowledge
+
       - name: Validate production sync configuration fixtures
         env:
           SYNC_APP_URL: https://macro.example.com/

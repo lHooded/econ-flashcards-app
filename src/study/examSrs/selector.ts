@@ -28,6 +28,8 @@ export interface SelectNextCardInput {
   readonly nowMs: number;
   readonly recentlyShownCardIds?: readonly string[];
   readonly studyAhead?: boolean;
+  /** Guidance only: used to order otherwise-comparable unseen cards. */
+  readonly newCardPrerequisiteReadyByCardId?: ReadonlyMap<string, boolean>;
 }
 
 export function selectNextCard(input: SelectNextCardInput): NextCardSelection {
@@ -49,6 +51,8 @@ export function selectNextCardFromSnapshot(input: {
   readonly nowMs: number;
   readonly recentlyShownCardIds?: readonly string[];
   readonly studyAhead?: boolean;
+  /** Guidance only: used to order otherwise-comparable unseen cards. */
+  readonly newCardPrerequisiteReadyByCardId?: ReadonlyMap<string, boolean>;
   /** Optional candidate restriction; omitted for normal full-deck study. */
   readonly candidateCardIds?: ReadonlySet<string>;
   /** Explicit Chapter 0 study bypasses only the automatic unseen-card gate. */
@@ -83,6 +87,7 @@ export function selectNextCardFromSnapshot(input: {
           ...right,
           priority: priorityFor(right.card, right.state, input, coverage),
         },
+        input.newCardPrerequisiteReadyByCardId,
       ),
   );
 
@@ -277,14 +282,33 @@ function calculateCoverage(
 function compareCandidates(
   left: { card: Flashcard; state: ExamSrsCardState; priority: number },
   right: { card: Flashcard; state: ExamSrsCardState; priority: number },
+  prerequisiteReadyByCardId?: ReadonlyMap<string, boolean>,
 ): number {
   return (
     right.priority - left.priority ||
+    compareNewCardReadiness(left, right, prerequisiteReadyByCardId) ||
     compareDueAt(left.state, right.state) ||
     left.state.reviewCount - right.state.reviewCount ||
     left.card.chapter - right.card.chapter ||
     compareLexical(left.card.id, right.card.id)
   );
+}
+
+function compareNewCardReadiness(
+  left: { card: Flashcard; state: ExamSrsCardState },
+  right: { card: Flashcard; state: ExamSrsCardState },
+  readiness?: ReadonlyMap<string, boolean>,
+): number {
+  if (
+    readiness === undefined ||
+    left.state.learningState !== "unseen" ||
+    right.state.learningState !== "unseen"
+  ) {
+    return 0;
+  }
+  const leftReady = readiness.get(left.card.id) === true;
+  const rightReady = readiness.get(right.card.id) === true;
+  return Number(rightReady) - Number(leftReady);
 }
 
 function compareStudyAhead(

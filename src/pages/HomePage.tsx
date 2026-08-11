@@ -12,6 +12,7 @@ import {
 import { useNow } from "../utils/useNow";
 import { buildStudyHash } from "../study/studyScope";
 import { deriveMockClock } from "../exam/mock/timer";
+import { KnowledgeText } from "../components/knowledge/KnowledgeText";
 
 function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): string {
   switch (phase) {
@@ -60,8 +61,7 @@ export function HomePage() {
           <p className="eyebrow">Exam-SRS · deadline-aware retrieval practice</p>
           <h1>Make the next retrieval count.</h1>
           <p className="lede">
-            A transparent finite-horizon study heuristic for the full macroeconomics
-            deck.
+            <KnowledgeText text="A transparent finite-horizon study heuristic for the full macroeconomics deck." />
           </p>
         </div>
         <a className="primary-button heading-action" href="#/study">

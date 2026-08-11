@@ -35,6 +35,7 @@ export interface SelectScopedNextCardInput {
   readonly nowMs: number;
   readonly recentlyShownCardIds?: readonly string[];
   readonly studyAhead?: boolean;
+  readonly newCardPrerequisiteReadyByCardId?: ReadonlyMap<string, boolean>;
 }
 
 /**
