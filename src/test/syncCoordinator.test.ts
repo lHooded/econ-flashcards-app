@@ -122,12 +122,25 @@ describe("two-device encrypted sync coordinator", () => {
       await laptop.recordReview({
         ...review("b", "ch01-002", "2026-08-11T00:01:00.000Z"),
       });
+      await laptop.recordReview({
+        ...createReviewEvent({
+          id: "generated-calculation",
+          cardId: "ch01-003",
+          reviewedAt: "2026-08-11T00:01:30.000Z",
+          mode: "calculation",
+          correct: true,
+          rating: null,
+          responseTimeMs: 812,
+          selectedChoice: null,
+        }),
+      });
       await laptopSync.createGroup();
       const pairingCode = await laptopSync.getPairingCode();
       await phoneSync.joinGroup(pairingCode);
       expect((await phone.loadSyncState()).reviews.map((event) => event.id)).toEqual([
         "a",
         "b",
+        "generated-calculation",
       ]);
 
       await laptop.recordReview({
@@ -145,9 +158,20 @@ describe("two-device encrypted sync coordinator", () => {
       expect(laptopState.reviews.map((event) => event.id)).toEqual([
         "a",
         "b",
+        "generated-calculation",
         "c",
         "d",
       ]);
+      expect(laptopState.reviews).toContainEqual(
+        expect.objectContaining({
+          id: "generated-calculation",
+          mode: "calculation",
+          correct: true,
+          rating: null,
+          selectedChoice: null,
+          responseTimeMs: 812,
+        }),
+      );
       expect(phoneState.reviews).toEqual(laptopState.reviews);
       expect(phoneState.mockAttempts).toEqual(laptopState.mockAttempts);
       const laptopProgress = await laptop.load();

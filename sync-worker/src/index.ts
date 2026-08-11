@@ -12,6 +12,7 @@ interface DurableObjectNamespaceLike {
 
 export interface Env {
   readonly SYNC_GROUPS: DurableObjectNamespaceLike;
+  readonly CLIENT_LIMITER?: RateLimiterLike;
   readonly CREATION_LIMITER?: RateLimiterLike;
   readonly GROUP_LIMITER?: RateLimiterLike;
   readonly CORS_ORIGINS?: string;
@@ -35,10 +36,6 @@ export default {
       return jsonResponse({ error: "Origin is not allowed." }, 403);
     }
 
-    if (request.method === "OPTIONS") {
-      return withCors(new Response(null, { status: 204 }), origin);
-    }
-
     if (url.pathname === "/health") {
       if (request.method !== "GET")
         return withCors(
@@ -59,8 +56,16 @@ export default {
     }
     if (!validateSyncId(syncId))
       return withCors(jsonResponse({ error: "Not found." }, 404), origin);
+    const clientLimit = await enforceRateLimit(
+      env.CLIENT_LIMITER,
+      `client:${clientKey(request)}`,
+    );
+    if (clientLimit !== null) return withCors(clientLimit, origin);
     const groupLimit = await enforceRateLimit(env.GROUP_LIMITER, `group:${syncId}`);
     if (groupLimit !== null) return withCors(groupLimit, origin);
+    if (request.method === "OPTIONS") {
+      return withCors(new Response(null, { status: 204 }), origin);
+    }
     if (request.method === "POST") {
       const creationLimit = await enforceRateLimit(
         env.CREATION_LIMITER,
@@ -106,8 +111,7 @@ async function enforceRateLimit(
 function clientKey(request: Request): string {
   const cloudflareIp = request.headers.get("CF-Connecting-IP")?.trim();
   if (cloudflareIp !== undefined && cloudflareIp !== "") return cloudflareIp;
-  const forwarded = request.headers.get("X-Forwarded-For")?.split(",")[0]?.trim();
-  return forwarded === undefined || forwarded === "" ? "unknown" : forwarded;
+  return "unknown";
 }
 
 function parseAllowedOrigin(value: string): string | null {
@@ -126,10 +130,18 @@ function parseAllowedOrigin(value: string): string | null {
     }
     const host = url.hostname.toLowerCase().replace(/\.$/u, "");
     if (host === "github.io" || host.endsWith(".github.io")) return null;
+    if (url.protocol === "http:" && !isLoopbackHostname(url.hostname)) return null;
     return url.origin;
   } catch {
     return null;
   }
+}
+
+function isLoopbackHostname(hostname: string): boolean {
+  const normalized = hostname.toLowerCase().replace(/^\[|\]$/gu, "");
+  return (
+    normalized === "localhost" || normalized === "127.0.0.1" || normalized === "::1"
+  );
 }
 
 function withCors(response: Response, origin: string | null): Response {

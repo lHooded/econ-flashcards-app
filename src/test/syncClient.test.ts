@@ -19,6 +19,22 @@ function response(status: number, body: unknown): Response {
 }
 
 describe("sync HTTP client", () => {
+  it.each([
+    "http://sync.example.com/",
+    "ftp://sync.example.com/",
+    "javascript:alert(1)",
+    "https://user:password@sync.example.com/",
+    "https://sync.example.com/?token=secret",
+    "https://sync.example.com/#secret",
+  ])("rejects insecure or credential-bearing API URL %s", (url) => {
+    expect(() => new SyncApiClient(url)).toThrow(/secure sync API URL/i);
+  });
+
+  it("allows an explicit loopback HTTP API for local development", () => {
+    expect(() => new SyncApiClient("http://localhost:8787/")).not.toThrow();
+    expect(() => new SyncApiClient("http://127.0.0.1:8787/")).not.toThrow();
+  });
+
   it("covers create, pull, conditional push, and delete request shapes", async () => {
     const credentials = createSyncGroupCredentials();
     const calls: RequestInit[] = [];

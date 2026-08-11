@@ -35,6 +35,15 @@ jobs:
       - name: Validate exam question bank
         run: npm run validate:exam-questions
 
+      - name: Validate generated calculations
+        run: npm run validate:calculations
+
+      - name: Validate production sync configuration fixtures
+        env:
+          SYNC_APP_URL: https://macro.example.com/
+          SYNC_API_URL: https://econ-flashcards-sync.example.workers.dev/
+        run: npm run validate:sync-deploy-config
+
       - name: Typecheck
         run: npm run typecheck
 

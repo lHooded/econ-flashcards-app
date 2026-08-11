@@ -1,8 +1,8 @@
 # Generated calculation practice
 
 This document is the audit and design record for Practice Lab → Calculations →
-Generated numeric. It is deliberately separate from the main README so that the
-parallel encrypted-sync work can change README documentation independently.
+Generated numeric. It is deliberately separate from the main README so the generated
+calculation registry and its validation evidence remain easy to review.
 
 ## Coverage
 

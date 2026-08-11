@@ -93,6 +93,7 @@ local timezone for the `datetime-local` exam setting.
 ```bash
 npm run validate:deck
 npm run validate:exam-questions
+npm run validate:calculations
 npm run typecheck
 npm run lint
 npm run format:check
@@ -100,8 +101,8 @@ npm run test
 npm run build
 ```
 
-`npm run build` validates the canonical deck before producing a static production
-bundle. Preview it with:
+`npm run build` validates the canonical deck, exam question bank, and generated
+calculation registry before producing a static production bundle. Preview it with:
 
 ```bash
 npm run preview
@@ -191,9 +192,10 @@ Optional sync adds a Cloudflare Worker plus SQLite-backed Durable Object. The PW
 remains local-first and usable without sync configuration; the existing shared
 `https://lhooded.github.io/econ-flashcards-app/` project site is intentionally
 sync-disabled because its origin is shared by other project paths. A sync-enabled
-build must run on an explicitly configured dedicated frontend origin. There, the
-client encrypts progress with AES-256-GCM before HTTP transport. Active mock attempts
-remain local to their starting device until terminal finalisation. See
+build must run on an explicitly configured HTTPS dedicated frontend origin and use an
+HTTPS sync API; HTTP is only accepted for loopback development. There, the client
+encrypts progress with AES-256-GCM before HTTP transport. Active mock attempts remain
+local to their starting device until terminal finalisation. See
 [docs/SYNC.md](docs/SYNC.md) for owner setup, protocol, pairing, merge, privacy, and
 local-development details.
 

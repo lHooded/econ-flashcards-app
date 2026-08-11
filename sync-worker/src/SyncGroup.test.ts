@@ -189,6 +189,8 @@ describe("encrypted sync Durable Object protocol", () => {
         get: () => ({ fetch: async () => new Response("ok") }),
       },
       SYNC_ALLOWED_ORIGIN: "https://macro.example.com/",
+      CLIENT_LIMITER: new StubRateLimiter(),
+      GROUP_LIMITER: new StubRateLimiter(),
     } satisfies Env;
     const allowed = await worker.fetch(
       new Request("https://sync.test/health", {
@@ -204,7 +206,7 @@ describe("encrypted sync Durable Object protocol", () => {
     expect(await allowed.json()).toEqual({ ok: true, protocol: 1 });
 
     const preflight = await worker.fetch(
-      new Request("https://sync.test/v1/sync/anything", {
+      new Request(`https://sync.test/v1/sync/${syncId}`, {
         method: "OPTIONS",
         headers: { Origin: "https://macro.example.com" },
       }),
@@ -232,14 +234,24 @@ describe("encrypted sync Durable Object protocol", () => {
     expect(local.headers.get("Access-Control-Allow-Origin")).toBe(
       "http://localhost:5173",
     );
+
+    const insecurePublic = await worker.fetch(
+      new Request("https://sync.test/health", {
+        headers: { Origin: "http://macro.example.com" },
+      }),
+      { ...env, CORS_ORIGINS: "http://macro.example.com" },
+    );
+    expect(insecurePublic.status).toBe(403);
   });
 
   it("rate-limits creation independently from normal group traffic", async () => {
     const store = new MemorySyncRecordStore();
     const creationLimiter = new StubRateLimiter((call) => call <= 1);
+    const clientLimiter = new StubRateLimiter();
     const groupLimiter = new StubRateLimiter();
     const env = {
       SYNC_ALLOWED_ORIGIN: "https://macro.example.com",
+      CLIENT_LIMITER: clientLimiter,
       CREATION_LIMITER: creationLimiter,
       GROUP_LIMITER: groupLimiter,
       SYNC_GROUPS: {
@@ -302,15 +314,18 @@ describe("encrypted sync Durable Object protocol", () => {
       env,
     );
     expect(read.status).toBe(200);
+    expect(clientLimiter.calls).toBe(4);
     expect(creationLimiter.calls).toBe(2);
     expect(groupLimiter.calls).toBe(4);
   });
 
   it("returns a group-limit response before routing to the Durable Object", async () => {
     const groupLimiter = new StubRateLimiter(() => false);
+    const clientLimiter = new StubRateLimiter();
     const creationLimiter = new StubRateLimiter();
     const env = {
       SYNC_ALLOWED_ORIGIN: "https://macro.example.com",
+      CLIENT_LIMITER: clientLimiter,
       CREATION_LIMITER: creationLimiter,
       GROUP_LIMITER: groupLimiter,
       SYNC_GROUPS: {
@@ -332,8 +347,79 @@ describe("encrypted sync Durable Object protocol", () => {
       env,
     );
     expect(response.status).toBe(429);
+    expect(clientLimiter.calls).toBe(1);
     expect(creationLimiter.calls).toBe(0);
     expect(groupLimiter.calls).toBe(1);
+  });
+
+  it("does not let rotating random IDs bypass the client-wide limiter", async () => {
+    let routed = 0;
+    const clientLimiter = new StubRateLimiter((call) => call <= 2);
+    const groupLimiter = new StubRateLimiter();
+    const creationLimiter = new StubRateLimiter();
+    const env = {
+      SYNC_ALLOWED_ORIGIN: "https://macro.example.com",
+      CLIENT_LIMITER: clientLimiter,
+      CREATION_LIMITER: creationLimiter,
+      GROUP_LIMITER: groupLimiter,
+      SYNC_GROUPS: {
+        idFromName: () => {
+          routed += 1;
+          return "id";
+        },
+        get: () => ({ fetch: async () => new Response("missing", { status: 404 }) }),
+      },
+    } satisfies Env;
+    const responses: Response[] = [];
+    for (let value = 31; value <= 34; value += 1) {
+      const rotatingId = toBase64Url(new Uint8Array(16).fill(value));
+      responses.push(
+        await worker.fetch(
+          new Request(`https://sync.test/v1/sync/${rotatingId}`, {
+            headers: {
+              Origin: "https://macro.example.com",
+              "CF-Connecting-IP": "203.0.113.10",
+            },
+          }),
+          env,
+        ),
+      );
+    }
+    expect(responses.map((response) => response.status)).toEqual([404, 404, 429, 429]);
+    expect(clientLimiter.calls).toBe(4);
+    expect(routed).toBe(2);
+  });
+
+  it("fails closed before Durable Object routing when required limiters are absent", async () => {
+    let routed = 0;
+    const requestFor = (extra: Partial<Env>) =>
+      worker.fetch(
+        new Request(`https://sync.test/v1/sync/${syncId}`, {
+          headers: { Origin: "https://macro.example.com" },
+        }),
+        {
+          SYNC_ALLOWED_ORIGIN: "https://macro.example.com",
+          SYNC_GROUPS: {
+            idFromName: () => {
+              routed += 1;
+              return "id";
+            },
+            get: () => ({ fetch: async () => new Response("unexpected") }),
+          },
+          ...extra,
+        },
+      );
+    await expect(
+      requestFor({ GROUP_LIMITER: new StubRateLimiter() }),
+    ).resolves.toMatchObject({
+      status: 503,
+    });
+    await expect(
+      requestFor({
+        CLIENT_LIMITER: new StubRateLimiter(),
+      }),
+    ).resolves.toMatchObject({ status: 503 });
+    expect(routed).toBe(0);
   });
 
   it("fails closed when a production sync origin is missing", async () => {

@@ -19,6 +19,14 @@
   },
   "ratelimits": [
     {
+      "name": "CLIENT_LIMITER",
+      "namespace_id": "1003",
+      "simple": {
+        "limit": 240,
+        "period": 60,
+      },
+    },
+    {
       "name": "CREATION_LIMITER",
       "namespace_id": "1001",
       "simple": {

@@ -31,6 +31,12 @@ jobs:
       - name: Test sync Worker Durable Object runtime
         run: npm run sync:integration-test
 
+      - name: Validate production sync configuration
+        env:
+          SYNC_APP_URL: ${{ vars.SYNC_APP_URL }}
+          SYNC_API_URL: ${{ vars.SYNC_API_URL }}
+        run: npm run validate:sync-deploy-config
+
       - name: Deploy Cloudflare Worker
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveSyncRuntimeConfig } from "../sync/config";
+import { isSecureSyncAppUrl, resolveSyncRuntimeConfig } from "../sync/config";
 import {
   buildPairingDeepLink,
   createSyncGroupCredentials,
@@ -14,6 +14,7 @@ describe("sync dedicated-origin admission", () => {
       apiUrl,
       appUrl: "https://lhooded.github.io/econ-flashcards-app/",
       currentOrigin: "https://lhooded.github.io",
+      isSecureContext: true,
     });
     expect(runtime.enabled).toBe(false);
     expect(runtime.reason).toMatch(/github\.io|dedicated/i);
@@ -25,6 +26,7 @@ describe("sync dedicated-origin admission", () => {
         apiUrl,
         appUrl: "https://macro.example.com/",
         currentOrigin: "https://macro.example.com",
+        isSecureContext: true,
       }).enabled,
     ).toBe(true);
     expect(
@@ -32,8 +34,66 @@ describe("sync dedicated-origin admission", () => {
         apiUrl,
         appUrl: "https://macro.example.com/",
         currentOrigin: "https://other.example.com",
+        isSecureContext: true,
       }).enabled,
     ).toBe(false);
+  });
+
+  it("requires HTTPS and a secure browser context for production sync", () => {
+    expect(
+      resolveSyncRuntimeConfig({
+        apiUrl: "https://sync.example.com/",
+        appUrl: "https://macro.example.com/",
+        currentOrigin: "https://macro.example.com",
+        isSecureContext: true,
+      }).enabled,
+    ).toBe(true);
+    expect(
+      resolveSyncRuntimeConfig({
+        apiUrl: "https://sync.example.com/",
+        appUrl: "https://macro.example.com/",
+        currentOrigin: "https://macro.example.com",
+        isSecureContext: false,
+      }).enabled,
+    ).toBe(false);
+    expect(
+      resolveSyncRuntimeConfig({
+        apiUrl: "http://sync.example.com/",
+        appUrl: "https://macro.example.com/",
+        currentOrigin: "https://macro.example.com",
+        isSecureContext: true,
+      }).enabled,
+    ).toBe(false);
+    expect(
+      resolveSyncRuntimeConfig({
+        apiUrl: "https://lhooded.github.io/sync/",
+        appUrl: "https://macro.example.com/",
+        currentOrigin: "https://macro.example.com",
+        isSecureContext: true,
+      }).enabled,
+    ).toBe(false);
+    expect(
+      resolveSyncRuntimeConfig({
+        apiUrl: "https://sync.example.com/",
+        appUrl: "http://macro.example.com/",
+        currentOrigin: "http://macro.example.com",
+        isSecureContext: true,
+      }).enabled,
+    ).toBe(false);
+    expect(isSecureSyncAppUrl("http://macro.example.com/")).toBe(false);
+  });
+
+  it("allows HTTP only for explicit loopback development", () => {
+    expect(
+      resolveSyncRuntimeConfig({
+        apiUrl: "http://127.0.0.1:8787/",
+        appUrl: "http://localhost:5173/",
+        currentOrigin: "http://localhost:5173",
+        isSecureContext: true,
+      }).enabled,
+    ).toBe(true);
+    expect(isSecureSyncAppUrl("http://localhost:5173/")).toBe(true);
+    expect(isSecureSyncAppUrl("http://192.168.1.20:5173/")).toBe(false);
   });
 
   it("uses the configured app path for fragment-only pairing links", () => {
@@ -54,5 +114,15 @@ describe("sync dedicated-origin admission", () => {
     expect(() =>
       buildPairingDeepLink(code, "https://lhooded.github.io/econ-flashcards-app/"),
     ).toThrow(/dedicated/i);
+  });
+
+  it("refuses insecure public pairing destinations", () => {
+    const code = serializePairingCredential(createSyncGroupCredentials());
+    expect(() => buildPairingDeepLink(code, "http://macro.example.com/")).toThrow(
+      /secure|HTTPS/i,
+    );
+    expect(buildPairingDeepLink(code, "http://localhost:5173/")).toContain(
+      "http://localhost:5173/",
+    );
   });
 });

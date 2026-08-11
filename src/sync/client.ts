@@ -1,5 +1,9 @@
 import { SyncPayloadTooLargeError, validateEncryptedSyncEnvelope } from "./crypto";
-import { configuredSyncRuntime, type SyncRuntimeConfig } from "./config";
+import {
+  configuredSyncRuntime,
+  type SyncRuntimeConfig,
+  validateSyncApiUrl,
+} from "./config";
 import type { EncryptedSyncEnvelope, SyncGroupCredentials } from "./model";
 
 export type SyncApiErrorKind =
@@ -50,8 +54,7 @@ export class SyncApiClient implements SyncApi {
     baseUrl: string,
     fetcher: typeof fetch = globalThis.fetch.bind(globalThis),
   ) {
-    if (baseUrl.trim() === "") throw new Error("Sync API URL cannot be empty.");
-    this.baseUrl = baseUrl.replace(/\/+$/u, "");
+    this.baseUrl = validateSyncApiUrl(baseUrl).href.replace(/\/+$/u, "");
     this.fetcher = fetcher;
   }
 
@@ -145,9 +148,12 @@ export class SyncApiClient implements SyncApi {
 export function configuredSyncApi(
   runtime: SyncRuntimeConfig = configuredSyncRuntime(),
 ): SyncApi | undefined {
-  return runtime.enabled && runtime.apiUrl !== null
-    ? new SyncApiClient(runtime.apiUrl)
-    : undefined;
+  if (!runtime.enabled || runtime.apiUrl === null) return undefined;
+  try {
+    return new SyncApiClient(runtime.apiUrl);
+  } catch {
+    return undefined;
+  }
 }
 
 async function parseJson(response: Response): Promise<unknown> {

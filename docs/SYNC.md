@@ -16,6 +16,12 @@ before upload. The server can observe request metadata, IP/network metadata, syn
 payload size, timing, version, and authentication success/failure. It cannot decrypt
 the progress payload and it never receives the encryption key by design.
 
+Production sync requires both an HTTPS API URL and an HTTPS dedicated frontend
+origin. The existing `https://lhooded.github.io/econ-flashcards-app/` project site
+continues to work as a local-only PWA. Its path is not an origin boundary, so it is
+never allowed to persist sync credentials. HTTP is accepted only for explicit
+loopback development (`localhost`, `127.0.0.1`, or `::1`).
+
 The storage migration is DB version 3. Manual portable backups remain
 `ProgressBackupV2` (backup version 2), and the encrypted sync payload/envelope and
 Worker API use sync protocol version 1. These formats are deliberately separate:
@@ -56,17 +62,18 @@ for the current platform details.
    ```
 
 7. Run **Actions → Deploy Sync Worker → Run workflow**. The workflow refuses to publish
-   if `SYNC_APP_URL` is absent and passes its origin to the Worker as the explicit
-   CORS allow-list. CORS is browser access control, not authentication or bot
-   protection.
+   if `SYNC_APP_URL` is absent, invalid, public HTTP, or a `github.io` origin. It passes
+   the configured origin to the Worker as the explicit CORS allow-list. CORS is browser
+   access control, not authentication or bot protection.
 8. Copy the deployed public URL, normally similar to:
 
    ```text
    https://econ-flashcards-sync.<your-subdomain>.workers.dev
    ```
 
-9. Add a GitHub repository **variable** named `SYNC_API_URL` containing that URL.
-   This is public frontend configuration, not a secret.
+9. Add a GitHub repository **variable** named `SYNC_API_URL` containing that HTTPS URL.
+   The frontend rejects public HTTP, credential-bearing, and non-HTTP(S) API URLs before
+   constructing a client. This is public frontend configuration, not a secret.
 10. Build/deploy the frontend on the dedicated origin with both public variables:
     `VITE_SYNC_API_URL` from `SYNC_API_URL` and `VITE_SYNC_APP_URL` from
     `SYNC_APP_URL`. If the dedicated origin is a custom domain for this Pages site,
@@ -98,9 +105,10 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173 npm run sync:dev
 
 Wrangler's local Durable Object storage is used by `wrangler dev`. A normal
 `npm run dev` without either sync variable, or when opened on a non-matching origin,
-remains fully local-only and does not require the Worker. Localhost is an explicit
-development exception to the dedicated-origin rule; production `github.io` origins
-are always rejected.
+remains fully local-only and does not require the Worker. The browser must report a
+secure context for sync admission; browsers normally treat loopback development as
+potentially trustworthy. Localhost is the only HTTP exception; public HTTP and all
+`github.io` origins are rejected.
 
 ## Credentials and pairing
 
@@ -161,11 +169,20 @@ the app reports `Sync data is too large for v1` rather than a cryptographic or
 authentication failure, and the independent ProgressBackupV2 JSON export remains
 available. There is no chunking or R2 path in v1.
 
-The Worker applies a conservative accountless abuse guard before Durable Object
-routing: up to 10 group-creation calls per client key per 60 seconds and up to 120
-operations per sync group per 60 seconds. Cloudflare's Worker Rate Limiting binding
-provides these counters; the limits are operational abuse controls, not a formal DDoS
-guarantee. A shared client IP can share a creation bucket with other users.
+The Worker applies three conservative accountless abuse guards before Durable Object
+routing:
+
+- 240 total sync-group operations per client key per 60 seconds;
+- 10 group-creation calls per client key per 60 seconds; and
+- 120 operations per sync group per 60 seconds.
+
+The client-wide counter is evaluated before `idFromName()`/`get()` routing, so rotating
+random valid sync IDs does not create a fresh bucket for every probe. In production the
+client key is Cloudflare's `CF-Connecting-IP`; local tests/Wrangler use the fixed
+`unknown` fallback when that header is absent. Users behind the same NAT may share the
+operational quota. Cloudflare Worker Rate Limiting counters are fast and eventually
+consistent, so these values are basic abuse guards, not exact accounting, authentication,
+or formal DDoS protection.
 
 ## Privacy and non-goals
 
@@ -173,9 +190,10 @@ The sync server stores an auth hash, encrypted envelope, blob version, and times
 inside one SQLite-backed Durable Object. It does not store plaintext progress, a
 question bank, scheduler fields, CardState rows, accounts, or identity-provider data.
 
-The Worker allows only the explicitly configured dedicated app origin (or explicit
-localhost origins during Wrangler development), never `*` and never a default
-`github.io` origin. Authenticated responses use `Cache-Control: no-store`.
+The Worker allows only the explicitly configured HTTPS dedicated app origin (or explicit
+loopback HTTP origins during Wrangler development), never `*` and never a default
+`github.io` origin. A production Worker without its origin or required limiter bindings
+fails closed. Authenticated responses use `Cache-Control: no-store`.
 
 This is client-side encrypted capability-based sync, not a formal security audit. It
 does not add accounts, shared study groups, active-mock handoff, server-side scheduling,
@@ -184,12 +202,13 @@ progress. **Delete cloud copy** is the one explicit destructive remote operation
 
 ## Tests
 
-The frontend tests cover DB-v2→v3 preservation, pairing/deep-link behavior, AES-GCM
-tamper failures, merge algebra and conflicts, API responses, two independent IndexedDB
-databases, offline laptop/phone convergence, terminal mock history, active-mock
-preservation, and scheduler snapshot equality. Worker tests exercise creation,
-auth, CAS versions, deletion, malformed/oversized envelopes, CORS, rate limits, and
-no-store responses using a deterministic storage fixture. A separate Workers Vitest
-runtime suite exercises SQLite-backed Durable Object persistence, concurrent CAS, and
-unknown-ID reads/deletes. The Worker typecheck and tests run in separate CI steps;
-deployment is never part of PR CI.
+The frontend tests cover DB-v2→v3 preservation, secure-origin admission, pairing/deep-link
+behavior, AES-GCM tamper failures, merge algebra and conflicts, API responses, two
+independent IndexedDB databases, offline laptop/phone convergence (including a normal
+`mode: "calculation"` ReviewEvent), terminal mock history, active-mock preservation,
+and scheduler snapshot equality. Worker tests exercise creation, auth, CAS versions,
+deletion, malformed/oversized envelopes, CORS, all three rate-limit layers, rotating-ID
+probing, and no-store responses using a deterministic storage fixture. A separate
+Workers Vitest runtime suite exercises SQLite-backed Durable Object persistence,
+concurrent CAS, and unknown-ID reads/deletes. The Worker typecheck and tests run in
+separate CI steps; deployment is never part of PR CI.
