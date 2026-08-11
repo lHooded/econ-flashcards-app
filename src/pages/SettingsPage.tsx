@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useProgress } from "../app/progressContext";
+import { useSync } from "../app/syncContext";
 import { cardIds } from "../data/deck";
+import { SyncPanel } from "../components/sync/SyncPanel";
 import { examQuestions } from "../exam/questionBank";
 import { parseProgressBackupText } from "../domain/backup";
 import { type AppSettings } from "../domain/progress";
@@ -11,9 +13,14 @@ import {
   toLocalDateTimeInputValue,
 } from "../utils/date";
 
-export function SettingsPage() {
+export function SettingsPage({
+  initialPairingCode,
+}: {
+  readonly initialPairingCode?: string | null;
+}) {
   const { snapshot, saveSettings, exportProgress, replaceProgress, resetProgress } =
     useProgress();
+  const { status: syncStatus } = useSync();
   const fileInput = useRef<HTMLInputElement>(null);
   const [examAt, setExamAt] = useState("");
   const [bufferHours, setBufferHours] = useState("24");
@@ -122,7 +129,9 @@ export function SettingsPage() {
     setDataMessage(null);
     if (
       !window.confirm(
-        "Delete every review, card state, exam setting, and mock history stored on this device? This cannot be undone unless you have an export.",
+        syncStatus.connected
+          ? "Reset local progress and disconnect this device? The remote cloud copy will remain. This cannot be undone unless you have an export."
+          : "Delete every review, card state, exam setting, and mock history stored on this device? This cannot be undone unless you have an export.",
       )
     ) {
       return;
@@ -145,8 +154,8 @@ export function SettingsPage() {
           <p className="eyebrow">Settings / Data</p>
           <h1>Set the target. Keep the data portable.</h1>
           <p className="lede">
-            Settings and review history stay in this browser’s IndexedDB until you
-            export them.
+            Progress is stored locally first. Optional encrypted sync can merge progress
+            across your devices; JSON export remains available as a manual backup.
           </p>
         </div>
       </section>
@@ -231,14 +240,24 @@ export function SettingsPage() {
             Imports are validated first and then replace the current local progress only
             after confirmation.
           </p>
+          {syncStatus.connected && (
+            <p className="field-help">
+              While connected, the next sync merges imported review history with the
+              remote history; importing an older backup does not delete reviews kept on
+              another device.
+            </p>
+          )}
           <div className="danger-zone">
             <p className="section-kicker">Danger zone</p>
             <p>
-              Reset clears all mutable local state. Export first if you may need it
-              later.
+              {syncStatus.connected
+                ? "Reset clears local progress and disconnects this device; it does not delete the remote cloud copy. Export first if you may need the local state later."
+                : "Reset clears all mutable local state. Export first if you may need it later."}
             </p>
             <button className="danger-button" type="button" onClick={reset}>
-              Reset all progress
+              {syncStatus.connected
+                ? "Reset local progress and disconnect"
+                : "Reset all progress"}
             </button>
           </div>
           {dataMessage && <p className="success-message">{dataMessage}</p>}
@@ -249,6 +268,8 @@ export function SettingsPage() {
           )}
         </section>
       </section>
+
+      <SyncPanel initialPairingCode={initialPairingCode} />
 
       <section className="callout">
         <div>

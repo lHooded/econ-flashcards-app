@@ -8,17 +8,18 @@ import { MockPage } from "../pages/MockPage";
 import { MockAttemptPage } from "../pages/MockAttemptPage";
 import { PracticePage } from "../pages/PracticePage";
 import { StudyPage } from "../pages/StudyPage";
-import { parseHashLocation, type ParsedHashLocation } from "./hashRoute";
+import type { ParsedHashLocation } from "./hashRoute";
+import { capturePairingRoute } from "./pairingRoute";
 
 export type { AppRoute } from "./hashRoute";
 
 function useHashRoute(): ParsedHashLocation {
   const [location, setLocation] = useState<ParsedHashLocation>(() =>
-    parseHashLocation(window.location.hash),
+    capturePairingRoute(),
   );
 
   useEffect(() => {
-    const onHashChange = () => setLocation(parseHashLocation(window.location.hash));
+    const onHashChange = () => setLocation(capturePairingRoute());
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
@@ -56,7 +57,7 @@ function StartupError({ message }: { message: string }) {
 }
 
 function Application() {
-  const { route, studyScope, attemptId, practiceMode } = useHashRoute();
+  const { route, studyScope, attemptId, practiceMode, pairingCode } = useHashRoute();
   const { snapshot, isLoading, error, clearError } = useProgress();
 
   if (isLoading || snapshot === null) {
@@ -68,7 +69,7 @@ function Application() {
       {route === "/study" ? (
         <StudyPage scope={studyScope} />
       ) : route === "/settings" ? (
-        <SettingsPage />
+        <SettingsPage initialPairingCode={pairingCode} />
       ) : route === "/mock" ? (
         <MockPage />
       ) : route === "/mock/attempt" && attemptId !== null ? (

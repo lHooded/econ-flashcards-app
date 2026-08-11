@@ -35,6 +35,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Typecheck sync Worker
+        run: npm run sync:typecheck
+
       - name: Lint
         run: npm run lint
 
@@ -43,6 +46,9 @@ jobs:
 
       - name: Run tests
         run: npm run test
+
+      - name: Run sync Worker tests
+        run: npm run sync:test
 
       - name: Build production bundle
         run: npm run build

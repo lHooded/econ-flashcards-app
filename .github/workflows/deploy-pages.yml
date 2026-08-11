@@ -42,6 +42,8 @@ jobs:
         run: npm run test
 
       - name: Build production site
+        env:
+          VITE_SYNC_API_URL: ${{ vars.SYNC_API_URL }}
         run: npm run build
 
       - name: Upload Pages artifact

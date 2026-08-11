@@ -19,13 +19,16 @@ export interface FinalizedMock {
 }
 
 export class MockExamRepository {
-  private readonly database = openProgressDatabase();
+  private readonly database: ReturnType<typeof openProgressDatabase>;
 
   public constructor(
     private readonly validCardIds: ReadonlySet<string>,
     private readonly validQuestionIds: ReadonlySet<string>,
     private readonly transactionFailure?: (processedEvents: number) => void,
-  ) {}
+    databaseName?: string,
+  ) {
+    this.database = openProgressDatabase(databaseName);
+  }
 
   public async listAttempts(): Promise<MockAttempt[]> {
     const database = await this.database;
