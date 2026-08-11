@@ -41,23 +41,23 @@ topic matching is not a runtime mapping mechanism.
 
 Representative rows from the full JSON audit table:
 
-| Card ID    | Chapter | Topic                        | Mapped concept IDs                                                                |
-| ---------- | ------: | ---------------------------- | --------------------------------------------------------------------------------- |
-| `mix-001`  |       0 | GDP synthesis                | `gross-domestic-product`, `final-good`                                            |
-| `ch01-006` |       1 | Value added formula          | `value-added`                                                                     |
-| `ch01-018` |       1 | CPI definition               | `cpi`                                                                             |
-| `ch02-004` |       2 | Unemployment rate            | `unemployment-rate`, `labour-force`                                               |
-| `ch03-006` |       3 | Fisher relationship          | `fisher-relationship`, `nominal-interest-rate`, `real-interest-rate`              |
-| `ch04-012` |       4 | Multiplier                   | `multiplier`, `planned-aggregate-expenditure`                                     |
-| `ch05-010` |       5 | Balanced-budget multiplier   | `balanced-budget-multiplier`, `multiplier`                                        |
-| `ch06-001` |       6 | Asset return                 | `asset-return`                                                                    |
-| `ch06-002` |       6 | Bond terminology             | `bond`, `face-value`, `coupon-payment`, `maturity`, `principal`, `future-payment` |
-| `ch06-003` |       6 | Bond price formula           | `bond`, `bond-price`, `present-value`, `interest-rate`                            |
-| `ch06-004` |       6 | Bond price and interest rate | `bond-price`, `interest-rate`                                                     |
-| `ch07-005` |       7 | Cash rate                    | `cash-rate`, `cash-market`, `interest-rate`                                       |
-| `ch08-008` |       8 | Aggregate demand shift       | `aggregate-demand`, `ad-shift`, `net-exports`                                     |
-| `ch09-017` |       9 | Appreciation                 | `appreciation`, `exchange-rate`                                                   |
-| `ch10-005` |      10 | Rule of 70                   | `rule-of-70`, `compound-growth`, `growth-rate`                                    |
+| Card ID    | Chapter | Topic                        | Mapped concept IDs                                                                             |
+| ---------- | ------: | ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| `mix-001`  |       0 | GDP synthesis                | `gross-domestic-product`, `final-good`                                                         |
+| `ch01-006` |       1 | Value added formula          | `value-added`                                                                                  |
+| `ch01-018` |       1 | CPI definition               | `cpi`                                                                                          |
+| `ch02-004` |       2 | Unemployment rate            | `unemployment-rate`, `labour-force`                                                            |
+| `ch03-006` |       3 | Fisher relationship          | `fisher-relationship`, `nominal-interest-rate`, `real-interest-rate`, `inflation-expectations` |
+| `ch04-012` |       4 | Multiplier                   | `multiplier`                                                                                   |
+| `ch05-010` |       5 | Balanced-budget multiplier   | `balanced-budget-multiplier`                                                                   |
+| `ch06-001` |       6 | Asset return                 | `asset-return`                                                                                 |
+| `ch06-002` |       6 | Bond terminology             | `bond`, `face-value`, `coupon-payment`, `maturity`, `principal`, `future-payment`              |
+| `ch06-003` |       6 | Bond price formula           | `bond`, `bond-price`, `present-value`, `interest-rate`                                         |
+| `ch06-004` |       6 | Bond price and interest rate | `bond-price`, `interest-rate`                                                                  |
+| `ch07-005` |       7 | Cash rate                    | `cash-rate`, `cash-market`, `interest-rate`                                                    |
+| `ch08-008` |       8 | Aggregate demand shift       | `aggregate-demand`, `ad-shift`, `net-exports`                                                  |
+| `ch09-017` |       9 | Appreciation                 | `appreciation`, `exchange-rate`                                                                |
+| `ch10-005` |      10 | Rule of 70                   | `rule-of-70`, `compound-growth`, `growth-rate`                                                 |
 
 The mandatory audit cases are intentional: `ch06-001` does not map to the
 generic `money` concept, and `ch06-002` does not receive any chapter fallback.
