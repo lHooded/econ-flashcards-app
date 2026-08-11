@@ -95,8 +95,9 @@ classification boundaries and direction/sign conventions rather than stylistic
 rewriting.
 
 The source pass used Week 1 Lecture 1 pp. 37–61 and Week 1 Lecture 2 pp. 2–29,
-Week 2 Lecture 2 pp. 2–3 and 45–81, Week 4 Lecture 2 pp. 5 and 20, Week 5
-Lecture 1 pp. 7–24 and 35–75, Week 5 Lecture 2 pp. 20–25, Week 8 Lecture 1
+Week 2 Lecture 1 pp. 50–58, Week 2 Lecture 2 pp. 2–3 and 45–81, Week 4
+Lecture 2 pp. 5 and 20, Week 5 Lecture 1 pp. 7–24 and 35–75, Week 5
+Lecture 2 pp. 20–25, Week 8 Lecture 1
 pp. 8–12 and 30–50, Week 8 Lecture 2 pp. 2–22, and Week 9 pp. 3–9 and 26–69,
 with the corresponding textbook discussions on pp. 18–24, 29, 39–40, 56–61,
 84–87, 97–103, 150–151, 165–176, 243–260, and 273–295.
