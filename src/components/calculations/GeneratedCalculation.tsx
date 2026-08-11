@@ -57,7 +57,7 @@ export function GeneratedCalculation({
     pendingPayload.current = null;
     startedAt.current = nowRef.current();
     onPendingChange?.(false);
-  }, [instance.instanceId, onPendingChange]);
+  }, [instance.seed, onPendingChange]);
 
   const submit = useCallback(async () => {
     if (phase !== "answering") return;

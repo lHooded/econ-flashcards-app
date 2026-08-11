@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { cards } from "../data/deck";
-import { buildGeneratedCalculationSet } from "../calculations/session";
+import {
+  buildGeneratedCalculationSet,
+  generatedCalculationFingerprint,
+} from "../calculations/session";
 import {
   calculationTemplates,
   getGeneratedCalculationInstance,
@@ -94,21 +97,70 @@ describe("generated calculation templates", () => {
         (1 - alpha) * Number(tfp.parameters.labourGrowth),
       10,
     );
+
+    for (const [seed, target] of [
+      ["seed-0", "intercept"],
+      ["seed-4", "rate_coefficient"],
+    ] as const) {
+      const pae = getGeneratedCalculationInstance("generated-pae-with-real-rate", seed);
+      const paeExpected =
+        target === "intercept"
+          ? Number(pae.parameters.consumptionIntercept) +
+            Number(pae.parameters.investmentIntercept)
+          : -(
+              Number(pae.parameters.consumptionRateCoefficient) +
+              Number(pae.parameters.investmentRateCoefficient)
+            );
+      expect(pae.parameters.target).toBe(target);
+      expect(pae.answer.value).toBe(paeExpected);
+      expect(pae.answer.unit).toBe(
+        target === "intercept"
+          ? "currency_millions"
+          : "currency_millions_per_percentage_point",
+      );
+      expect(pae.prompt).not.toContain("calculate PAE");
+      expect(pae.prompt).not.toContain("With Y =");
+      expect(pae.workedSolution.join(" ")).toContain("PAE =");
+    }
+
+    for (const [seed, target] of [
+      ["seed-0", "intercept"],
+      ["seed-4", "inflation_coefficient"],
+    ] as const) {
+      const ad = getGeneratedCalculationInstance("generated-ad-substitution", seed);
+      const adExpected =
+        target === "intercept"
+          ? Number(ad.parameters.equilibriumIntercept) -
+            Number(ad.parameters.equilibriumRateCoefficient) *
+              Number(ad.parameters.policyIntercept)
+          : -Number(ad.parameters.equilibriumRateCoefficient) *
+            Number(ad.parameters.policyInflationCoefficient);
+      expect(ad.parameters.target).toBe(target);
+      expect(ad.answer.value).toBeCloseTo(adExpected, 10);
+      expect(ad.answer.unit).toBe(
+        target === "intercept"
+          ? "currency_millions"
+          : "currency_millions_per_percentage_point",
+      );
+      expect(ad.prompt).not.toContain("At π =");
+      expect(ad.prompt).not.toContain("calculate equilibrium output");
+      expect(ad.workedSolution.join(" ")).toContain("AD equation:");
+    }
   });
 
-  it("shows meaningful answer and instance diversity across 100 seeds", () => {
+  it("shows meaningful answer and prompt/stimulus content diversity across 100 seeds", () => {
     for (const template of calculationTemplates) {
       const instances = Array.from({ length: 100 }, (_, index) =>
         template.instantiate(`diversity-${index}`),
       );
       const answers = new Set(instances.map((instance) => instance.answer.value));
-      const instancesByContent = new Set(
+      const promptStimulusContent = new Set(
         instances.map((instance) =>
           JSON.stringify({ prompt: instance.prompt, stimulus: instance.stimulus }),
         ),
       );
       expect(answers.size).toBeGreaterThan(1);
-      expect(instancesByContent.size).toBeGreaterThan(1);
+      expect(promptStimulusContent.size).toBeGreaterThan(1);
     }
   });
 
@@ -176,7 +228,16 @@ describe("generated calculation templates", () => {
       getGeneratedCalculationInstance("generated-tfp-growth", "snapshot-growth"),
     ).toMatchObject({
       parameters: { outputGrowth: 2, capitalGrowth: 0.5, labourGrowth: 0, alpha: 0.2 },
-      answer: { value: 1.9, unit: "percentage_points" },
+      answer: { value: 1.9, unit: "percent", displayUnit: "%" },
+    });
+    expect(
+      getGeneratedCalculationInstance(
+        "generated-output-growth-accounting",
+        "correction-a",
+      ),
+    ).toMatchObject({
+      parameters: { alpha: 0.2, capitalGrowth: 0, labourGrowth: 5, tfpGrowth: 2 },
+      answer: { value: 6, unit: "percent", displayUnit: "%" },
     });
   });
 });
@@ -215,7 +276,19 @@ describe("generated calculation sessions", () => {
     });
     expect(instances).toHaveLength(20);
     expect(new Set(instances.map((instance) => instance.reviewCardId)).size).toBe(2);
-    expect(new Set(instances.map((instance) => instance.instanceId)).size).toBe(20);
+    expect(new Set(instances.map(generatedCalculationFingerprint)).size).toBe(20);
+  });
+
+  it("fills Chapter 5 size-20 sets with unique content across 100 session seeds", () => {
+    for (let seed = 0; seed < 100; seed += 1) {
+      const instances = buildGeneratedCalculationSet(calculationTemplates, {
+        chapter: 5,
+        size: 20,
+        seed: `chapter-five-stress-${seed}`,
+      });
+      expect(instances).toHaveLength(20);
+      expect(new Set(instances.map(generatedCalculationFingerprint)).size).toBe(20);
+    }
   });
 
   it("does not offer a misleading Chapter 0 generated set", () => {

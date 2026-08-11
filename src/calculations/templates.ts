@@ -89,6 +89,12 @@ function signed(value: number, decimals = 0): string {
     : formatNumber(value, decimals);
 }
 
+function signedTerm(value: number, decimals = 0): string {
+  return value < 0
+    ? `− ${formatNumber(Math.abs(value), decimals)}`
+    : `+ ${formatNumber(value, decimals)}`;
+}
+
 function finalLine(
   label: string,
   value: number,
@@ -670,31 +676,38 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const consumptionRateCoefficient = random.integer(1, 3) * 5;
       const investmentIntercept = random.integer(5, 12) * 10;
       const investmentRateCoefficient = random.integer(1, 4) * 5;
-      const output = random.integer(4, 12) * 100;
-      const realRatePoints = random.integer(1, 5);
-      const pae =
-        consumptionIntercept +
-        consumptionSlope * output -
-        consumptionRateCoefficient * realRatePoints +
-        investmentIntercept -
-        investmentRateCoefficient * realRatePoints;
+      const target = random.pick(["intercept", "rate_coefficient"] as const);
+      const combinedIntercept = consumptionIntercept + investmentIntercept;
+      const combinedRateCoefficient = -(
+        consumptionRateCoefficient + investmentRateCoefficient
+      );
+      const targetValue =
+        target === "intercept" ? combinedIntercept : combinedRateCoefficient;
+      const targetLabel =
+        target === "intercept" ? "Combined autonomous intercept" : "Coefficient on r";
+      const targetDisplayUnit =
+        target === "intercept" ? "$ million" : "$ million per percentage point";
+      const targetUnit =
+        target === "intercept"
+          ? "currency_millions"
+          : "currency_millions_per_percentage_point";
       return {
-        prompt: `Consumption is C = ${formatNumber(consumptionIntercept)} + ${formatNumber(consumptionSlope, 2)}Y − ${formatNumber(consumptionRateCoefficient)}r and investment is I = ${formatNumber(investmentIntercept)} − ${formatNumber(investmentRateCoefficient)}r. With Y = ${formatNumber(output)} and r = ${formatNumber(realRatePoints)} percentage points, calculate PAE.`,
+        prompt: `Consumption is C = ${formatNumber(consumptionIntercept)} + ${formatNumber(consumptionSlope, 2)}Y − ${formatNumber(consumptionRateCoefficient)}r and investment is I = ${formatNumber(investmentIntercept)} − ${formatNumber(investmentRateCoefficient)}r. After combining C and I into PAE, what is the ${target === "intercept" ? "combined autonomous intercept" : "coefficient on r"}?${target === "rate_coefficient" ? " Include its sign." : ""}`,
         answer: answer(
-          pae,
-          "currency_millions",
+          targetValue,
+          targetUnit,
           0,
-          "$ million",
-          "Give PAE to the nearest $ million.",
+          targetDisplayUnit,
+          `Give the ${target === "intercept" ? "combined autonomous intercept" : "coefficient on r"} to the nearest whole ${targetDisplayUnit}.`,
         ),
         workedSolution: [
           "Formula: PAE = C + I.",
-          `Combine terms: PAE = ${formatNumber(consumptionIntercept + investmentIntercept)} + ${formatNumber(consumptionSlope, 2)}Y − ${formatNumber(consumptionRateCoefficient + investmentRateCoefficient)}r.`,
-          `Substitute: PAE = ${formatNumber(consumptionIntercept + investmentIntercept)} + ${formatNumber(consumptionSlope, 2)}(${formatNumber(output)}) − ${formatNumber(consumptionRateCoefficient + investmentRateCoefficient)}(${formatNumber(realRatePoints)}).`,
-          finalLine("Planned aggregate expenditure", pae, " $ million", 0),
+          `Substitute the generated equations: PAE = (${formatNumber(consumptionIntercept)} + ${formatNumber(consumptionSlope, 2)}Y − ${formatNumber(consumptionRateCoefficient)}r) + (${formatNumber(investmentIntercept)} − ${formatNumber(investmentRateCoefficient)}r).`,
+          `Combine like terms: PAE = ${formatNumber(combinedIntercept)} + ${formatNumber(consumptionSlope, 2)}Y − (${formatNumber(consumptionRateCoefficient)} + ${formatNumber(investmentRateCoefficient)})r = ${formatNumber(combinedIntercept)} + ${formatNumber(consumptionSlope, 2)}Y ${signedTerm(combinedRateCoefficient)}r.`,
+          finalLine(targetLabel, targetValue, ` ${targetDisplayUnit}`, 0),
         ],
         explanation:
-          "Add consumption and investment first, combining their intercepts and real-rate coefficients, then substitute Y and r.",
+          "The canonical skill is combining the autonomous terms and both real-rate coefficients before any equilibrium or point evaluation.",
         commonTrap: trap("ch08-003"),
         parameters: {
           consumptionIntercept,
@@ -702,9 +715,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           consumptionRateCoefficient,
           investmentIntercept,
           investmentRateCoefficient,
-          output,
-          realRatePoints,
-          pae,
+          target,
+          combinedIntercept,
+          combinedRateCoefficient,
         },
       };
     },
@@ -713,38 +726,50 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
     { id: "generated-ad-substitution", reviewCardId: "ch08-005" },
     (random) => {
       const equilibriumIntercept = random.integer(5, 9) * 100;
-      const equilibriumRateCoefficient = random.integer(4, 10) * 10;
-      const policyIntercept = random.pick([1, 1.5, 2, 2.5]);
-      const policyInflationCoefficient = random.pick([0.4, 0.5, 0.6, 0.75]);
-      const inflation = random.integer(0, 10) / 2;
-      const realRate = policyIntercept + policyInflationCoefficient * inflation;
-      const output = equilibriumIntercept - equilibriumRateCoefficient * realRate;
+      const equilibriumRateCoefficient = random.pick([50, 60, 75, 80, 90, 100]);
+      const policyIntercept = random.pick([0.5, 1, 1.5, 2, 2.5]);
+      const policyInflationCoefficient = random.pick([0.25, 0.5, 0.75, 1]);
+      const target = random.pick(["intercept", "inflation_coefficient"] as const);
+      const adIntercept =
+        equilibriumIntercept - equilibriumRateCoefficient * policyIntercept;
+      const adInflationCoefficient = -(
+        equilibriumRateCoefficient * policyInflationCoefficient
+      );
+      const targetValue = target === "intercept" ? adIntercept : adInflationCoefficient;
+      const targetLabel =
+        target === "intercept" ? "AD intercept" : "AD coefficient on π";
+      const targetDisplayUnit =
+        target === "intercept" ? "$ million" : "$ million per percentage point";
+      const targetUnit =
+        target === "intercept"
+          ? "currency_millions"
+          : "currency_millions_per_percentage_point";
       return {
-        prompt: `Equilibrium output is Y = ${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}r and the policy reaction function is r = ${formatNumber(policyIntercept, 2)} + ${formatNumber(policyInflationCoefficient, 2)}π. At π = ${formatPercent(inflation, 2)}, calculate equilibrium output Y.`,
+        prompt: `Equilibrium output is Y = ${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}r and the policy reaction function is r = ${formatNumber(policyIntercept, 2)} + ${formatNumber(policyInflationCoefficient, 2)}π. After substituting the PRF into the output relation, what is the ${target === "intercept" ? "AD intercept" : "coefficient on π"}?${target === "inflation_coefficient" ? " Include its sign." : ""}`,
         answer: answer(
-          output,
-          "currency_millions",
+          targetValue,
+          targetUnit,
           1,
-          "$ million",
-          "Give output to 1 decimal place in $ million.",
+          targetDisplayUnit,
+          `Give the ${target === "intercept" ? "AD intercept" : "coefficient on π"} to 1 decimal place in ${targetDisplayUnit}.`,
         ),
         workedSolution: [
-          "Formula: substitute the policy reaction function into the equilibrium-output relation.",
-          `First find r = ${formatNumber(policyIntercept, 2)} + ${formatNumber(policyInflationCoefficient, 2)}(${formatNumber(inflation, 2)}) = ${formatNumber(realRate, 3)}.`,
-          `Y = ${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}(${formatNumber(realRate, 3)}).`,
-          finalLine("Equilibrium output", output, " $ million", 1),
+          "Formula: substitute r = r₀ + γπ into Y = A − Br.",
+          `Y = ${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}(${formatNumber(policyIntercept, 2)} + ${formatNumber(policyInflationCoefficient, 2)}π).`,
+          `AD equation: Y = (${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}×${formatNumber(policyIntercept, 2)}) − (${formatNumber(equilibriumRateCoefficient)}×${formatNumber(policyInflationCoefficient, 2)})π = ${formatNumber(adIntercept, 1)} ${signedTerm(adInflationCoefficient, 1)}π.`,
+          finalLine(targetLabel, targetValue, ` ${targetDisplayUnit}`, 1),
         ],
         explanation:
-          "The AD relationship comes from substituting the policy reaction function for the real rate; this numeric version evaluates that substitution at a generated inflation rate.",
+          "The canonical skill is deriving the AD intercept and inflation coefficient by distributing the output equation across the PRF, not evaluating the equation at one inflation observation.",
         commonTrap: trap("ch08-005"),
         parameters: {
           equilibriumIntercept,
           equilibriumRateCoefficient,
           policyIntercept,
           policyInflationCoefficient,
-          inflation,
-          realRate,
-          output,
+          target,
+          adIntercept,
+          adInflationCoefficient,
         },
       };
     },
@@ -881,17 +906,17 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       prompt: `Output grows by ${formatPercent(outputGrowth, 2)}, capital grows by ${formatPercent(capitalGrowth, 2)}, labour grows by ${formatPercent(labourGrowth, 2)}, and α = ${formatNumber(alpha, 2)}. Calculate TFP growth using growth accounting.`,
       answer: answer(
         tfpGrowth,
-        "percentage_points",
+        "percent",
         2,
-        "percentage points",
-        "Enter TFP growth in percentage points rounded to 2 decimal places.",
+        "%",
+        "Enter TFP growth as a percentage rounded to 2 decimal places.",
       ),
       workedSolution: [
         "Formula: gA = gY − αgK − (1 − α)gL.",
         `Capital contribution = ${formatNumber(alpha, 2)} × ${formatNumber(capitalGrowth, 2)} = ${formatNumber(alpha * capitalGrowth, 2)} percentage points.`,
         `Labour contribution = ${formatNumber(1 - alpha, 2)} × ${formatNumber(labourGrowth, 2)} = ${formatNumber((1 - alpha) * labourGrowth, 2)} percentage points.`,
         `gA = ${formatNumber(outputGrowth, 2)} − ${formatNumber(alpha * capitalGrowth + (1 - alpha) * labourGrowth, 2)}.`,
-        finalLine("TFP growth", tfpGrowth, " percentage points", 2),
+        finalLine("TFP growth", tfpGrowth, "%", 2),
       ],
       explanation:
         "Capital and labour growth enter as weighted percentage-point contributions; the residual is TFP growth.",
@@ -913,17 +938,17 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
         prompt: `In a Cobb–Douglas growth-accounting exercise, α = ${formatNumber(alpha, 2)}, capital grows by ${formatPercent(capitalGrowth, 2)}, labour grows by ${formatPercent(labourGrowth, 2)}, and TFP grows by ${formatPercent(tfpGrowth, 2)}. Calculate predicted output growth.`,
         answer: answer(
           outputGrowth,
-          "percentage_points",
+          "percent",
           2,
-          "percentage points",
-          "Enter output growth in percentage points rounded to 2 decimal places.",
+          "%",
+          "Enter predicted output growth as a percentage rounded to 2 decimal places.",
         ),
         workedSolution: [
           "Formula: gY = gA + αgK + (1 − α)gL.",
           `Capital contribution = ${formatNumber(alpha, 2)} × ${formatNumber(capitalGrowth, 2)} = ${formatNumber(capitalContribution, 2)} percentage points.`,
           `Labour contribution = ${formatNumber(1 - alpha, 2)} × ${formatNumber(labourGrowth, 2)} = ${formatNumber(labourContribution, 2)} percentage points.`,
           `gY = ${formatNumber(tfpGrowth, 2)} + ${formatNumber(capitalContribution, 2)} + ${formatNumber(labourContribution, 2)}.`,
-          finalLine("Predicted output growth", outputGrowth, " percentage points", 2),
+          finalLine("Predicted output growth", outputGrowth, "%", 2),
         ],
         explanation:
           "Growth accounting adds TFP growth to the weighted capital and labour contributions; the weights are not renormalised after the calculation.",

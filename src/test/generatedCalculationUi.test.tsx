@@ -3,6 +3,7 @@ import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { ProgressContext, type ProgressContextValue } from "../app/progressContext";
 import { GeneratedCalculation } from "../components/calculations/GeneratedCalculation";
+import { GeneratedCalculationLab } from "../components/calculations/GeneratedCalculationLab";
 import { getGeneratedCalculationInstance } from "../calculations/templates";
 import type { GeneratedCalculationInstance } from "../calculations/model";
 import type { NewReviewEvent } from "../domain/progress";
@@ -203,6 +204,113 @@ describe("generated calculation UI lifecycle", () => {
     fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
     await waitFor(() => expect(recordReview).toHaveBeenCalledTimes(1));
     expect(recordReview.mock.calls[0][0].responseTimeMs).toBe(20);
+    expect(recordReview.mock.calls[0][0].cardId).toBe(first.reviewCardId);
+  });
+
+  it("keeps New numbers fresh in finite parameter spaces without recording reviews", async () => {
+    const recordReview = vi.fn().mockResolvedValue(undefined);
+
+    function Harness({
+      chapter,
+      size,
+    }: {
+      readonly chapter: number;
+      readonly size: 5 | 20;
+    }) {
+      const [seed, setSeed] = useState(100);
+      return (
+        <GeneratedCalculationLab
+          chapter={chapter}
+          setChapter={vi.fn()}
+          size={size}
+          setSize={vi.fn()}
+          seed={seed}
+          onNewSet={() => setSeed((value) => value + 1)}
+          onBack={vi.fn()}
+          onUseAuthored={vi.fn()}
+          recordReview={recordReview}
+        />
+      );
+    }
+
+    const { unmount } = render(<Harness chapter={10} size={5} />);
+    const ruleOf70Prompts = new Set<string>();
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const prompt = screen.getByRole("heading", { level: 2 }).textContent ?? "";
+      expect(ruleOf70Prompts.has(prompt)).toBe(false);
+      ruleOf70Prompts.add(prompt);
+      fireEvent.click(screen.getByRole("button", { name: "New numbers" }));
+      await waitFor(() =>
+        expect(screen.getByRole("heading", { level: 2 }).textContent).not.toBe(prompt),
+      );
+    }
+    expect(recordReview).not.toHaveBeenCalled();
+    unmount();
+
+    render(<Harness chapter={5} size={20} />);
+    const balancedBudgetPrompts = new Set<string>();
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const prompt = screen.getByRole("heading", { level: 2 }).textContent ?? "";
+      expect(balancedBudgetPrompts.has(prompt)).toBe(false);
+      balancedBudgetPrompts.add(prompt);
+      fireEvent.click(screen.getByRole("button", { name: "New numbers" }));
+      await waitFor(() =>
+        expect(screen.getByRole("heading", { level: 2 }).textContent).not.toBe(prompt),
+      );
+    }
+    expect(recordReview).not.toHaveBeenCalled();
+  });
+
+  it("rebuilds a complete fresh set at the set boundary", async () => {
+    const recordReview = vi.fn().mockResolvedValue(undefined);
+    const oldPrompts: string[] = [];
+
+    function Harness() {
+      const [seed, setSeed] = useState(100);
+      return (
+        <>
+          <output data-testid="session-seed">{seed}</output>
+          <GeneratedCalculationLab
+            chapter={1}
+            setChapter={vi.fn()}
+            size={5}
+            setSize={vi.fn()}
+            seed={seed}
+            onNewSet={() => setSeed((value) => value + 1)}
+            onBack={vi.fn()}
+            onUseAuthored={vi.fn()}
+            recordReview={recordReview}
+          />
+        </>
+      );
+    }
+
+    render(<Harness />);
+    for (let index = 0; index < 5; index += 1) {
+      oldPrompts.push(screen.getByRole("heading", { level: 2 }).textContent ?? "");
+      fireEvent.change(screen.getByLabelText(/Numeric answer/), {
+        target: { value: "0" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
+      await waitFor(() => expect(recordReview).toHaveBeenCalledTimes(index + 1));
+      if (index < 4) {
+        fireEvent.click(screen.getByRole("button", { name: "Next" }));
+        await waitFor(() =>
+          expect(screen.getByRole("heading", { level: 2 }).textContent).not.toBe(
+            oldPrompts[index],
+          ),
+        );
+      }
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(screen.getByTestId("session-seed")).toHaveTextContent("101"),
+    );
+    expect(screen.getByRole("heading", { level: 2 }).textContent).not.toBe(
+      oldPrompts[1],
+    );
+    expect(recordReview).toHaveBeenCalledTimes(5);
   });
 });
 

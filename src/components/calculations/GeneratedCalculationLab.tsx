@@ -2,9 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { NewReviewEvent } from "../../domain/progress";
 import {
   buildGeneratedCalculationSet,
+  generatedCalculationFingerprint,
+  instantiateFreshCalculationVariant,
   type GeneratedCalculationSessionOptions,
 } from "../../calculations/session";
-import { deriveCalculationSeed } from "../../calculations/random";
 import {
   calculationTemplates,
   getGeneratedCalculationTemplate,
@@ -37,9 +38,9 @@ export function GeneratedCalculationLab({
   const [overrides, setOverrides] = useState<
     Readonly<Record<number, GeneratedCalculationInstance>>
   >({});
-  const [cycle, setCycle] = useState(0);
   const [saving, setSaving] = useState(false);
   const refreshCounter = useRef(0);
+  const shownFingerprints = useRef<Record<number, Set<string>>>({});
   const options = useMemo<GeneratedCalculationSessionOptions>(
     () => ({ chapter, size, seed }),
     [chapter, seed, size],
@@ -60,8 +61,14 @@ export function GeneratedCalculationLab({
   useEffect(() => {
     setIndex(0);
     setOverrides({});
-    setCycle(0);
     refreshCounter.current = 0;
+    const fingerprints: Record<number, Set<string>> = {};
+    baseInstances.forEach((instance, instanceIndex) => {
+      fingerprints[instanceIndex] = new Set([
+        generatedCalculationFingerprint(instance),
+      ]);
+    });
+    shownFingerprints.current = fingerprints;
     setSaving(false);
   }, [baseInstances]);
 
@@ -70,14 +77,14 @@ export function GeneratedCalculationLab({
     const template = getGeneratedCalculationTemplate(current.templateId);
     if (template === undefined) return;
     refreshCounter.current += 1;
-    const fresh = template.instantiate(
-      deriveCalculationSeed(
-        seed,
-        "new-numbers",
-        index,
-        refreshCounter.current,
-        Date.now(),
-      ),
+    const fingerprints =
+      shownFingerprints.current[index] ??
+      new Set([generatedCalculationFingerprint(current)]);
+    shownFingerprints.current[index] = fingerprints;
+    const fresh = instantiateFreshCalculationVariant(
+      template,
+      [seed, "new-numbers", index, refreshCounter.current],
+      fingerprints,
     );
     setOverrides((previous) => ({ ...previous, [index]: fresh }));
   }, [current, index, saving, seed]);
@@ -88,18 +95,8 @@ export function GeneratedCalculationLab({
       setIndex((value) => value + 1);
       return;
     }
-    const first = instances[0];
-    if (first === undefined) return;
-    const template = getGeneratedCalculationTemplate(first.templateId);
-    if (template === undefined) return;
-    const nextCycle = cycle + 1;
-    const fresh = template.instantiate(
-      deriveCalculationSeed(seed, "next-cycle", nextCycle, first.templateId),
-    );
-    setOverrides((previous) => ({ ...previous, 0: fresh }));
-    setCycle(nextCycle);
-    setIndex(0);
-  }, [current, cycle, index, instances, saving, seed]);
+    onNewSet();
+  }, [current, index, instances.length, onNewSet, saving]);
 
   return (
     <div className="page-stack practice-page generated-calculation-lab">

@@ -5,6 +5,7 @@ import {
   parseNumericAnswer,
 } from "../calculations/grade";
 import { makeNumericAnswer } from "../calculations/instantiate";
+import { getGeneratedCalculationInstance } from "../calculations/templates";
 
 function numericAnswer(
   value: number,
@@ -47,6 +48,34 @@ describe("generated numeric grading", () => {
     const percentagePoints = numericAnswer(5, "percentage_points", 2);
     expect(parseNumericAnswer("5", percentagePoints)).toEqual({ value: 5 });
     expect(parseNumericAnswer("5%", percentagePoints)).toBeNull();
+  });
+
+  it("grades Chapter 10 final growth rates as percent answers", () => {
+    const tfp = getGeneratedCalculationInstance(
+      "generated-tfp-growth",
+      "snapshot-growth",
+    );
+    const output = getGeneratedCalculationInstance(
+      "generated-output-growth-accounting",
+      "correction-a",
+    );
+
+    for (const instance of [tfp, output]) {
+      expect(instance.answer.unit).toBe("percent");
+      expect(instance.answer.displayUnit).toBe("%");
+      expect(
+        parseAndGradeNumericAnswer(String(instance.answer.value), instance.answer)
+          .correct,
+      ).toBe(true);
+      expect(
+        parseAndGradeNumericAnswer(`${instance.answer.value}%`, instance.answer)
+          .correct,
+      ).toBe(true);
+      expect(
+        parseAndGradeNumericAnswer(String(instance.answer.value / 100), instance.answer)
+          .correct,
+      ).toBe(false);
+    }
   });
 
   it("supports comma-separated ordinary numbers", () => {

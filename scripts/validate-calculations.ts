@@ -1,4 +1,5 @@
 import { calculationTemplates } from "../src/calculations/templates";
+import { generatedCalculationFingerprint } from "../src/calculations/session";
 import { validateCalculationTemplateRegistry } from "../src/calculations/validate";
 
 const stats = validateCalculationTemplateRegistry(calculationTemplates, 500);
@@ -18,15 +19,11 @@ for (const template of calculationTemplates) {
   );
   const answers = instances.map((instance) => instance.answer.value);
   const distinctAnswers = new Set(answers.map((value) => String(value))).size;
-  const distinctInstances = new Set(
-    instances.map((instance) =>
-      JSON.stringify({ prompt: instance.prompt, stimulus: instance.stimulus }),
-    ),
-  ).size;
+  const distinctContent = new Set(instances.map(generatedCalculationFingerprint)).size;
   const positive = answers.filter((value) => value > 0).length;
   const negative = answers.filter((value) => value < 0).length;
   const zero = answers.filter((value) => value === 0).length;
   console.log(
-    `- ${template.id}: answers ${distinctAnswers}, instances ${distinctInstances}, range ${Math.min(...answers)}..${Math.max(...answers)}, signs +${positive}/−${negative}/0${zero}`,
+    `- ${template.id}: answers ${distinctAnswers}, prompt/stimulus content ${distinctContent}, range ${Math.min(...answers)}..${Math.max(...answers)}, signs +${positive}/−${negative}/0${zero}`,
   );
 }

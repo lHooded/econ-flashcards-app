@@ -54,7 +54,7 @@ export function PracticePage({
       size={size}
       setSize={setSize}
       seed={seed}
-      onNewSet={() => setSeed(Date.now())}
+      onNewSet={() => setSeed((previous) => previous + 1)}
       onBack={() => {
         setMode(null);
         window.location.hash = "#/practice";

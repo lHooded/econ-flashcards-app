@@ -1,5 +1,9 @@
 import { cards } from "../data/deck";
-import type { CalculationTemplate, GeneratedCalculationInstance } from "./model";
+import {
+  isNumericUnit,
+  type CalculationTemplate,
+  type GeneratedCalculationInstance,
+} from "./model";
 import { validateQuestionStimulus } from "../stimulus/validateStimulus";
 
 export interface CalculationTemplateValidationStats {
@@ -151,6 +155,9 @@ export function validateGeneratedCalculationInstance(
   }
   if (answer.unit.trim().length === 0)
     throw new Error(`Template "${template.id}" has no answer unit.`);
+  if (!isNumericUnit(answer.unit)) {
+    throw new Error(`Template "${template.id}" has an unsupported answer unit.`);
+  }
   if (answer.tolerance.type !== "absolute" && answer.tolerance.type !== "relative") {
     throw new Error(`Template "${template.id}" returned an invalid tolerance type.`);
   }

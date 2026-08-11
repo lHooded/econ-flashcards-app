@@ -1,5 +1,11 @@
-import type { CalculationTemplate, GeneratedCalculationInstance } from "./model";
+import type {
+  CalculationSeed,
+  CalculationTemplate,
+  GeneratedCalculationInstance,
+} from "./model";
 import { deriveCalculationSeed, SeededRandom } from "./random";
+
+const MAX_FRESH_VARIANT_ATTEMPTS = 10_000;
 
 export interface GeneratedCalculationSessionOptions {
   readonly chapter: number | null;
@@ -47,22 +53,40 @@ export function buildGeneratedCalculationSet(
   }
 
   const seenInstances = new Set<string>();
-  return selected.map((template, ordinal) => {
-    let attempt = 0;
-    let instance = template.instantiate(
-      deriveCalculationSeed(options.seed, template.id, ordinal, attempt),
-    );
-    while (seenInstances.has(instanceFingerprint(instance)) && attempt < 20) {
-      attempt += 1;
-      instance = template.instantiate(
-        deriveCalculationSeed(options.seed, template.id, ordinal, attempt),
-      );
-    }
-    seenInstances.add(instanceFingerprint(instance));
-    return instance;
-  });
+  return selected.map((template, ordinal) =>
+    instantiateFreshCalculationVariant(
+      template,
+      [options.seed, template.id, ordinal],
+      seenInstances,
+    ),
+  );
 }
 
-function instanceFingerprint(instance: GeneratedCalculationInstance): string {
+export function generatedCalculationFingerprint(
+  instance: GeneratedCalculationInstance,
+): string {
   return JSON.stringify({ prompt: instance.prompt, stimulus: instance.stimulus });
+}
+
+export function instantiateFreshCalculationVariant(
+  template: CalculationTemplate,
+  seedParts: readonly CalculationSeed[],
+  usedFingerprints: Set<string>,
+): GeneratedCalculationInstance {
+  if (seedParts.length === 0) {
+    throw new Error("Fresh calculation variants require at least one seed part.");
+  }
+
+  for (let attempt = 0; attempt < MAX_FRESH_VARIANT_ATTEMPTS; attempt += 1) {
+    const instance = template.instantiate(deriveCalculationSeed(...seedParts, attempt));
+    const fingerprint = generatedCalculationFingerprint(instance);
+    if (!usedFingerprints.has(fingerprint)) {
+      usedFingerprints.add(fingerprint);
+      return instance;
+    }
+  }
+
+  throw new Error(
+    `Could not generate a fresh variant for template "${template.id}" after ${MAX_FRESH_VARIANT_ATTEMPTS} deterministic attempts.`,
+  );
 }

@@ -3,18 +3,25 @@ import type { QuestionStimulusSpec } from "../stimulus/model";
 
 export type CalculationSeed = string | number;
 
-export type NumericUnit =
-  | "none"
-  | "percent"
-  | "percentage_points"
-  | "currency"
-  | "currency_millions"
-  | "index"
-  | "ratio"
-  | "people"
-  | "units"
-  | "years"
-  | string;
+export const NUMERIC_UNITS = [
+  "none",
+  "percent",
+  "percentage_points",
+  "currency",
+  "currency_millions",
+  "currency_millions_per_percentage_point",
+  "index",
+  "ratio",
+  "people",
+  "units",
+  "years",
+] as const;
+
+export type NumericUnit = (typeof NUMERIC_UNITS)[number];
+
+export function isNumericUnit(value: string): value is NumericUnit {
+  return (NUMERIC_UNITS as readonly string[]).includes(value);
+}
 
 export interface NumericTolerance {
   readonly type: "absolute" | "relative";
