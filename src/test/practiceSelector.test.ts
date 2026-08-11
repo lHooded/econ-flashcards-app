@@ -72,4 +72,18 @@ describe("Practice Lab selection", () => {
       questions.every((question) => question.stimulus?.type === "econ_graph"),
     ).toBe(true);
   });
+
+  it("keeps a concept-focused practice set inside its exact question IDs", () => {
+    const conceptIds = new Set(["auth-ch01-006", "auth-ch01-007"]);
+    const questions = buildPracticeSet(examQuestions, {
+      chapter: null,
+      style: "all",
+      stimulus: "all",
+      size: 20,
+      seed: "concept-focus",
+      questionIds: conceptIds,
+    });
+    expect(questions.length).toBeGreaterThan(0);
+    expect(questions.every((question) => conceptIds.has(question.id))).toBe(true);
+  });
 });

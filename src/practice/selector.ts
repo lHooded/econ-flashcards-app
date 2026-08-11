@@ -9,6 +9,8 @@ export interface PracticeQuestionFilters {
   readonly size: 5 | 10 | 20;
   readonly seed: number | string;
   readonly recentQuestionIds?: readonly string[];
+  /** Optional concept focus; candidates must belong to this exact question set. */
+  readonly questionIds?: ReadonlySet<string>;
 }
 
 export function buildPracticeSet(
@@ -17,6 +19,7 @@ export function buildPracticeSet(
 ): readonly ExamQuestion[] {
   const candidates = bank.filter(
     (question) =>
+      (filters.questionIds?.has(question.id) ?? true) &&
       (filters.chapter === null || question.chapter === filters.chapter) &&
       (filters.style === "all" || question.style === filters.style) &&
       (filters.stimulus === "all"

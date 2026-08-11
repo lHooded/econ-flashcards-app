@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Flashcard } from "../domain/content";
 import type { NewReviewEvent, ReviewRating } from "../domain/progress";
+import { KnowledgeText } from "./knowledge/KnowledgeText";
 
 interface StudyCardProps {
   readonly card: Flashcard;
+  readonly testedConceptIds?: readonly string[];
   readonly onSubmitReview: (input: Omit<NewReviewEvent, "cardId">) => Promise<void>;
   readonly onFinish: () => void;
   readonly onPhaseChange?: (phase: StudyCardPhase) => void;
@@ -19,6 +21,7 @@ function modeForCard(card: Flashcard): NewReviewEvent["mode"] {
 
 export function StudyCard({
   card,
+  testedConceptIds,
   onSubmitReview,
   onFinish,
   onPhaseChange,
@@ -244,7 +247,11 @@ export function StudyCard({
           : "Keyboard: Space / Enter reveal · 1–3 rate"}
       </p>
       <h2 id={`card-${card.id}-prompt`} className="study-prompt">
-        {card.front}
+        <KnowledgeText
+          text={card.front}
+          disclosure={revealed ? "full" : "preview"}
+          testedConceptIds={revealed ? [] : testedConceptIds}
+        />
       </h2>
 
       {isMcq && card.choices !== undefined && card.correctChoice !== undefined ? (
@@ -314,15 +321,21 @@ export function StudyCard({
           )}
           <section className="answer-block">
             <p className="section-kicker">Answer</p>
-            <p className="answer-text">{card.answer}</p>
+            <p className="answer-text">
+              <KnowledgeText text={card.answer} />
+            </p>
           </section>
           <section className="explanation-block">
             <p className="section-kicker">Why it works</p>
-            <p>{card.explanation}</p>
+            <p>
+              <KnowledgeText text={card.explanation} />
+            </p>
           </section>
           <section className="trap-block">
             <p className="section-kicker">Common trap</p>
-            <p>{card.commonTrap}</p>
+            <p>
+              <KnowledgeText text={card.commonTrap} />
+            </p>
           </section>
 
           {isMcq ? (

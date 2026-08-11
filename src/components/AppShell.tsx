@@ -10,8 +10,10 @@ interface AppShellProps extends PropsWithChildren {
 const navigation = [
   { href: "#/", route: "/" as const, label: "Home" },
   { href: "#/study", route: "/study" as const, label: "Study" },
+  { href: "#/guided", route: "/guided" as const, label: "Guided Cram" },
   { href: "#/mock", route: "/mock" as const, label: "Mock exam" },
   { href: "#/practice", route: "/practice" as const, label: "Practice Lab" },
+  { href: "#/knowledge", route: "/knowledge" as const, label: "Knowledge" },
   { href: "#/settings", route: "/settings" as const, label: "Settings / Data" },
 ];
 

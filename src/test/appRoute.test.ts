@@ -19,6 +19,10 @@ describe("hash routing", () => {
       route: "/study",
       studyScope: { preset: "needs_work", chapter: 9 },
     });
+    expect(parseHashLocation("#/study?concept=bond")).toMatchObject({
+      route: "/study",
+      conceptId: "bond",
+    });
   });
 
   it("falls back safely for unknown presets and malformed chapters", () => {
@@ -52,7 +56,34 @@ describe("hash routing", () => {
       route: "/practice",
       practiceMode: "stimulus",
     });
+    expect(parseHashLocation("#/practice?mode=mcq&concept=bond")).toMatchObject({
+      route: "/practice",
+      practiceMode: "mcq",
+      conceptId: "bond",
+    });
     expect(parseHashLocation("#/practice?mode=not-real").practiceMode).toBeNull();
+  });
+
+  it("supports a hash-safe Knowledge route and concept deep link", () => {
+    expect(parseHashLocation("#/knowledge")).toMatchObject({
+      route: "/knowledge",
+      conceptId: null,
+    });
+    expect(parseHashLocation("#/knowledge?concept=real-interest-rate")).toMatchObject({
+      route: "/knowledge",
+      conceptId: "real-interest-rate",
+    });
+  });
+
+  it("supports the Guided Cram route and current-concept deep link", () => {
+    expect(parseHashLocation("#/guided")).toMatchObject({
+      route: "/guided",
+      conceptId: null,
+    });
+    expect(parseHashLocation("#/guided?concept=percentage")).toMatchObject({
+      route: "/guided",
+      conceptId: "percentage",
+    });
   });
 
   it("captures a pairing secret from the fragment and removes it from the visible URL", () => {

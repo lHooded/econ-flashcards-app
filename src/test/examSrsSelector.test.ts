@@ -46,6 +46,7 @@ function select(
   options: Partial<{
     recentlyShownCardIds: readonly string[];
     studyAhead: boolean;
+    newCardPrerequisiteReadyByCardId: ReadonlyMap<string, boolean>;
   }> = {},
 ) {
   return selectNextCard({
@@ -77,12 +78,18 @@ describe("Exam-SRS selector", () => {
 
   it("lets a due failure outrank unseen material", () => {
     const cards = [card("failed", 1), card("unseen", 2)];
-    const result = select(cards, [
-      review("failure", "failed", NOW - 11 * 60 * 1000, {
-        correct: false,
-        rating: "forgot",
-      }),
-    ]);
+    const result = select(
+      cards,
+      [
+        review("failure", "failed", NOW - 11 * 60 * 1000, {
+          correct: false,
+          rating: "forgot",
+        }),
+      ],
+      {
+        newCardPrerequisiteReadyByCardId: new Map([["unseen", true]]),
+      },
+    );
     expect(result.selection).toMatchObject({
       card: { id: "failed" },
       reason: "Relearning",
@@ -156,6 +163,26 @@ describe("Exam-SRS selector", () => {
   it("uses deterministic tie-breaking", () => {
     const result = select([card("card-b", 1), card("card-a", 1)]);
     expect(result.selection?.card.id).toBe("card-a");
+  });
+
+  it("prefers a graph-ready unseen card only when new-card priorities are otherwise tied", () => {
+    const result = select([card("candidate-b", 1), card("candidate-a", 1)], [], {
+      newCardPrerequisiteReadyByCardId: new Map([
+        ["candidate-a", false],
+        ["candidate-b", true],
+      ]),
+    });
+    expect(result.selection?.card.id).toBe("candidate-b");
+  });
+
+  it("falls back deterministically when every unseen card has unmet prerequisites", () => {
+    const result = select([card("candidate-b", 1), card("candidate-a", 1)], [], {
+      newCardPrerequisiteReadyByCardId: new Map([
+        ["candidate-a", false],
+        ["candidate-b", false],
+      ]),
+    });
+    expect(result.selection?.card.id).toBe("candidate-a");
   });
 
   it("reports the next future review when the deck is caught up", () => {

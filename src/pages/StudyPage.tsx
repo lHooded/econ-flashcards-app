@@ -20,15 +20,23 @@ import {
 import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
 import { formatLocalDateTime } from "../utils/date";
 import { useNow } from "../utils/useNow";
+import { deriveCardPrerequisiteReadiness } from "../knowledge/mastery";
+import { KnowledgeText } from "../components/knowledge/KnowledgeText";
+import { cardConceptMap } from "../knowledge/contentMap";
+import { knowledgeConceptById } from "../knowledge/data";
 
 const RECENT_CARD_LIMIT = 3;
 const EMPTY_REVIEWS: readonly ReviewEvent[] = [];
 
 interface StudyPageProps {
   readonly scope?: StudyScope;
+  readonly conceptId?: string | null;
 }
 
-export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
+export function StudyPage({
+  scope = DEFAULT_STUDY_SCOPE,
+  conceptId = null,
+}: StudyPageProps) {
   const { snapshot, recordReview } = useProgress();
   const nowMs = useNow(30 * 1000);
   const [currentCardId, setCurrentCardId] = useState<string | null>(null);
@@ -38,6 +46,11 @@ export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
   const [studyAhead, setStudyAhead] = useState(false);
   const currentCardPhase = useRef<StudyCardPhase>("unanswered");
   const previousScopeKey = useRef(scopeKeyFor(scope));
+  const conceptCardIds = useMemo(() => {
+    if (conceptId === null) return undefined;
+    const concept = knowledgeConceptById.get(conceptId);
+    return new Set(concept?.linkedCardIds ?? []);
+  }, [conceptId]);
 
   const settings = snapshot?.settings ?? DEFAULT_APP_SETTINGS;
   const persistedReviews = snapshot?.reviewEvents ?? EMPTY_REVIEWS;
@@ -52,17 +65,31 @@ export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
     () => deriveExamSrsSnapshot(cards, effectiveReviews, settings, nowMs),
     [effectiveReviews, nowMs, settings],
   );
+  const prerequisiteReadiness = useMemo(
+    () => deriveCardPrerequisiteReadiness(cards, scheduler),
+    [scheduler],
+  );
   const scopedNextCard = useMemo(
     () =>
       selectScopedNextCard({
         cards,
         scheduler,
         scope,
+        candidateCardIds: conceptCardIds,
         nowMs,
         recentlyShownCardIds: recentCardIds,
         studyAhead,
+        newCardPrerequisiteReadyByCardId: prerequisiteReadiness,
       }),
-    [nowMs, recentCardIds, scheduler, scope, studyAhead],
+    [
+      conceptCardIds,
+      nowMs,
+      prerequisiteReadiness,
+      recentCardIds,
+      scheduler,
+      scope,
+      studyAhead,
+    ],
   );
 
   // Once a persisted review reaches the provider snapshot, the local event
@@ -76,7 +103,7 @@ export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
   }, [persistedReviews]);
 
   useEffect(() => {
-    const nextScopeKey = scopeKeyFor(scope);
+    const nextScopeKey = scopeKeyFor(scope) + ":" + (conceptId ?? "all");
     if (previousScopeKey.current === nextScopeKey) {
       return;
     }
@@ -94,7 +121,7 @@ export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
     ) {
       setCurrentCardId(null);
     }
-  }, [scope]);
+  }, [conceptId, scope]);
 
   useEffect(() => {
     if (currentCardId === null && scopedNextCard.selection !== null) {
@@ -178,8 +205,7 @@ export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
           <p className="eyebrow">Exam-SRS · dynamic next-card selection</p>
           <h1>One card at a time.</h1>
           <p className="lede">
-            Every saved review changes the next choice. New cards protect coverage;
-            failures return quickly without being repeated immediately.
+            <KnowledgeText text="Every saved review changes the next choice. New cards protect coverage; failures return quickly without being repeated immediately." />
           </p>
         </div>
         <div className="session-counter" aria-live="polite">
@@ -212,6 +238,7 @@ export function StudyPage({ scope = DEFAULT_STUDY_SCOPE }: StudyPageProps) {
           </div>
           <StudyCard
             card={currentCard}
+            testedConceptIds={cardConceptMap[currentCard.id] ?? []}
             key={currentCard.id}
             onSubmitReview={submitReview}
             onFinish={finishCard}

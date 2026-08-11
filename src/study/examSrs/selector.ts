@@ -28,6 +28,24 @@ export interface SelectNextCardInput {
   readonly nowMs: number;
   readonly recentlyShownCardIds?: readonly string[];
   readonly studyAhead?: boolean;
+  /** Guidance only: used to order otherwise-comparable unseen cards. */
+  readonly newCardPrerequisiteReadyByCardId?: ReadonlyMap<string, boolean>;
+}
+
+export interface RankExamSrsCandidatesInput {
+  readonly cards: readonly Flashcard[];
+  readonly scheduler: ExamSrsSnapshot;
+  readonly nowMs: number;
+  readonly recentlyShownCardIds?: readonly string[];
+  readonly newCardPrerequisiteReadyByCardId?: ReadonlyMap<string, boolean>;
+  readonly candidateCardIds?: ReadonlySet<string>;
+  readonly overrideChapterZeroGate?: boolean;
+}
+
+export interface RankedExamSrsCandidate {
+  readonly card: Flashcard;
+  readonly state: ExamSrsCardState;
+  readonly priority: number;
 }
 
 export function selectNextCard(input: SelectNextCardInput): NextCardSelection {
@@ -49,42 +67,21 @@ export function selectNextCardFromSnapshot(input: {
   readonly nowMs: number;
   readonly recentlyShownCardIds?: readonly string[];
   readonly studyAhead?: boolean;
+  /** Guidance only: used to order otherwise-comparable unseen cards. */
+  readonly newCardPrerequisiteReadyByCardId?: ReadonlyMap<string, boolean>;
   /** Optional candidate restriction; omitted for normal full-deck study. */
   readonly candidateCardIds?: ReadonlySet<string>;
   /** Explicit Chapter 0 study bypasses only the automatic unseen-card gate. */
   readonly overrideChapterZeroGate?: boolean;
 }): NextCardSelection {
   const statesById = input.scheduler.stateByCardId;
-  const coverage = calculateCoverage(input.cards, input.scheduler.states);
   const candidateCards = input.cards.filter(
     (card) => input.candidateCardIds?.has(card.id) ?? true,
   );
-  const normalCandidates = candidateCards
-    .map((card) => ({ card, state: statesById[card.id] }))
-    .filter(
-      (candidate): candidate is { card: Flashcard; state: ExamSrsCardState } =>
-        candidate.state !== undefined &&
-        (candidate.state.learningState === "unseen" || candidate.state.isDue),
-    );
-
   const recentIds = new Set(
     (input.recentlyShownCardIds ?? []).slice(0, MAX_RECENT_CARDS),
   );
-  const selectedNormal = chooseWithRecentFallback(
-    normalCandidates,
-    recentIds,
-    (left, right) =>
-      compareCandidates(
-        {
-          ...left,
-          priority: priorityFor(left.card, left.state, input, coverage),
-        },
-        {
-          ...right,
-          priority: priorityFor(right.card, right.state, input, coverage),
-        },
-      ),
-  );
+  const selectedNormal = rankExamSrsCandidatesFromSnapshot(input)[0] ?? null;
 
   if (selectedNormal !== null) {
     return {
@@ -132,6 +129,42 @@ export function selectNextCardFromSnapshot(input: {
   }
 
   return { selection: null, nextDueAt };
+}
+
+/**
+ * Return the same ordinary Exam-SRS candidate order used by Study. Guided
+ * Cram uses this read-only ranking to skip a graph-blocked unseen anchor while
+ * preserving numeric urgency, coverage pressure, and all ordinary tie-breaks.
+ */
+export function rankExamSrsCandidatesFromSnapshot(
+  input: RankExamSrsCandidatesInput,
+): readonly RankedExamSrsCandidate[] {
+  const statesById = input.scheduler.stateByCardId;
+  const coverage = calculateCoverage(input.cards, input.scheduler.states);
+  const candidates = input.cards
+    .filter((card) => input.candidateCardIds?.has(card.id) ?? true)
+    .map((card) => ({ card, state: statesById[card.id] }))
+    .filter(
+      (candidate): candidate is { card: Flashcard; state: ExamSrsCardState } =>
+        candidate.state !== undefined &&
+        (candidate.state.learningState === "unseen" || candidate.state.isDue),
+    )
+    .map((candidate) => ({
+      ...candidate,
+      priority: priorityFor(candidate.card, candidate.state, input, coverage),
+    }));
+  const recentIds = new Set(
+    (input.recentlyShownCardIds ?? []).slice(0, MAX_RECENT_CARDS),
+  );
+  const withoutRecent = candidates.filter(
+    (candidate) => !recentIds.has(candidate.card.id),
+  );
+  const pool = withoutRecent.length > 0 ? withoutRecent : candidates;
+  return Object.freeze(
+    [...pool].sort((left, right) =>
+      compareCandidates(left, right, input.newCardPrerequisiteReadyByCardId),
+    ),
+  );
 }
 
 export function getStudyReason(
@@ -226,6 +259,40 @@ function priorityFor(
   return priority;
 }
 
+/**
+ * Public read-only view of the same numeric priority used by normal Study.
+ * Guided Cram uses this only to compare an already-attempted guided check with
+ * the canonical selector; it does not maintain a second scheduler.
+ */
+export function getExamSrsPriority(input: {
+  readonly card: Flashcard;
+  readonly state: ExamSrsCardState;
+  readonly cards: readonly Flashcard[];
+  readonly scheduler: ExamSrsSnapshot;
+  readonly nowMs: number;
+  readonly overrideChapterZeroGate?: boolean;
+}): number {
+  return priorityFor(
+    input.card,
+    input.state,
+    input,
+    calculateCoverage(input.cards, input.scheduler.states),
+  );
+}
+
+/** The base/overdue part of Exam-SRS priority for non-canonical check skills. */
+export function getExamSrsStatePriority(
+  state: ExamSrsCardState,
+  nowMs: number,
+): number {
+  let priority = BASE_PRIORITY[state.learningState];
+  if (state.learningState !== "unseen" && state.isDue && state.dueAt !== null) {
+    const overdueHours = Math.max(0, (nowMs - Date.parse(state.dueAt)) / HOUR_MS);
+    priority += Math.min(400, overdueHours * 20);
+  }
+  return priority;
+}
+
 function calculateCoverage(
   cards: readonly Flashcard[],
   states: readonly ExamSrsCardState[],
@@ -277,14 +344,33 @@ function calculateCoverage(
 function compareCandidates(
   left: { card: Flashcard; state: ExamSrsCardState; priority: number },
   right: { card: Flashcard; state: ExamSrsCardState; priority: number },
+  prerequisiteReadyByCardId?: ReadonlyMap<string, boolean>,
 ): number {
   return (
     right.priority - left.priority ||
+    compareNewCardReadiness(left, right, prerequisiteReadyByCardId) ||
     compareDueAt(left.state, right.state) ||
     left.state.reviewCount - right.state.reviewCount ||
     left.card.chapter - right.card.chapter ||
     compareLexical(left.card.id, right.card.id)
   );
+}
+
+function compareNewCardReadiness(
+  left: { card: Flashcard; state: ExamSrsCardState },
+  right: { card: Flashcard; state: ExamSrsCardState },
+  readiness?: ReadonlyMap<string, boolean>,
+): number {
+  if (
+    readiness === undefined ||
+    left.state.learningState !== "unseen" ||
+    right.state.learningState !== "unseen"
+  ) {
+    return 0;
+  }
+  const leftReady = readiness.get(left.card.id) === true;
+  const rightReady = readiness.get(right.card.id) === true;
+  return Number(rightReady) - Number(leftReady);
 }
 
 function compareStudyAhead(

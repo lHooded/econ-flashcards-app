@@ -203,6 +203,24 @@ describe("study scope predicates", () => {
     ).toBe("new-3");
   });
 
+  it("keeps concept-focused Study inside the linked card set", () => {
+    const cards = [card("linked-a", 1), card("linked-b", 2), card("unrelated", 3)];
+    const scheduler = snapshot([
+      state("linked-a", "unseen"),
+      state("linked-b", "unseen"),
+      state("unrelated", "unseen"),
+    ]);
+    const result = selectScopedNextCard({
+      cards,
+      scheduler,
+      scope: scope("smart"),
+      candidateCardIds: new Set(["linked-a", "linked-b"]),
+      nowMs: NOW,
+    });
+    expect(["linked-a", "linked-b"]).toContain(result.selection?.card.id);
+    expect(result.selection?.card.id).not.toBe("unrelated");
+  });
+
   it("does not let Due introduce unseen or future-due cards", () => {
     const cards = [card("unseen", 1), card("due", 2), card("future", 3)];
     const scheduler = snapshot([
@@ -350,6 +368,22 @@ describe("scoped selection status and Chapter 0", () => {
 });
 
 describe("dynamic scoped scheduling", () => {
+  it("uses prerequisite readiness only inside the existing focused candidate pool", () => {
+    const cards = [card("chapter-one", 1), card("chapter-two", 2)];
+    const result = selectScopedNextCard({
+      cards,
+      scheduler: deriveExamSrsSnapshot(cards, [], NO_EXAM, NOW),
+      scope: scope("smart", 1),
+      nowMs: NOW,
+      newCardPrerequisiteReadyByCardId: new Map([
+        ["chapter-one", false],
+        ["chapter-two", true],
+      ]),
+    });
+    expect(result.selection?.card.id).toBe("chapter-one");
+    expect(result.counts.matchingCount).toBe(1);
+  });
+
   it("keeps a Chapter 9 failure and later reviews inside the Chapter 9 pool", () => {
     const cards = [card("failed-9", 9), card("unseen-9", 9), card("outside-8", 8)];
     const failureAt = NOW;

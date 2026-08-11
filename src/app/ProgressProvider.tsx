@@ -22,6 +22,7 @@ import type { MockAttempt, MockQuestionAttemptState } from "../exam/mock/model";
 import { configuredSyncApi } from "../sync/client";
 import { configuredSyncRuntime } from "../sync/config";
 import { SyncCoordinator } from "../sync/coordinator";
+import { reviewableProgressIds } from "../knowledge/guided/registry";
 
 function toSnapshot(
   data: Awaited<ReturnType<ProgressRepository["load"]>>,
@@ -44,7 +45,7 @@ function errorMessage(error: unknown): string {
 }
 
 export function ProgressProvider({ children }: PropsWithChildren) {
-  const repository = useMemo(() => new ProgressRepository(cardIds), []);
+  const repository = useMemo(() => new ProgressRepository(reviewableProgressIds), []);
   const mockRepository = useMemo(
     () =>
       new MockExamRepository(
@@ -72,7 +73,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       new SyncCoordinator({
         repository,
         api: syncApi,
-        validCardIds: cardIds,
+        validCardIds: reviewableProgressIds,
         syncAppUrl: syncRuntime.appUrl ?? undefined,
         unavailableMessage: syncRuntime.reason ?? undefined,
         onApplied: async () => {

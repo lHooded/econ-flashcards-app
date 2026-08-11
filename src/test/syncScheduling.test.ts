@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { cardIds } from "../data/deck";
 import { createReviewEvent } from "../domain/progress";
 import { ProgressRepository } from "../db/progressRepository";
+import { reviewableProgressIds } from "../knowledge/guided/registry";
 import { SyncApiError, type SyncApi } from "../sync/client";
 import { decryptSyncPayload, encryptSyncPayload } from "../sync/crypto";
 import { SyncCoordinator } from "../sync/coordinator";
@@ -339,6 +340,79 @@ class InvalidPayloadRemote implements SyncApi {
 }
 
 describe("sync scheduling", () => {
+  it("joins a disconnected device with guided evidence through the repository join path", async () => {
+    const laptopName = `sync-guided-join-source-${Date.now()}`;
+    const phoneName = `sync-guided-join-device-${Date.now()}`;
+    const laptopRepository = new ProgressRepository(reviewableProgressIds, laptopName);
+    const phoneRepository = new ProgressRepository(reviewableProgressIds, phoneName);
+    const remote = new DeferredJoinRemote();
+    const laptop = new SyncCoordinator({
+      repository: laptopRepository,
+      api: remote,
+      validCardIds: reviewableProgressIds,
+      debounceMs: 0,
+      now: () => "2026-08-11T12:00:00.000Z",
+    });
+    const phone = new SyncCoordinator({
+      repository: phoneRepository,
+      api: remote,
+      validCardIds: reviewableProgressIds,
+      debounceMs: 0,
+      now: () => "2026-08-11T12:00:00.000Z",
+    });
+    const remoteGuided = createReviewEvent({
+      id: "join-guided-remote",
+      cardId: "knowledge-check:percentage",
+      reviewedAt: "2026-08-11T00:00:00.000Z",
+      mode: "calculation",
+      correct: true,
+      rating: null,
+      responseTimeMs: 620,
+      selectedChoice: null,
+    });
+    const localGuided = createReviewEvent({
+      id: "join-guided-local",
+      cardId: "knowledge-check:percentage",
+      reviewedAt: "2026-08-11T00:01:00.000Z",
+      mode: "calculation",
+      correct: false,
+      rating: null,
+      responseTimeMs: 710,
+      selectedChoice: null,
+    });
+    try {
+      await laptopRepository.resetAll();
+      await phoneRepository.resetAll();
+      await laptopRepository.recordReview(remoteGuided);
+      await phoneRepository.recordReview(localGuided);
+      await laptop.createGroup();
+      const joining = phone.joinGroup(await laptop.getPairingCode());
+      await vi.waitFor(() => expect(remote.pullCount).toBe(1));
+      remote.pullGate.resolve();
+      await joining;
+
+      const joined = await phoneRepository.loadSyncState();
+      const joinedSnapshot = await phoneRepository.load();
+      expect(
+        joined.reviews.filter((review) => review.cardId === remoteGuided.cardId),
+      ).toEqual([remoteGuided, localGuided]);
+      expect(
+        joinedSnapshot.cardStates.find((state) => state.cardId === remoteGuided.cardId),
+      ).toMatchObject({ cardId: remoteGuided.cardId, totalReviews: 2 });
+      expect(
+        joinedSnapshot.cardStates.filter((state) => cardIds.has(state.cardId)),
+      ).toHaveLength(349);
+      expect(phone.getStatus()).toMatchObject({ phase: "synced", connected: true });
+    } finally {
+      laptop.dispose();
+      phone.dispose();
+      await laptopRepository.close();
+      await phoneRepository.close();
+      await deleteDB(laptopName);
+      await deleteDB(phoneName);
+    }
+  });
+
   it("coalesces a burst into one pass plus at most one trailing pass", async () => {
     const databaseName = `sync-schedule-${Date.now()}`;
     const repository = new ProgressRepository(cardIds, databaseName);

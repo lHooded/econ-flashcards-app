@@ -20,6 +20,7 @@ import {
 } from "../sync/merge";
 import type { SyncPayloadV1 } from "../sync/model";
 import { toBase64Url } from "../sync/encoding";
+import { reviewableProgressIds } from "../knowledge/guided/registry";
 
 const deviceA = toBase64Url(new Uint8Array(16).fill(1));
 const deviceB = toBase64Url(new Uint8Array(16).fill(2));
@@ -84,6 +85,27 @@ function submittedAttempt(id: string): {
 }
 
 describe("sync merge algebra", () => {
+  it("accepts and merges a registered guided check without changing the canonical deck metric", () => {
+    const guided = review(
+      "guided-sync",
+      "knowledge-check:percentage",
+      "2026-08-11T00:00:00.000Z",
+      true,
+    );
+    const validated = validateSyncPayload(payload([guided]), reviewableProgressIds);
+    expect(validated.reviews).toEqual([guided]);
+    const states = deriveSyncedCardStates(reviewableProgressIds, validated.reviews);
+    expect(states.find((state) => state.cardId === guided.cardId)?.totalReviews).toBe(
+      1,
+    );
+    expect(
+      states.filter((state) => !state.cardId.startsWith("knowledge-check:")).length,
+    ).toBe(349);
+    expect(mergeSyncPayloads(payload([guided]), payload([guided]))).toEqual(
+      payload([guided]),
+    );
+  });
+
   it("unions offline reviews, rebuilds derived state, and is idempotent/symmetric", () => {
     const a = payload([review("a", "ch01-001", "2026-08-11T00:00:00.000Z", true)]);
     const b = payload(

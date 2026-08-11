@@ -18,7 +18,7 @@ import type {
   SchedulerOutcome,
 } from "./model";
 
-interface ReviewEvidence {
+export interface ReviewEvidence {
   readonly outcome: SchedulerOutcome;
   readonly strengthDelta: number;
 }

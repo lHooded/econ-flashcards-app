@@ -5,13 +5,21 @@ import {
 } from "../study/studyScope";
 
 export type AppRoute =
-  "/" | "/study" | "/settings" | "/mock" | "/mock/attempt" | "/practice";
+  | "/"
+  | "/study"
+  | "/settings"
+  | "/mock"
+  | "/mock/attempt"
+  | "/practice"
+  | "/knowledge"
+  | "/guided";
 
 export interface ParsedHashLocation {
   readonly route: AppRoute;
   readonly studyScope: StudyScope;
   readonly attemptId: string | null;
   readonly practiceMode: "mcq" | "stimulus" | "written" | "calculations" | null;
+  readonly conceptId: string | null;
   readonly pairingCode?: string | null;
 }
 
@@ -22,11 +30,13 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
   const query = queryIndex === -1 ? "" : rawLocation.slice(queryIndex + 1);
 
   if (path === "/study") {
+    const params = safeParams(query);
     return {
       route: "/study",
       studyScope: parseStudyScopeQuery(query),
       attemptId: null,
       practiceMode: null,
+      conceptId: params.get("concept")?.trim() || null,
     };
   }
 
@@ -37,6 +47,7 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
       studyScope: DEFAULT_STUDY_SCOPE,
       attemptId: null,
       practiceMode: null,
+      conceptId: null,
       pairingCode: params.get("pair"),
     };
   }
@@ -47,6 +58,7 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
       studyScope: DEFAULT_STUDY_SCOPE,
       attemptId: null,
       practiceMode: null,
+      conceptId: null,
     };
   }
 
@@ -59,6 +71,7 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
         studyScope: DEFAULT_STUDY_SCOPE,
         attemptId: id,
         practiceMode: null,
+        conceptId: null,
       };
     }
     return {
@@ -66,11 +79,13 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
       studyScope: DEFAULT_STUDY_SCOPE,
       attemptId: null,
       practiceMode: null,
+      conceptId: null,
     };
   }
 
   if (path === "/practice") {
-    const mode = safeParams(query).get("mode");
+    const params = safeParams(query);
+    const mode = params.get("mode");
     return {
       route: "/practice",
       studyScope: DEFAULT_STUDY_SCOPE,
@@ -82,6 +97,29 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
         mode === "calculations"
           ? mode
           : null,
+      conceptId: params.get("concept")?.trim() || null,
+    };
+  }
+
+  if (path === "/knowledge") {
+    const conceptId = safeParams(query).get("concept");
+    return {
+      route: "/knowledge",
+      studyScope: DEFAULT_STUDY_SCOPE,
+      attemptId: null,
+      practiceMode: null,
+      conceptId: conceptId?.trim() || null,
+    };
+  }
+
+  if (path === "/guided") {
+    const conceptId = safeParams(query).get("concept");
+    return {
+      route: "/guided",
+      studyScope: DEFAULT_STUDY_SCOPE,
+      attemptId: null,
+      practiceMode: null,
+      conceptId: conceptId?.trim() || null,
     };
   }
 
@@ -90,6 +128,7 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
     studyScope: DEFAULT_STUDY_SCOPE,
     attemptId: null,
     practiceMode: null,
+    conceptId: null,
   };
 }
 

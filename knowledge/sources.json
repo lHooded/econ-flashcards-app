@@ -1,0 +1,128 @@
+[
+  {
+    "id": "textbook",
+    "kind": "textbook",
+    "label": "Playconomics Textbook",
+    "path": "Playconomics Textbook.pdf",
+    "description": "Local Playconomics Introduction to Macroeconomics, third edition."
+  },
+  {
+    "id": "lecture-w1-l1",
+    "kind": "lecture",
+    "label": "Week 1 Lecture 1",
+    "path": "lectures/Week1_Lecture1.pdf",
+    "description": "Aggregate production, GDP, nominal and real output, and business cycles."
+  },
+  {
+    "id": "lecture-w1-l2",
+    "kind": "lecture",
+    "label": "Week 1 Lecture 2",
+    "path": "lectures/Week1_Lecture2.pdf",
+    "description": "CPI, inflation, labour-force statistics, unemployment, potential output, and Okun's law."
+  },
+  {
+    "id": "lecture-w2-l1",
+    "kind": "lecture",
+    "label": "Week 2 Lecture 1",
+    "path": "lectures/Week2_Lecture1.pdf",
+    "description": "Labour demand and supply, wages, nominal and real interest rates, and the Fisher effect."
+  },
+  {
+    "id": "lecture-w2-l2",
+    "kind": "lecture",
+    "label": "Week 2 Lecture 2",
+    "path": "lectures/Week2_Lecture2.pdf",
+    "description": "Investment, capital, user cost, household saving, national saving, and crowding out."
+  },
+  {
+    "id": "lecture-w3-l1",
+    "kind": "lecture",
+    "label": "Week 3 Lecture 1",
+    "path": "lectures/Week3_Lecture1.pdf",
+    "description": "Planned aggregate expenditure, inventories, consumption, and the income-expenditure model."
+  },
+  {
+    "id": "lecture-w3-l2",
+    "kind": "lecture",
+    "label": "Week 3 Lecture 2",
+    "path": "lectures/Week3_Lecture2.pdf",
+    "description": "The multiplier, open-economy leakages, and paradox of thrift."
+  },
+  {
+    "id": "lecture-w4-l1",
+    "kind": "lecture",
+    "label": "Week 4 Lecture 1",
+    "path": "lectures/Week4_Lecture1.pdf",
+    "description": "Government sector, fiscal multipliers, and balanced-budget effects."
+  },
+  {
+    "id": "lecture-w4-l2",
+    "kind": "lecture",
+    "label": "Week 4 Lecture 2",
+    "path": "lectures/Week4_Lecture2.pdf",
+    "description": "Fiscal policy timing, deficits, debt, and stabilisation."
+  },
+  {
+    "id": "lecture-w5-l1",
+    "kind": "lecture",
+    "label": "Week 5 Lecture 1",
+    "path": "lectures/Week5_Lecture1.pdf",
+    "description": "Financial assets, bond pricing, money, and private banks."
+  },
+  {
+    "id": "lecture-w5-l2",
+    "kind": "lecture",
+    "label": "Week 5 Lecture 2",
+    "path": "lectures/Week5_Lecture2.pdf",
+    "description": "Central banks, the RBA, the cash rate, Exchange Settlement Accounts, corridor operations, and open-market operations."
+  },
+  {
+    "id": "lecture-w7-l1",
+    "kind": "lecture",
+    "label": "Week 7 Lecture 1",
+    "path": "lectures/Week7_Lecture1.pdf",
+    "description": "The term structure, expectations, nominal and real rates, policy rules, and monetary transmission through PAE."
+  },
+  {
+    "id": "lecture-w7-l2",
+    "kind": "lecture",
+    "label": "Week 7 Lecture 2",
+    "path": "lectures/Week7_Lecture2.pdf",
+    "description": "Aggregate demand, aggregate supply, inflation dynamics, and policy responses."
+  },
+  {
+    "id": "lecture-w8-l1",
+    "kind": "lecture",
+    "label": "Week 8 Lecture 1",
+    "path": "lectures/Week8_Lecture1.pdf",
+    "description": "Balance of payments, small open economies, saving, investment, and net exports."
+  },
+  {
+    "id": "lecture-w8-l2",
+    "kind": "lecture",
+    "label": "Week 8 Lecture 2",
+    "path": "lectures/Week8_Lecture2.pdf",
+    "description": "Nominal and real exchange rates, PPP, the AUD market, and fixed exchange rates."
+  },
+  {
+    "id": "lecture-w9-l1",
+    "kind": "lecture",
+    "label": "Week 9 Lecture 1",
+    "path": "lectures/Week9Lec125.pdf",
+    "description": "Economic growth, production functions, productivity, and growth accounting."
+  },
+  {
+    "id": "canonical-deck",
+    "kind": "canonical-deck",
+    "label": "MACRO1 canonical flashcard deck",
+    "path": "flashcards/MACRO1_master_flashcards.json",
+    "description": "The 349-card course deck used for card-level coverage and review links."
+  },
+  {
+    "id": "question-bank",
+    "kind": "question-bank",
+    "label": "MACRO1 question banks",
+    "path": "exam_questions/",
+    "description": "Authored ordinary and stimulus question banks, linked through reviewCardId."
+  }
+]
