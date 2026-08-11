@@ -27,6 +27,13 @@ Exam-SRS methodology:
 - strong intervals are capped by the existing remaining-time deadline/buffer
   functions.
 
+Guided Knowledge Checks are objective retrieval only. An MCQ or calculation
+check records `correct: true/false` with `rating: null`, so a Guided Check can
+produce objective success or objective failure but cannot produce a
+`struggled` rating. Weak success remains a real Exam-SRS outcome, but it comes
+from a canonical recall card (or another existing self-rated recall surface)
+where the learner can choose `Struggled`.
+
 An attempted guided check can interrupt new material only when its existing
 Exam-SRS urgency is strictly higher than the canonical anchor. Canonical
 relearning/due/weak priority remains first on equal or higher numeric priority.
@@ -151,6 +158,25 @@ dependencies, 0 unknown required concepts, and 0 prerequisite-unsafe emitted
 variants. The validator reports these counts in CI. The source PDFs used for
 this pass remain local reference material and are not bundled or committed.
 
+### Beginner-safe distractor audit
+
+All 52 static variants were manually inspected for distractors as well as
+their correct-answer reasoning. The `quantity:units-sold` distractors no
+longer use interest-rate or income-tax terminology; they use a close price
+contrast and ordinary bakery facts. The first `lending` variant no longer uses
+shortage or price-index distractors; it contrasts lending with a gift,
+immediate purchase, and payment for work. The income-approach and catch-up
+growth variants likewise use ordinary, non-technical alternatives where a
+later course term was not needed.
+
+The remaining technical distractors are intentional close contrasts taught by
+the same concept or its immediate explanation: relative percentage versus
+percentage points, price versus quantity, supply versus demand, equilibrium
+versus shortage/surplus, exports versus imports, and deflation versus
+disinflation. They are retained because the contrast is the pedagogical point
+of the item, not because the learner must already know an unrelated future
+chapter.
+
 The command runs explicitly in pull-request CI and is also part of `prebuild`,
 so a production bundle cannot omit the check-registry validation.
 
@@ -199,10 +225,13 @@ On a fresh device, the canonical anchor for an inflation-related card may cause
 the graph to introduce percentage, percentage change, index/price index, and
 price level one at a time. Each no-card lesson is followed by its stable check.
 After positive evidence, Guided Cram can introduce inflation and then present
-the relevant canonical card. A weak percentage check can be revisited in about
-45 minutes without blocking inflation forever; a failed check returns on the
-failure interval, while another due item or a different new branch can appear
-in between.
+the relevant canonical card. A correct percentage calculation is an objective
+calculation success (`rating: null`) and a failed percentage calculation is an
+objective failure that returns on the short failure interval. A canonical
+recall card such as the stock/flow card can produce a legitimate `Struggled`
+rating and return in about 45 minutes; that weak canonical evidence can unlock
+the next dependent idea while its review remains scheduled. Another due item
+or an independent new branch can appear between a failure and its retry.
 
 ## Offline and persistence contract
 

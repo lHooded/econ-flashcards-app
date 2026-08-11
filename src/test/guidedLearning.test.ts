@@ -33,7 +33,9 @@ function review(
   id: string,
   cardId: string,
   reviewedAt: string,
-  overrides: Partial<Pick<ReviewEvent, "mode" | "correct" | "rating">> = {},
+  overrides: Partial<
+    Pick<ReviewEvent, "mode" | "correct" | "rating" | "selectedChoice">
+  > = {},
 ): ReviewEvent {
   return createReviewEvent({
     id,
@@ -48,7 +50,50 @@ function review(
           : "got_it"
         : overrides.rating,
     responseTimeMs: 400,
-    selectedChoice: overrides.mode === "mcq" ? 0 : null,
+    selectedChoice: overrides.selectedChoice ?? (overrides.mode === "mcq" ? 0 : null),
+  });
+}
+
+/** Guided checks are objective UI events; they cannot produce self-ratings. */
+function guidedReview(
+  id: string,
+  skillId: string,
+  reviewedAt: string,
+  mode: "mcq" | "calculation",
+  correct = true,
+): ReviewEvent {
+  const event = review(id, skillId, reviewedAt, {
+    mode,
+    correct,
+    rating: null,
+  });
+  if (event.rating !== null) {
+    throw new Error("Guided Knowledge Checks must remain objective events.");
+  }
+  return event;
+}
+
+/** Build only review events that the real StudyCard UI can emit. */
+function canonicalStudyReview(
+  id: string,
+  cardId: string,
+  reviewedAt: string,
+  outcome: "failure" | "weak" | "strong",
+): ReviewEvent {
+  const card = cards.find((candidate) => candidate.id === cardId);
+  if (card === undefined) throw new Error(`Missing canonical test card ${cardId}`);
+  const isMcq = card.choices !== undefined;
+  return review(id, cardId, reviewedAt, {
+    mode: isMcq ? "mcq" : "recall",
+    correct: outcome !== "failure",
+    rating: isMcq
+      ? null
+      : outcome === "failure"
+        ? "forgot"
+        : outcome === "weak"
+          ? "struggled"
+          : "got_it",
+    selectedChoice: isMcq ? (card.correctChoice ?? 0) : null,
   });
 }
 
@@ -140,24 +185,25 @@ describe("Guided Knowledge Check registry", () => {
 
 describe("Guided checks reuse Exam-SRS evidence", () => {
   it.each([
-    ["failure", { correct: false, rating: "forgot" as const, mode: "mcq" as const }],
-    ["weak", { correct: true, rating: "struggled" as const, mode: "recall" as const }],
+    ["failure", { correct: false, rating: null, mode: "mcq" as const }],
     ["mcq", { correct: true, rating: null, mode: "mcq" as const }],
     ["calculation", { correct: true, rating: null, mode: "calculation" as const }],
   ])("derives identical %s state for a guided ID", (_label, outcome) => {
+    const canonicalCardId = outcome.mode === "calculation" ? "ch01-010" : "ch01-002";
     const canonical = review(
       "canonical",
-      "ch01-001",
+      canonicalCardId,
       "2026-08-10T00:00:00.000Z",
       outcome,
     );
-    const guided = review(
+    const guided = guidedReview(
       "guided",
       "knowledge-check:percentage",
       "2026-08-10T00:00:00.000Z",
-      outcome,
+      outcome.mode,
+      outcome.correct,
     );
-    const canonicalState = deriveCardState("ch01-001", [canonical], NO_EXAM, NOW);
+    const canonicalState = deriveCardState(canonicalCardId, [canonical], NO_EXAM, NOW);
     const guidedState = deriveCardState(
       "knowledge-check:percentage",
       [guided],
@@ -170,22 +216,47 @@ describe("Guided checks reuse Exam-SRS evidence", () => {
     });
   });
 
+  it("keeps weak self-rated evidence on a real canonical recall card", () => {
+    const weakCard = cards.find((card) => card.id === "ch03-010");
+    expect(weakCard?.choices).toBeUndefined();
+    const weak = canonicalStudyReview(
+      "weak-stock-flow",
+      "ch03-010",
+      "2026-08-10T23:00:00.000Z",
+      "weak",
+    );
+    expect(weak).toEqual(
+      expect.objectContaining({
+        mode: "recall",
+        correct: true,
+        rating: "struggled",
+      }),
+    );
+    const weakState = deriveCardState("ch03-010", [weak], NO_EXAM, NOW);
+    expect(weakState.learningState).toBe("weak");
+    expect(Date.parse(weakState.dueAt!) - Date.parse(weak.reviewedAt)).toBe(
+      EXAM_SRS_INTERVALS.weakSuccessMs,
+    );
+  });
+
   it("keeps deadline and buffer caps identical for a guided calculation", () => {
     const reviewedAt = "2026-08-10T12:00:00.000Z";
-    const canonical = review("canonical-cap", "ch01-001", reviewedAt, {
+    const canonical = review("canonical-cap", "ch01-010", reviewedAt, {
       mode: "calculation",
       rating: null,
     });
-    const guided = review("guided-cap", "knowledge-check:percentage", reviewedAt, {
-      mode: "calculation",
-      rating: null,
-    });
+    const guided = guidedReview(
+      "guided-cap",
+      "knowledge-check:percentage",
+      reviewedAt,
+      "calculation",
+    );
     const settings = {
       examAt: "2026-08-12T12:00:00.000Z",
       studyBufferHours: 4,
     } as const;
     const canonicalState = deriveCardState(
-      "ch01-001",
+      "ch01-010",
       [canonical],
       settings,
       Date.parse("2026-08-11T00:00:00.000Z"),
@@ -206,7 +277,7 @@ describe("Guided checks reuse Exam-SRS evidence", () => {
     const bufferCanonical = deriveCardState(
       "ch01-001",
       [
-        review("canonical-buffer", "ch01-001", "2026-08-11T09:00:00.000Z", {
+        review("canonical-buffer", "ch01-010", "2026-08-11T09:00:00.000Z", {
           mode: "calculation",
           rating: null,
         }),
@@ -217,11 +288,11 @@ describe("Guided checks reuse Exam-SRS evidence", () => {
     const bufferGuided = deriveCardState(
       "knowledge-check:percentage",
       [
-        review(
+        guidedReview(
           "guided-buffer",
           "knowledge-check:percentage",
           "2026-08-11T09:00:00.000Z",
-          { mode: "calculation", rating: null },
+          "calculation",
         ),
       ],
       bufferSettings,
@@ -247,23 +318,45 @@ describe("Guided concept readiness and progression", () => {
       ),
     ).toBe("unseen");
 
-    const weak = review("percentage-weak", skill.id, "2026-08-10T23:00:00.000Z", {
-      mode: "mcq",
-      rating: "struggled",
-    });
-    const weakStates = deriveGuidedCheckStates([weak], NO_EXAM, NOW);
-    expect(isConceptIntroducedEnough("percentage", [weak])).toBe(true);
+    const objectiveSuccess = guidedReview(
+      "percentage-success",
+      skill.id,
+      "2026-08-10T23:00:00.000Z",
+      "mcq",
+    );
+    const successStates = deriveGuidedCheckStates([objectiveSuccess], NO_EXAM, NOW);
+    expect(isConceptIntroducedEnough("percentage", [objectiveSuccess])).toBe(true);
     expect(
-      deriveConceptStatuses({ stateByCardId: {} }, knowledgeConcepts, weakStates).get(
-        "percentage",
-      ),
+      deriveConceptStatuses(
+        { stateByCardId: {} },
+        knowledgeConcepts,
+        successStates,
+      ).get("percentage"),
+    ).toBe("learning");
+
+    const objectiveFailure = guidedReview(
+      "percentage-failure",
+      skill.id,
+      "2026-08-10T23:55:00.000Z",
+      "mcq",
+      false,
+    );
+    const failureStates = deriveGuidedCheckStates([objectiveFailure], NO_EXAM, NOW);
+    expect(
+      deriveConceptStatuses(
+        { stateByCardId: {} },
+        knowledgeConcepts,
+        failureStates,
+      ).get("percentage"),
     ).toBe("needs-work");
 
     const successes = Array.from({ length: 3 }, (_, index) =>
-      review(`percentage-${index}`, skill.id, `2026-08-0${index + 1}T00:00:00.000Z`, {
-        mode: "mcq",
-        rating: null,
-      }),
+      guidedReview(
+        `percentage-${index}`,
+        skill.id,
+        `2026-08-0${index + 1}T00:00:00.000Z`,
+        "mcq",
+      ),
     );
     const solidStates = deriveGuidedCheckStates(
       successes,
@@ -283,32 +376,47 @@ describe("Guided concept readiness and progression", () => {
     ).not.toContain("percentage");
   });
 
-  it("starts with a lesson, then allows weak evidence to move forward", () => {
-    const first = selectGuidedNextStep({
-      cards,
-      reviews: [],
-      settings: NO_EXAM,
-      nowMs: NOW,
-    });
-    expect(first.kind).toBe("lesson");
-    if (first.kind !== "lesson") return;
-    const checkSkill = guidedKnowledgeCheckSkills.find(
-      (skill) => skill.conceptId === first.conceptId,
+  it("allows a legitimate weak canonical recall to progress to a dependent branch", () => {
+    const dependentCard = cards.filter((card) => card.id === "ch10-017");
+    const assetEvidence = canonicalStudyReview(
+      "asset-positive",
+      "ch03-022",
+      "2026-08-10T20:00:00.000Z",
+      "strong",
     );
-    expect(checkSkill).toBeDefined();
-    const weak = review("weak-first", checkSkill!.id, "2026-08-10T23:55:00.000Z", {
-      mode: "mcq",
-      rating: "struggled",
-    });
-    const next = selectGuidedNextStep({
-      cards,
-      reviews: [weak],
+    const weakStockFlow = canonicalStudyReview(
+      "stock-flow-weak",
+      "ch03-010",
+      "2026-08-10T23:00:00.000Z",
+      "weak",
+    );
+    const reviews = [assetEvidence, weakStockFlow];
+    expect(isConceptIntroducedEnough("stock", reviews)).toBe(true);
+    expect(isConceptIntroducedEnough("flow", reviews)).toBe(true);
+    expect(
+      deriveCardState("ch03-010", [weakStockFlow], NO_EXAM, NOW).learningState,
+    ).toBe("weak");
+
+    const lesson = selectGuidedNextStep({
+      cards: dependentCard,
+      reviews,
       settings: NO_EXAM,
       nowMs: NOW,
-      lessonCompletedConceptIds: new Set([first.conceptId]),
     });
-    expect(next.kind).not.toBe("knowledge-check");
-    expect(isConceptIntroducedEnough(first.conceptId, [weak])).toBe(true);
+    expect(lesson.kind).toBe("lesson");
+    if (lesson.kind !== "lesson") return;
+    expect(lesson.conceptId).toBe("capital");
+    expect(lesson.targetCardId).toBe("ch10-017");
+
+    const card = selectGuidedNextStep({
+      cards: dependentCard,
+      reviews,
+      settings: NO_EXAM,
+      nowMs: NOW,
+      lessonCompletedConceptIds: new Set(["capital"]),
+    });
+    expect(card.kind).toBe("canonical-card");
+    if (card.kind === "canonical-card") expect(card.card.id).toBe("ch10-017");
   });
 
   it("does not immediately repeat a failed check and retains a fallback", () => {
@@ -323,11 +431,13 @@ describe("Guided concept readiness and progression", () => {
     const skill = guidedKnowledgeCheckSkills.find(
       (candidate) => candidate.conceptId === first.conceptId,
     )!;
-    const failure = review("failed-first", skill.id, "2026-08-10T23:55:00.000Z", {
-      mode: "mcq",
-      correct: false,
-      rating: "forgot",
-    });
+    const failure = guidedReview(
+      "failed-first",
+      skill.id,
+      "2026-08-10T23:55:00.000Z",
+      "mcq",
+      false,
+    );
     const next = selectGuidedNextStep({
       cards,
       reviews: [failure],
@@ -344,17 +454,18 @@ describe("Guided concept readiness and progression", () => {
     const targetAndIndependent = cards.filter((card) =>
       ["ch01-019", "ch06-001"].includes(card.id),
     );
-    const failedPercentage = review(
+    const failedPercentage = guidedReview(
       "percentage-failure",
       "knowledge-check:percentage",
       "2026-08-10T23:55:00.000Z",
-      { mode: "calculation", correct: false, rating: null },
+      "calculation",
+      false,
     );
-    const introducedBuyer = review(
+    const introducedBuyer = guidedReview(
       "introduced-buyer",
       "knowledge-check:buyer",
       "2026-08-10T20:00:00.000Z",
-      { mode: "mcq", rating: null },
+      "mcq",
     );
     const next = selectGuidedNextStep({
       cards: targetAndIndependent,
@@ -396,46 +507,21 @@ describe("Guided concept readiness and progression", () => {
     }
   });
 
-  it("lets weak positive evidence progress down the same branch", () => {
+  it("keeps historical objective evidence distinct from a latest guided failure", () => {
     const targetCard = cards.filter((card) => card.id === "ch01-019");
-    const weakPercentage = review(
-      "percentage-weak-progress",
-      "knowledge-check:percentage",
-      "2026-08-10T23:55:00.000Z",
-      { mode: "calculation", rating: "struggled" },
-    );
-    const next = selectGuidedNextStep({
-      cards: targetCard,
-      reviews: [weakPercentage],
-      settings: NO_EXAM,
-      nowMs: NOW,
-      lessonCompletedConceptIds: new Set(["percentage"]),
-    });
-    expect(next.kind).toBe("lesson");
-    if (next.kind === "lesson") {
-      expect(next.conceptId).not.toBe("percentage");
-      expect(next.targetCardId).toBe("ch01-019");
-    }
-
     const historicalPositiveThenFailure = [
-      review(
+      guidedReview(
         "percentage-old-success",
         "knowledge-check:percentage",
         "2026-08-01T00:00:00.000Z",
-        {
-          mode: "calculation",
-          rating: null,
-        },
+        "calculation",
       ),
-      review(
+      guidedReview(
         "percentage-latest-failure",
         "knowledge-check:percentage",
         "2026-08-10T23:55:00.000Z",
-        {
-          mode: "calculation",
-          correct: false,
-          rating: null,
-        },
+        "calculation",
+        false,
       ),
     ];
     expect(isConceptIntroducedEnough("percentage", historicalPositiveThenFailure)).toBe(
@@ -456,41 +542,98 @@ describe("Guided concept readiness and progression", () => {
 
   it("recursively prepares a real multi-concept linked canonical card", () => {
     const subset = cards.filter((card) => ["ch01-005", "mix-001"].includes(card.id));
-    const evidenceIds = [
-      "knowledge-check:buyer",
-      "knowledge-check:seller",
-      "knowledge-check:market",
-      "knowledge-check:quantity",
-      "knowledge-check:price",
-      "ch03-010",
+    const evidence: ReviewEvent[] = [
+      guidedReview(
+        "multi-concept-buyer",
+        "knowledge-check:buyer",
+        "2026-08-10T20:00:00.000Z",
+        "mcq",
+      ),
+      guidedReview(
+        "multi-concept-seller",
+        "knowledge-check:seller",
+        "2026-08-10T20:00:00.000Z",
+        "mcq",
+      ),
+      guidedReview(
+        "multi-concept-market",
+        "knowledge-check:market",
+        "2026-08-10T20:00:00.000Z",
+        "mcq",
+      ),
+      guidedReview(
+        "multi-concept-quantity",
+        "knowledge-check:quantity",
+        "2026-08-10T20:00:00.000Z",
+        "mcq",
+      ),
+      guidedReview(
+        "multi-concept-price",
+        "knowledge-check:price",
+        "2026-08-10T20:00:00.000Z",
+        "mcq",
+      ),
+      canonicalStudyReview(
+        "multi-concept-flow",
+        "ch03-010",
+        "2026-08-10T20:00:00.000Z",
+        "strong",
+      ),
     ];
-    const evidence = evidenceIds.map((cardId, index) =>
-      review(`multi-concept-${index}`, cardId, "2026-08-10T20:00:00.000Z", {
-        mode: cardId.startsWith("knowledge-check:") ? "mcq" : "recall",
-        rating: cardId.startsWith("knowledge-check:") ? null : "got_it",
-      }),
-    );
-    const step = selectGuidedNextStep({
-      cards: subset,
-      reviews: evidence,
-      settings: NO_EXAM,
-      nowMs: NOW,
-      lessonCompletedConceptIds: new Set([
-        "buyer",
-        "seller",
-        "market",
-        "quantity",
-        "price",
-        "flow",
-        "final-good",
-      ]),
-    });
     expect(cardConceptMap["mix-001"]).toEqual(["gross-domestic-product", "final-good"]);
-    expect(step.kind).toBe("lesson");
-    if (step.kind === "lesson") {
-      expect(step.conceptId).toBe("gross-domestic-product");
-      expect(step.targetCardId).toBe("mix-001");
+    const lessons = new Set<string>();
+    const visited: string[] = [];
+    let reviews = evidence;
+    let nowMs = NOW;
+
+    for (let index = 0; index < 8; index += 1) {
+      const step = selectGuidedNextStep({
+        cards: subset,
+        reviews,
+        settings: NO_EXAM,
+        nowMs,
+        lessonCompletedConceptIds: lessons,
+        sessionSeed: index,
+      });
+      expect(step.kind).not.toBe("idle");
+      if (step.kind === "lesson") {
+        visited.push(`lesson:${step.conceptId}`);
+        lessons.add(step.conceptId);
+      } else if (step.kind === "canonical-card") {
+        visited.push(`card:${step.card.id}`);
+        if (step.card.id === "mix-001") {
+          reviews = [
+            ...reviews,
+            canonicalStudyReview(
+              "multi-concept-mix-review",
+              "mix-001",
+              new Date(nowMs).toISOString(),
+              "strong",
+            ),
+          ];
+          nowMs += 1_000;
+        } else if (step.card.id === "ch01-005") {
+          break;
+        }
+      } else if (step.kind === "knowledge-check") {
+        throw new Error(`Unexpected check ${step.skill.id} in pre-satisfied path.`);
+      }
     }
+
+    expect(visited).toEqual([
+      "lesson:final-good",
+      "lesson:gross-domestic-product",
+      "card:mix-001",
+      "lesson:intermediate-good",
+      "card:ch01-005",
+    ]);
+    expect(visited.indexOf("lesson:gross-domestic-product")).toBeLessThan(
+      visited.indexOf("card:mix-001"),
+    );
+    expect(visited.indexOf("lesson:final-good")).toBeLessThan(
+      visited.indexOf("card:mix-001"),
+    );
+    expect(visited).toContain("card:ch01-005");
   });
 
   it("terminates deterministically on a cycle-shaped card evidence mapping", () => {
@@ -538,10 +681,12 @@ describe("Guided concept readiness and progression", () => {
         visited.push(`check:${step.skill.conceptId}`);
         reviews = [
           ...reviews,
-          review(`path-${index}`, step.skill.id, new Date(nowMs).toISOString(), {
-            mode: step.skill.kind,
-            rating: null,
-          }),
+          guidedReview(
+            `path-${index}`,
+            step.skill.id,
+            new Date(nowMs).toISOString(),
+            step.skill.kind,
+          ),
         ];
         nowMs += 1_000;
       } else if (step.kind === "canonical-card") {
@@ -579,21 +724,17 @@ describe("Guided concept readiness and progression", () => {
   });
 
   it("keeps an urgent canonical failure ahead of a ready unseen branch", () => {
-    const failure = review(
+    const failure = canonicalStudyReview(
       "canonical-failure",
       "ch01-001",
       "2026-08-10T23:00:00.000Z",
-      {
-        mode: "mcq",
-        correct: false,
-        rating: null,
-      },
+      "failure",
     );
-    const check = review(
+    const check = guidedReview(
       "check-weak",
       "knowledge-check:percentage",
       "2026-08-10T23:00:00.000Z",
-      { mode: "mcq", rating: "struggled" },
+      "mcq",
     );
     const selected = selectGuidedNextStep({
       cards,
@@ -620,17 +761,18 @@ describe("Guided concept readiness and progression", () => {
 
   it("does not let guided-only evidence alter ordinary canonical Study", () => {
     const canonicalHistory = [
-      review("ordinary-failure", "ch01-001", "2026-08-10T23:00:00.000Z", {
-        mode: "mcq",
-        correct: false,
-        rating: null,
-      }),
+      canonicalStudyReview(
+        "ordinary-failure",
+        "ch01-001",
+        "2026-08-10T23:00:00.000Z",
+        "failure",
+      ),
     ];
-    const guidedHistory = review(
+    const guidedHistory = guidedReview(
       "ordinary-ignored-guided",
       "knowledge-check:percentage",
       "2026-08-10T23:00:00.000Z",
-      { mode: "mcq", rating: null },
+      "mcq",
     );
     const before = selectNextCard({
       cards,
@@ -674,17 +816,24 @@ describe("Guided concept readiness and progression", () => {
         checks += 1;
         reviews = [
           ...reviews,
-          review(`cram-check-${index}`, step.skill.id, new Date(nowMs).toISOString(), {
-            mode: step.skill.kind,
-            rating: null,
-          }),
+          guidedReview(
+            `cram-check-${index}`,
+            step.skill.id,
+            new Date(nowMs).toISOString(),
+            step.skill.kind,
+          ),
         ];
         nowMs += 60 * 60 * 1000;
       } else if (step.kind === "canonical-card") {
         seenCanonical.add(step.card.id);
         reviews = [
           ...reviews,
-          review(`cram-card-${index}`, step.card.id, new Date(nowMs).toISOString()),
+          canonicalStudyReview(
+            `cram-card-${index}`,
+            step.card.id,
+            new Date(nowMs).toISOString(),
+            "strong",
+          ),
         ];
         nowMs += 60 * 60 * 1000;
       }
@@ -697,9 +846,12 @@ describe("Guided concept readiness and progression", () => {
     const far = deriveCardState(
       "knowledge-check:percentage",
       [
-        review("far-horizon", "knowledge-check:percentage", reviewAt, {
-          mode: "recall",
-        }),
+        guidedReview(
+          "far-horizon",
+          "knowledge-check:percentage",
+          reviewAt,
+          "calculation",
+        ),
       ],
       {
         examAt: new Date(start + 48 * 60 * 60 * 1000).toISOString(),
@@ -710,9 +862,12 @@ describe("Guided concept readiness and progression", () => {
     const near = deriveCardState(
       "knowledge-check:percentage",
       [
-        review("near-horizon", "knowledge-check:percentage", reviewAt, {
-          mode: "recall",
-        }),
+        guidedReview(
+          "near-horizon",
+          "knowledge-check:percentage",
+          reviewAt,
+          "calculation",
+        ),
       ],
       {
         examAt: new Date(start + 4 * 60 * 60 * 1000).toISOString(),
@@ -759,36 +914,29 @@ describe("Guided concept readiness and progression", () => {
           lessons.add(step.conceptId);
         } else if (step.kind === "knowledge-check") {
           const isFailure = index % 11 === 0;
-          const isWeak = !isFailure && index % 5 === 0;
           if (isFailure) failures += 1;
-          if (isWeak) weak += 1;
           reviews.push(
-            review(
+            guidedReview(
               `mixed-${horizon.label}-${index}`,
               step.skill.id,
               new Date(nowMs).toISOString(),
-              {
-                mode: step.skill.kind,
-                correct: !isFailure,
-                rating: isFailure ? null : isWeak ? "struggled" : null,
-              },
+              step.skill.kind,
+              !isFailure,
             ),
           );
         } else if (step.kind === "canonical-card") {
           seenCanonical.add(step.card.id);
           const isFailure = index % 13 === 0;
-          const isWeak = !isFailure && index % 7 === 0;
+          const isWeak =
+            !isFailure && step.card.choices === undefined && index % 7 === 0;
           if (isFailure) failures += 1;
           if (isWeak) weak += 1;
           reviews.push(
-            review(
+            canonicalStudyReview(
               `mixed-card-${horizon.label}-${index}`,
               step.card.id,
               new Date(nowMs).toISOString(),
-              {
-                correct: !isFailure,
-                rating: isFailure ? "forgot" : isWeak ? "struggled" : "got_it",
-              },
+              isFailure ? "failure" : isWeak ? "weak" : "strong",
             ),
           );
         }
@@ -804,11 +952,11 @@ describe("Guided concept readiness and progression", () => {
   it("contracts strong-success intervals at 48h, 12h, 4h, and in the buffer", () => {
     const start = Date.parse("2026-08-11T00:00:00.000Z");
     const history = Array.from({ length: 6 }, (_, index) =>
-      review(
+      guidedReview(
         `horizon-${index}`,
         "knowledge-check:percentage",
         new Date(start + index * 1_000).toISOString(),
-        { mode: "calculation", rating: null },
+        "calculation",
       ),
     );
     const stateAt = (examHours: number, bufferHours: number, nowMs: number) =>
