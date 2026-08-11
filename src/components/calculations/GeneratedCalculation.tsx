@@ -24,6 +24,8 @@ export function GeneratedCalculation({
   onNext,
   onNewNumbers,
   onPendingChange,
+  freshnessError,
+  newNumbersDisabled = false,
   now: nowProvider,
 }: {
   readonly instance: GeneratedCalculationInstance;
@@ -33,6 +35,8 @@ export function GeneratedCalculation({
   readonly onNext: () => void;
   readonly onNewNumbers: () => void;
   readonly onPendingChange?: (pending: boolean) => void;
+  readonly freshnessError?: string | null;
+  readonly newNumbersDisabled?: boolean;
   readonly now?: () => number;
 }) {
   const now = nowProvider ?? monotonicNow;
@@ -155,6 +159,11 @@ export function GeneratedCalculation({
         }}
         onEnter={() => void submit()}
       />
+      {freshnessError !== undefined && freshnessError !== null ? (
+        <p className="generated-calculation-freshness-error" role="alert">
+          {freshnessError}
+        </p>
+      ) : null}
       <div className="generated-calculation-actions">
         <button
           className="primary-button"
@@ -167,7 +176,7 @@ export function GeneratedCalculation({
         <button
           className="secondary-button"
           type="button"
-          disabled={isPending}
+          disabled={isPending || newNumbersDisabled}
           onClick={onNewNumbers}
         >
           New numbers

@@ -4,7 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import { ProgressContext, type ProgressContextValue } from "../app/progressContext";
 import { GeneratedCalculation } from "../components/calculations/GeneratedCalculation";
 import { GeneratedCalculationLab } from "../components/calculations/GeneratedCalculationLab";
-import { getGeneratedCalculationInstance } from "../calculations/templates";
+import { buildGeneratedCalculationSet } from "../calculations/session";
+import {
+  calculationTemplates,
+  getGeneratedCalculationInstance,
+} from "../calculations/templates";
 import type { GeneratedCalculationInstance } from "../calculations/model";
 import type { NewReviewEvent } from "../domain/progress";
 import { PracticePage } from "../pages/PracticePage";
@@ -59,6 +63,22 @@ function renderGenerated(
       now={overrides.now}
     />,
   );
+}
+
+function findRuleOf70Session() {
+  for (let seedIndex = 0; seedIndex < 100; seedIndex += 1) {
+    const seed = `rule-of-70-exhaustion-${seedIndex}`;
+    const instances = buildGeneratedCalculationSet(calculationTemplates, {
+      chapter: 10,
+      size: 20,
+      seed,
+    });
+    const ruleIndex = instances.findIndex(
+      (instance) => instance.templateId === "generated-rule-of-70",
+    );
+    if (ruleIndex >= 0) return { seed, instances, ruleIndex };
+  }
+  throw new Error("Could not find a real Rule-of-70 session for the UI regression.");
 }
 
 describe("generated calculation UI lifecycle", () => {
@@ -258,6 +278,147 @@ describe("generated calculation UI lifecycle", () => {
         expect(screen.getByRole("heading", { level: 2 }).textContent).not.toBe(prompt),
       );
     }
+    expect(recordReview).not.toHaveBeenCalled();
+  });
+
+  it("handles real Rule-of-70 freshness exhaustion and recovers with New set", async () => {
+    const session = findRuleOf70Session();
+    const recordReview = vi.fn().mockResolvedValue(undefined);
+
+    function Harness() {
+      const [seed, setSeed] = useState(session.seed);
+      return (
+        <>
+          <output data-testid="session-seed">{seed}</output>
+          <GeneratedCalculationLab
+            chapter={10}
+            setChapter={vi.fn()}
+            size={20}
+            setSize={vi.fn()}
+            seed={seed}
+            onNewSet={() => setSeed((value) => `${value}-next`)}
+            onBack={vi.fn()}
+            onUseAuthored={vi.fn()}
+            recordReview={recordReview}
+          />
+        </>
+      );
+    }
+
+    render(<Harness />);
+    for (let index = 0; index < session.ruleIndex; index += 1) {
+      const previousPrompt = screen.getByRole("heading", { level: 2 }).textContent;
+      fireEvent.change(screen.getByLabelText(/Numeric answer/), {
+        target: { value: "0" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
+      await waitFor(() => expect(recordReview).toHaveBeenCalledTimes(index + 1));
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+      await waitFor(() =>
+        expect(screen.getByRole("heading", { level: 2 }).textContent).not.toBe(
+          previousPrompt,
+        ),
+      );
+    }
+
+    expect(screen.getByText("Chapter 10 · Rule of 70")).toBeInTheDocument();
+    const seenPrompts = new Set<string>([
+      screen.getByRole("heading", { level: 2 }).textContent ?? "",
+    ]);
+    const reviewsBeforeRefresh = recordReview.mock.calls.length;
+    let exhaustionShown = false;
+
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      const newNumbers = screen.getByRole("button", { name: "New numbers" });
+      if (newNumbers.hasAttribute("disabled")) {
+        exhaustionShown = true;
+        break;
+      }
+      const previousPrompt =
+        screen.getByRole("heading", { level: 2 }).textContent ?? "";
+      fireEvent.click(newNumbers);
+      await waitFor(() => {
+        const message = screen.queryByText(/No more unseen number variants/);
+        const currentPrompt =
+          screen.getByRole("heading", { level: 2 }).textContent ?? "";
+        expect(message !== null || currentPrompt !== previousPrompt).toBe(true);
+      });
+      const message = screen.queryByText(/No more unseen number variants/);
+      if (message !== null) {
+        exhaustionShown = true;
+        expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
+          previousPrompt,
+        );
+        break;
+      }
+      const currentPrompt = screen.getByRole("heading", { level: 2 }).textContent ?? "";
+      expect(seenPrompts.has(currentPrompt)).toBe(false);
+      seenPrompts.add(currentPrompt);
+    }
+
+    expect(exhaustionShown).toBe(true);
+    expect(seenPrompts.size).toBe(14);
+    expect(screen.getByText(/No more unseen number variants/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New numbers" })).toBeDisabled();
+    expect(recordReview).toHaveBeenCalledTimes(reviewsBeforeRefresh);
+    const input = screen.getByLabelText(/Numeric answer/) as HTMLInputElement;
+    expect(input).toBeEnabled();
+    expect(screen.getByLabelText("Chapter")).toBeEnabled();
+    expect(screen.getByLabelText("Set size")).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Change format" })).toBeEnabled();
+    expect(screen.getByRole("tab", { name: "Authored MCQs" })).toBeEnabled();
+    fireEvent.change(input, { target: { value: "0" } });
+    expect(input.value).toBe("0");
+    expect(screen.getByRole("button", { name: "New set" })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "New set" }));
+    await waitFor(() =>
+      expect(screen.getByTestId("session-seed")).toHaveTextContent(/-next$/),
+    );
+    expect(
+      screen.queryByText(/No more unseen number variants/),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New numbers" })).toBeEnabled();
+
+    fireEvent.change(screen.getByLabelText(/Numeric answer/), {
+      target: { value: "0" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
+    await waitFor(() =>
+      expect(recordReview).toHaveBeenCalledTimes(reviewsBeforeRefresh + 1),
+    );
+  });
+
+  it("renders base-set freshness exhaustion as an inline callout", () => {
+    const recordReview = vi.fn().mockResolvedValue(undefined);
+    const failingBuild: typeof buildGeneratedCalculationSet = () => {
+      throw new Error("synthetic fresh-set exhaustion");
+    };
+
+    render(
+      <GeneratedCalculationLab
+        chapter={10}
+        setChapter={vi.fn()}
+        size={20}
+        setSize={vi.fn()}
+        seed="base-set-failure"
+        onNewSet={vi.fn()}
+        onBack={vi.fn()}
+        onUseAuthored={vi.fn()}
+        recordReview={recordReview}
+        buildSet={failingBuild}
+      />,
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Could not build a fresh calculation set for these filters.",
+    );
+    expect(
+      screen.getByText("Try a smaller set or start a new set."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New set" })).toBeEnabled();
+    expect(screen.getByLabelText("Chapter")).toBeEnabled();
+    expect(screen.getByLabelText("Set size")).toBeEnabled();
     expect(recordReview).not.toHaveBeenCalled();
   });
 

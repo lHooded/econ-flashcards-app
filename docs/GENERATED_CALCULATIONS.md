@@ -166,6 +166,14 @@ the finite Rule-of-70 space and the balanced-budget multiplier space. When a
 set ends, the entire requested set is rebuilt; completed items are not kept
 as stale entries for the next cycle.
 
+If a finite space is exhausted, the domain search still fails clearly at its
+10,000-attempt bound, but the Practice Lab catches that failure. The current
+instance and input remain unchanged, an inline message explains that no more
+unseen variants are available, and only that slot's New numbers action is
+disabled. Submit, New set, filters, and format changes remain available when
+the save lifecycle permits them. Base-set construction failures use a separate
+inline callout rather than an uncaught render error.
+
 ### Save lifecycle and SRS mapping
 
 The generated question lifecycle is `answering → pending_save → completed`.

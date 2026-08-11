@@ -13,6 +13,11 @@ import {
 import type { GeneratedCalculationInstance } from "../../calculations/model";
 import { GeneratedCalculation } from "./GeneratedCalculation";
 
+const FRESHNESS_EXHAUSTION_MESSAGE =
+  "No more unseen number variants are available for this concept in the current session. Start a new set to continue.";
+const BASE_SET_ERROR_MESSAGE =
+  "Could not build a fresh calculation set for these filters.";
+
 export function GeneratedCalculationLab({
   chapter,
   setChapter,
@@ -23,6 +28,7 @@ export function GeneratedCalculationLab({
   onBack,
   onUseAuthored,
   recordReview,
+  buildSet: buildSetOverride,
 }: {
   readonly chapter: number | null;
   readonly setChapter: (value: number | null) => void;
@@ -33,22 +39,35 @@ export function GeneratedCalculationLab({
   readonly onBack: () => void;
   readonly onUseAuthored: () => void;
   readonly recordReview: (input: NewReviewEvent) => Promise<unknown>;
+  readonly buildSet?: typeof buildGeneratedCalculationSet;
 }) {
   const [index, setIndex] = useState(0);
   const [overrides, setOverrides] = useState<
     Readonly<Record<number, GeneratedCalculationInstance>>
   >({});
   const [saving, setSaving] = useState(false);
+  const [freshnessError, setFreshnessError] = useState<string | null>(null);
   const refreshCounter = useRef(0);
   const shownFingerprints = useRef<Record<number, Set<string>>>({});
+  const buildSet = buildSetOverride ?? buildGeneratedCalculationSet;
   const options = useMemo<GeneratedCalculationSessionOptions>(
     () => ({ chapter, size, seed }),
     [chapter, seed, size],
   );
-  const baseInstances = useMemo(
-    () => buildGeneratedCalculationSet(calculationTemplates, options),
-    [options],
-  );
+  const baseSetResult = useMemo(() => {
+    try {
+      return {
+        instances: buildSet(calculationTemplates, options),
+        error: null,
+      };
+    } catch {
+      return {
+        instances: [] as readonly GeneratedCalculationInstance[],
+        error: BASE_SET_ERROR_MESSAGE,
+      };
+    }
+  }, [buildSet, options]);
+  const baseInstances = baseSetResult.instances;
   const instances = useMemo(
     () =>
       baseInstances.map(
@@ -70,6 +89,7 @@ export function GeneratedCalculationLab({
     });
     shownFingerprints.current = fingerprints;
     setSaving(false);
+    setFreshnessError(null);
   }, [baseInstances]);
 
   const newNumbers = useCallback(() => {
@@ -81,20 +101,27 @@ export function GeneratedCalculationLab({
       shownFingerprints.current[index] ??
       new Set([generatedCalculationFingerprint(current)]);
     shownFingerprints.current[index] = fingerprints;
-    const fresh = instantiateFreshCalculationVariant(
-      template,
-      [seed, "new-numbers", index, refreshCounter.current],
-      fingerprints,
-    );
-    setOverrides((previous) => ({ ...previous, [index]: fresh }));
+    try {
+      const fresh = instantiateFreshCalculationVariant(
+        template,
+        [seed, "new-numbers", index, refreshCounter.current],
+        fingerprints,
+      );
+      setFreshnessError(null);
+      setOverrides((previous) => ({ ...previous, [index]: fresh }));
+    } catch {
+      setFreshnessError(FRESHNESS_EXHAUSTION_MESSAGE);
+    }
   }, [current, index, saving, seed]);
 
   const next = useCallback(() => {
     if (saving || current === undefined) return;
     if (index + 1 < instances.length) {
+      setFreshnessError(null);
       setIndex((value) => value + 1);
       return;
     }
+    setFreshnessError(null);
     onNewSet();
   }, [current, index, instances.length, onNewSet, saving]);
 
@@ -193,11 +220,18 @@ export function GeneratedCalculationLab({
         </button>
       </section>
       <p className="generated-calculation-session-note" role="status">
-        {instances.length === size
-          ? `${instances.length}-question set · each canonical concept appears once before any variant repeats.`
-          : `${instances.length}-question set · all eligible canonical concepts are included; there are not enough for ${size} unique concepts.`}
+        {baseSetResult.error !== null
+          ? "Fresh calculation set unavailable."
+          : instances.length === size
+            ? `${instances.length}-question set · each canonical concept appears once before any variant repeats.`
+            : `${instances.length}-question set · all eligible canonical concepts are included; there are not enough for ${size} unique concepts.`}
       </p>
-      {current === undefined ? (
+      {baseSetResult.error !== null ? (
+        <section className="callout" role="alert">
+          <h2>{BASE_SET_ERROR_MESSAGE}</h2>
+          <p>Try a smaller set or start a new set.</p>
+        </section>
+      ) : current === undefined ? (
         <section className="callout">
           <h2>No generated calculations match this filter.</h2>
           <p>Try All chapters or a broader set size.</p>
@@ -211,6 +245,8 @@ export function GeneratedCalculationLab({
           onNext={next}
           onNewNumbers={newNumbers}
           onPendingChange={setSaving}
+          freshnessError={freshnessError}
+          newNumbersDisabled={freshnessError !== null}
         />
       )}
     </div>

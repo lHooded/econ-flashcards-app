@@ -1730,6 +1730,16 @@ h3 {
   font-weight: 750;
 }
 
+.generated-calculation-freshness-error {
+  margin: 0.85rem 0 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #d8b36a;
+  border-radius: 0.55rem;
+  background: #fff8e8;
+  color: #654b14;
+  line-height: 1.45;
+}
+
 .generated-calculation-session-note {
   margin: -0.35rem 0 0;
 }
