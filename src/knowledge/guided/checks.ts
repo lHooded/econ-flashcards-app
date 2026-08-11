@@ -11,6 +11,7 @@ import {
 
 interface McqDraft {
   readonly id: string;
+  readonly requiredConceptIds?: readonly string[];
   readonly prompt: string;
   readonly choices: readonly string[];
   readonly correctChoice: number;
@@ -26,6 +27,7 @@ function concept(conceptId: string): KnowledgeConcept {
 
 function mcqPair(
   conceptId: string,
+  requiredConceptIds: readonly string[],
   first: McqDraft,
   second: McqDraft,
 ): GuidedKnowledgeCheckSkill {
@@ -37,11 +39,22 @@ function mcqPair(
     chapter: current.chapters[0] ?? 0,
     tags: [...current.tags, "guided-check"],
     sourceRefs: current.sourceRefs,
-    variants: [makeMcqVariant(conceptId, first), makeMcqVariant(conceptId, second)],
+    variants: [
+      makeMcqVariant(conceptId, first.requiredConceptIds ?? requiredConceptIds, first),
+      makeMcqVariant(
+        conceptId,
+        second.requiredConceptIds ?? requiredConceptIds,
+        second,
+      ),
+    ],
   };
 }
 
-function makeMcqVariant(conceptId: string, draft: McqDraft): GuidedMcqVariant {
+function makeMcqVariant(
+  conceptId: string,
+  requiredConceptIds: readonly string[],
+  draft: McqDraft,
+): GuidedMcqVariant {
   const shift = stableChoiceShift(draft.id, draft.choices.length);
   const choices = draft.choices.map(
     (_, index) =>
@@ -51,6 +64,7 @@ function makeMcqVariant(conceptId: string, draft: McqDraft): GuidedMcqVariant {
     kind: "mcq",
     id: `${guidedCheckIdForConcept(conceptId)}:${draft.id}`,
     fingerprint: `${guidedCheckIdForConcept(conceptId)}:${draft.id}:${draft.prompt}`,
+    requiredConceptIds: Object.freeze([...requiredConceptIds]),
     prompt: draft.prompt,
     choices: Object.freeze(choices),
     correctChoice: (draft.correctChoice + shift) % draft.choices.length,
@@ -84,20 +98,18 @@ function generated(
 }
 
 function percentageGenerator(seed: number): GuidedCalculationVariant {
-  const base = 80 + (Math.abs(seed * 17) % 8) * 10;
-  const increase = 10 + (Math.abs(seed * 13) % 7) * 5;
-  const answer = roundTo((increase / base) * 100, 1);
+  const marked = 10 + (Math.abs(seed * 17) % 8) * 5;
   return {
     kind: "calculation",
     id: `${guidedCheckIdForConcept("percentage")}:generated:${seed}`,
-    fingerprint: `percentage-increase:${base}:${increase}`,
-    prompt: `A price rises from $${base} to $${base + increase}. What is the percentage increase, using the original price as the base?`,
-    answer,
+    fingerprint: `percentage-out-of-100:${marked}`,
+    requiredConceptIds: [],
+    prompt: `There are ${marked} marked squares among 100 squares. What percentage of the squares are marked?`,
+    answer: marked,
     unit: "percent",
-    decimals: 1,
-    tolerance: 0.06,
-    explanation:
-      "Percentage change compares the change with the original amount: (new − old) ÷ old × 100.",
+    decimals: 0,
+    tolerance: 0.01,
+    explanation: `A percentage says how many out of every 100. So ${marked} marked squares out of 100 is ${marked}%.`,
   };
 }
 
@@ -109,7 +121,8 @@ function ratioGenerator(seed: number): GuidedCalculationVariant {
     kind: "calculation",
     id: `${guidedCheckIdForConcept("ratio")}:generated:${seed}`,
     fingerprint: `ratio:${left}:${right}`,
-    prompt: `A group contains ${left} buyers and ${right} sellers. What is the ratio of buyers to sellers, written as buyers per seller?`,
+    requiredConceptIds: [],
+    prompt: `A tray has ${left} red objects and ${right} blue objects. What is the ratio of red objects to blue objects, written as red objects per blue object?`,
     answer,
     unit: "ratio",
     decimals: 2,
@@ -125,17 +138,18 @@ function roundTo(value: number, decimals: number): number {
 }
 
 const skills: readonly GuidedKnowledgeCheckSkill[] = [
-  generated("percentage", "percentage-increase", percentageGenerator),
+  generated("percentage", "percentage-out-of-100", percentageGenerator),
   mcqPair(
     "percentage-point",
+    ["percentage"],
     {
       id: "rate-difference",
-      prompt: "Unemployment rises from 5% to 7%. What is the arithmetic change?",
+      prompt: "A reported rate rises from 5% to 7%. What is the arithmetic change?",
       choices: [
         "2 percentage points",
         "2% relative to the old rate",
         "12 percentage points",
-        "0.02 percentage points",
+        "7 percentage points",
       ],
       correctChoice: 0,
       explanation:
@@ -143,29 +157,34 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     },
     {
       id: "inflation-difference",
-      prompt: "Inflation falls from 6% to 3%. Which statement is correct?",
+      prompt: "A reported rate falls from 6% to 3%. Which statement is correct?",
       choices: [
         "It fell by 3 percentage points",
-        "Prices fell by 3%",
-        "The price level fell by 3 percentage points",
+        "It fell by 3% of the old rate",
         "It rose by 3 percentage points",
+        "It fell by 3 units of currency",
       ],
       correctChoice: 0,
       explanation:
-        "The inflation rate changed by 3 percentage points; the price level may still be rising at 3%.",
+        "The reported rate changed by 3 percentage points: 6% − 3% = 3 percentage points.",
     },
   ),
   generated("ratio", "ratio-per-unit", ratioGenerator),
   mcqPair(
     "rate",
+    ["ratio"],
     {
       id: "interest-per-period",
-      prompt:
-        "A borrower pays $10 interest on $200 for one year. What is the interest rate for that year?",
-      choices: ["5%", "$10", "2000%", "0.05 percentage points"],
+      prompt: "A machine makes 10 parts in 2 hours. What is its rate of production?",
+      choices: [
+        "5 parts per hour",
+        "20 parts per hour",
+        "2 parts per hour",
+        "10 hours per part",
+      ],
       correctChoice: 0,
       explanation:
-        "A rate is the payment relative to the principal: 10 ÷ 200 × 100 = 5%.",
+        "A rate compares an amount with a time period: 10 ÷ 2 = 5 parts per hour.",
     },
     {
       id: "speed-rate",
@@ -183,14 +202,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "price",
+    ["market", "buyer", "seller"],
     {
       id: "unit-price",
       prompt: "In an ordinary market, what does the price of a good tell you?",
       choices: [
         "How much money is exchanged for one unit",
         "How many units exist in total",
-        "The seller's total income",
-        "The buyer's total wealth",
+        "The number of sellers",
+        "The colour of the good",
       ],
       correctChoice: 0,
       explanation:
@@ -199,20 +219,22 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     {
       id: "price-versus-quantity",
       prompt:
-        "A shop raises its price from $4 to $5 but sells fewer units. Which pair describes the two variables?",
+        "A buyer sees $5 per notebook on a shop label. What does the $5 represent?",
       choices: [
-        "Price rose and quantity fell",
-        "Price fell and quantity rose",
-        "Both price and quantity rose",
-        "Neither variable changed",
+        "The price of one notebook",
+        "The total number of notebooks in the shop",
+        "The buyer's total resources",
+        "The shop's total number of workers",
       ],
       correctChoice: 0,
       explanation:
-        "Price is the amount per unit; quantity is the number of units. They can move in opposite directions.",
+        "Price is the money amount attached to one unit. A total number of units is a separate quantity.",
+      requiredConceptIds: ["buyer"],
     },
   ),
   mcqPair(
     "quantity",
+    [],
     {
       id: "amount",
       prompt: "What does quantity mean in a basic market graph?",
@@ -238,14 +260,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "market",
+    ["buyer", "seller"],
     {
       id: "exchange",
       prompt: "What makes a market in the basic economic sense?",
       choices: [
-        "Buyers and sellers interact to exchange a good, service, or asset",
+        "Buyers and sellers interact to exchange a good or service",
         "Only a physical shop with a cash register",
-        "A government list of all prices",
-        "A person's private budget",
+        "A person's private collection of objects",
+        "A single seller acting alone",
       ],
       correctChoice: 0,
       explanation:
@@ -257,9 +280,9 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
         "An online platform where households offer and buy second-hand goods is best described as:",
       choices: [
         "A market",
-        "A price index",
-        "A production function",
-        "A capital stock",
+        "A private list of belongings",
+        "A single household budget",
+        "A delivery receipt",
       ],
       correctChoice: 0,
       explanation:
@@ -268,14 +291,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "buyer",
+    [],
     {
       id: "buyer-role",
       prompt: "In a market, a buyer is the participant who:",
       choices: [
         "Wants to acquire the good or service",
         "Offers the good for sale",
-        "Measures the price level",
-        "Creates every bank reserve",
+        "Repairs the seller's equipment",
+        "Writes the seller's receipt",
       ],
       correctChoice: 0,
       explanation:
@@ -287,8 +311,8 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       choices: [
         "Buyer-side decision",
         "Seller-side production decision",
-        "Central-bank reserve decision",
-        "GDP deflator calculation",
+        "A repair decision",
+        "A transport decision",
       ],
       correctChoice: 0,
       explanation:
@@ -297,14 +321,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "seller",
+    [],
     {
       id: "seller-role",
       prompt: "In a market, a seller is the participant who:",
       choices: [
         "Offers the good or service",
         "Must be the final consumer",
-        "Measures unemployment",
-        "Sets the country's money stock by definition",
+        "Must be the only buyer",
+        "Counts the number of households",
       ],
       correctChoice: 0,
       explanation: "A seller supplies or offers an item to potential buyers.",
@@ -315,8 +340,8 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       choices: [
         "Seller-side supply decision",
         "Buyer-side consumption decision",
-        "Bond-yield calculation",
-        "Population estimate",
+        "A buyer-side choice",
+        "A weather observation",
       ],
       correctChoice: 0,
       explanation: "The bakery is the seller deciding how much output to offer.",
@@ -324,14 +349,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "supply",
+    ["market", "price", "quantity"],
     {
       id: "supply-meaning",
       prompt: "In a basic supply schedule, supply describes:",
       choices: [
         "How much sellers are willing and able to offer at different prices",
         "How much buyers want at different prices",
-        "The price level across the economy",
-        "The amount of money in bank accounts",
+        "The number of buyers in a market",
+        "The amount of time in a day",
       ],
       correctChoice: 0,
       explanation:
@@ -344,8 +370,8 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       choices: [
         "An increase or rightward shift of supply",
         "A movement caused only by a higher bread price",
-        "A fall in demand",
-        "A change in the price index",
+        "A reduction in supply",
+        "A change in the number of buyers only",
       ],
       correctChoice: 0,
       explanation:
@@ -354,14 +380,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "demand",
+    ["market", "price", "quantity"],
     {
       id: "demand-meaning",
       prompt: "In a basic demand schedule, demand describes:",
       choices: [
         "How much buyers are willing and able to buy at different prices",
         "How much sellers have already produced",
-        "The amount of capital in the economy",
-        "The number of people in the labour force",
+        "How much sellers are willing to offer",
+        "The number of shops in the market",
       ],
       correctChoice: 0,
       explanation:
@@ -370,7 +397,7 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     {
       id: "demand-shift",
       prompt:
-        "If household income rises and households want more restaurant meals at every price, demand:",
+        "If a change other than the meal's own price makes households want more restaurant meals at every price, demand:",
       choices: [
         "Shifts outward or to the right",
         "Moves along the same curve only",
@@ -384,14 +411,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "equilibrium",
+    ["supply", "demand", "quantity"],
     {
       id: "market-clearing",
       prompt: "A market equilibrium is a price and quantity at which:",
       choices: [
         "Quantity supplied equals quantity demanded",
-        "Every person is equally wealthy",
-        "Inflation is exactly zero",
-        "The government owns every firm",
+        "Every buyer gets every item they want",
+        "Every seller makes the same amount",
+        "The market has no price",
       ],
       correctChoice: 0,
       explanation:
@@ -401,7 +429,12 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       id: "equilibrium-price",
       prompt:
         "If a market price is below the price at which quantity supplied equals quantity demanded, the market is not yet:",
-      choices: ["At equilibrium", "A market", "Using money", "Able to have buyers"],
+      choices: [
+        "At equilibrium",
+        "A market",
+        "Able to have buyers",
+        "Able to have sellers",
+      ],
       correctChoice: 0,
       explanation:
         "A price below the clearing price creates excess demand, so it is not the equilibrium price.",
@@ -409,14 +442,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "shortage",
+    ["supply", "demand"],
     {
       id: "excess-demand",
       prompt: "A shortage occurs when:",
       choices: [
         "Quantity demanded is greater than quantity supplied",
         "Quantity supplied is greater than quantity demanded",
-        "The price level rises forever",
-        "A firm owns a machine",
+        "Everyone gets exactly the amount they want",
+        "No one wants the good",
       ],
       correctChoice: 0,
       explanation:
@@ -425,8 +459,8 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     {
       id: "ticket-shortage",
       prompt:
-        "Concert tickets are priced below the clearing price and many more people want tickets than there are seats. This is:",
-      choices: ["A shortage", "A surplus", "Equilibrium", "Deflation"],
+        "Concert tickets have many more people wanting tickets than there are seats at the current price. This is:",
+      choices: ["A shortage", "A surplus", "Equilibrium", "No market exists"],
       correctChoice: 0,
       explanation:
         "Demand exceeds supply at the stated price, which is the definition of a shortage.",
@@ -434,14 +468,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "surplus",
+    ["supply", "demand"],
     {
       id: "excess-supply",
       prompt: "A surplus occurs when:",
       choices: [
         "Quantity supplied is greater than quantity demanded",
         "Quantity demanded is greater than quantity supplied",
-        "The currency appreciates by definition",
-        "Income equals wealth",
+        "Everyone gets exactly the amount they want",
+        "No seller offers the good",
       ],
       correctChoice: 0,
       explanation:
@@ -454,8 +489,8 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       choices: [
         "A surplus",
         "A shortage",
-        "A labour-force exit",
-        "A current-account deficit",
+        "A buyer's decision",
+        "A change in the weather",
       ],
       correctChoice: 0,
       explanation:
@@ -464,14 +499,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "income",
+    ["flow"],
     {
       id: "income-flow",
       prompt: "Income is best understood as:",
       choices: [
         "A flow of money or resources received over a period",
-        "The total value of assets minus liabilities at one date",
-        "The price of one unit of a good",
-        "The number of goods in a warehouse",
+        "A single payment made at one instant",
+        "The number of goods on a shelf",
+        "The amount of time in a day",
       ],
       correctChoice: 0,
       explanation:
@@ -480,21 +516,22 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     {
       id: "wage-income",
       prompt: "A worker's weekly pay is an example of:",
-      choices: ["Income", "A capital stock", "A price index", "A shortage"],
+      choices: ["Income", "A quantity of goods", "A market location", "A time period"],
       correctChoice: 0,
       explanation: "Pay received for labour is income during the week.",
     },
   ),
   mcqPair(
     "expenditure",
+    ["flow"],
     {
       id: "spending-flow",
       prompt: "Expenditure means:",
       choices: [
-        "Spending on goods, services, or assets during a period",
-        "All assets owned at one date",
-        "A seller's willingness to supply",
-        "The percentage change in prices",
+        "Spending on goods or services during a period",
+        "The number of goods owned at one date",
+        "The number of sellers in a market",
+        "The length of a time period",
       ],
       correctChoice: 0,
       explanation:
@@ -505,9 +542,9 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       prompt: "A household paying for a haircut is recording:",
       choices: [
         "Expenditure",
-        "A bond's face value",
-        "A labour-force denominator",
-        "A stock of capital",
+        "Income received",
+        "The number of haircuts available",
+        "A buyer's name",
       ],
       correctChoice: 0,
       explanation: "The payment is spending on a service during the period.",
@@ -515,6 +552,7 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "lending",
+    ["asset", "flow"],
     {
       id: "funds-now",
       prompt:
@@ -526,28 +564,30 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     },
     {
       id: "bond-lending",
-      prompt: "Buying a bond from its issuer is economically closest to:",
+      prompt:
+        "Alex gives Sam $100 now under an agreement that Sam repays Alex later. Alex is:",
       choices: [
-        "Lending to the issuer",
-        "Buying a loaf for immediate consumption",
-        "Creating a labour force",
-        "Measuring GDP per capita",
+        "Lending",
+        "Buying an item for immediate use",
+        "Receiving a payment for work",
+        "Counting objects in a group",
       ],
       correctChoice: 0,
       explanation:
-        "The bond buyer provides funds and receives specified future payments.",
+        "Giving funds now in exchange for repayment later is lending. A bond is one more formal example of that time-transfer relationship.",
     },
   ),
   mcqPair(
     "index",
+    ["ratio", "price", "quantity"],
     {
       id: "base-value",
       prompt: "An index is useful because it:",
       choices: [
         "Summarises a changing quantity relative to a chosen reference",
         "Must always equal a dollar price",
-        "Counts only people with jobs",
-        "Is the same thing as a percentage point",
+        "Must always count people",
+        "Is a physical object that cannot change",
       ],
       correctChoice: 0,
       explanation:
@@ -558,21 +598,22 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       prompt:
         "If an index is 100 in its base period and 120 later, what does the later number mean?",
       choices: [
-        "The indexed quantity is 20% above its base-period level",
+        "The indexed quantity is 20 index points above its base-period level",
         "The quantity is exactly $120",
-        "Inflation is 120 percentage points",
-        "The quantity has fallen by 20%",
+        "The indexed quantity is 20 index points below its base-period level",
+        "The index must be unchanged",
       ],
       correctChoice: 0,
       explanation:
-        "The base is normalised to 100, so 120 represents a level 20% above the base.",
+        "The base is normalised to 100, so 120 is 20 index points above the base. The meaning of the original quantity still depends on what the index measures.",
     },
   ),
   mcqPair(
     "graph-intercept",
+    ["graph-axis"],
     {
       id: "y-intercept",
-      prompt: "For y = 2x + 5, where does the line cross the y-axis?",
+      prompt: "A line crosses the vertical axis at y = 5. What is its y-intercept?",
       choices: ["5", "2", "0", "10"],
       correctChoice: 0,
       explanation: "The intercept is the y-value when x = 0, which is 5.",
@@ -583,8 +624,8 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       choices: [
         "What is the vertical-axis value when the horizontal variable is zero?",
         "How steep is every curve?",
-        "What is the percentage change in price?",
-        "How many sellers exist?",
+        "How many points are on the line?",
+        "Which colour is the line?",
       ],
       correctChoice: 0,
       explanation: "An intercept is found by setting the other axis variable to zero.",
@@ -592,14 +633,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "income-approach",
+    ["gross-domestic-product", "income", "value-added"],
     {
       id: "income-gdp",
       prompt: "The income approach to GDP measures current production by adding:",
       choices: [
-        "Income generated by production, such as wages and profits",
-        "Only household shopping",
-        "Only imports",
-        "The stock of government debt",
+        "Income generated by production, such as payments to workers and owners",
+        "Only one person's spending",
+        "Only goods produced in another country",
+        "The number of workers in a firm",
       ],
       correctChoice: 0,
       explanation:
@@ -607,20 +649,22 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     },
     {
       id: "same-production",
-      prompt: "Why can the income approach and expenditure approach give the same GDP?",
+      prompt:
+        "A bakery pays workers and owners while producing bread. Why can adding those payments help measure the bread produced?",
       choices: [
-        "Spending on output becomes income to the participants in producing it",
-        "They both count every second-hand sale",
-        "Income is always equal to wealth",
-        "Imports are always zero",
+        "The payments are income generated by the current production",
+        "Payments are never connected with production",
+        "Only the bakery's building is counted as output",
+        "The amount produced cannot be measured",
       ],
       correctChoice: 0,
       explanation:
-        "For current production, one person's expenditure is another participant's production income in the accounting identity.",
+        "Current production generates payments to participants such as workers and owners. Adding those production incomes gives the income-side measure of output.",
     },
   ),
   mcqPair(
     "exports",
+    ["gross-domestic-product", "expenditure", "market"],
     {
       id: "foreign-buyer",
       prompt:
@@ -628,8 +672,8 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       choices: [
         "An export",
         "An import",
-        "Household consumption by definition",
-        "A government deficit",
+        "A domestic sale only",
+        "A payment unrelated to production",
       ],
       correctChoice: 0,
       explanation:
@@ -641,8 +685,8 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
       choices: [
         "The output is produced in Australia and purchased by a foreign resident",
         "The buyer lives in Australia",
-        "The item is second-hand",
-        "The seller pays interest",
+        "The item is never produced",
+        "The seller changes its opening hours",
       ],
       correctChoice: 0,
       explanation:
@@ -651,6 +695,7 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "disinflation",
+    ["inflation", "price-level", "percentage-point"],
     {
       id: "slower-rise",
       prompt:
@@ -659,7 +704,7 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
         "Disinflation",
         "Deflation",
         "A fall in the price level",
-        "A 3 percentage-point fall in GDP",
+        "No change in the inflation rate",
       ],
       correctChoice: 0,
       explanation:
@@ -681,14 +726,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "population",
+    ["stock"],
     {
       id: "headcount",
       prompt: "Population is a measure of:",
       choices: [
         "How many people are in the defined group",
-        "How much each person earns",
-        "The price of one currency",
-        "The amount of capital per worker",
+        "How much each person eats",
+        "The number of hours in a day",
+        "The colour of the group's buildings",
       ],
       correctChoice: 0,
       explanation:
@@ -697,28 +743,29 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     {
       id: "per-capita",
       prompt:
-        "If real GDP stays fixed while population rises, real GDP per capita will:",
+        "A town has 100 residents and later has 120 residents. What happened to its population?",
       choices: [
-        "Fall",
-        "Rise automatically",
-        "Become inflation",
-        "Equal the unemployment rate",
+        "It increased by 20 people",
+        "It decreased by 20 people",
+        "It stayed at 100 people",
+        "It became a price",
       ],
       correctChoice: 0,
       explanation:
-        "Real GDP per capita is real GDP divided by population, so a larger denominator lowers it when output is fixed.",
+        "Population is a headcount. Moving from 100 to 120 residents is an increase of 20 people.",
     },
   ),
   mcqPair(
     "working-age-population",
+    ["population", "stock"],
     {
       id: "labour-container",
-      prompt: "The working-age population can include people who are:",
+      prompt: "The working-age population can include people who:",
       choices: [
-        "Employed, unemployed, or outside the labour force",
-        "Only employed",
-        "Only actively searching",
-        "Only retired",
+        "Have a job, are looking for a job, or are not active in the job market",
+        "All have a job",
+        "Are all looking for a job",
+        "Are all too young to work",
       ],
       correctChoice: 0,
       explanation:
@@ -726,12 +773,13 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     },
     {
       id: "not-everyone-active",
-      prompt: "Why is the working-age population not the same as the labour force?",
+      prompt:
+        "Why is the working-age population a wider group than people active in the job market?",
       choices: [
-        "Some working-age people are neither working nor actively seeking and available",
-        "The labour force includes children only",
-        "The working-age population counts prices",
-        "The two terms always mean exactly the same thing",
+        "Some working-age people are neither working nor looking for a job",
+        "The wider group counts only prices",
+        "Every working-age person is automatically active",
+        "The two groups always mean exactly the same thing",
       ],
       correctChoice: 0,
       explanation:
@@ -740,14 +788,15 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
   ),
   mcqPair(
     "expectations",
+    [],
     {
       id: "future-belief",
       prompt: "In macroeconomics, expectations are best understood as:",
       choices: [
         "Beliefs about future economic conditions that can affect current decisions",
         "Guaranteed future outcomes",
-        "Only past prices",
-        "A synonym for current income",
+        "A record of only past events",
+        "A synonym for a current object",
       ],
       correctChoice: 0,
       explanation:
@@ -756,28 +805,29 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     {
       id: "expected-inflation",
       prompt:
-        "If borrowers expect higher future inflation, which contract term may they care about especially?",
+        "Someone believes that bus fares will be higher next year. What does this belief represent?",
       choices: [
-        "The purchasing-power value of future repayments",
-        "The number of sellers in a market only",
-        "The graph intercept by definition",
-        "The country's population count",
+        "An expectation about a future condition",
+        "A guaranteed observation of the future",
+        "A count of today's buses",
+        "A payment already received",
       ],
       correctChoice: 0,
       explanation:
-        "Expected inflation affects how much future dollar payments are expected to buy.",
+        "An expectation is a belief about what may happen in the future; it is not the future outcome itself.",
     },
   ),
   mcqPair(
     "wage",
+    ["income", "price"],
     {
       id: "labour-payment",
       prompt: "A wage is a payment for:",
       choices: [
         "Labour services",
-        "Holding a bond",
-        "Owning a house",
-        "A country's exports",
+        "A random number",
+        "A shop's opening hours",
+        "A list of household objects",
       ],
       correctChoice: 0,
       explanation:
@@ -785,28 +835,25 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     },
     {
       id: "real-wage-context",
-      prompt: "A nominal wage tells you primarily:",
-      choices: [
-        "The money payment for labour",
-        "How many goods the worker can always buy",
-        "The unemployment rate",
-        "The firm's capital stock",
-      ],
+      prompt:
+        "A worker receives $30 for one hour of labour. What is the $30 payment called?",
+      choices: ["A wage", "A quantity of goods", "A market location", "A time period"],
       correctChoice: 0,
       explanation:
-        "A nominal wage is measured in money; purchasing power requires comparing it with the price level.",
+        "A wage is a payment for labour. Calling it nominal becomes useful when distinguishing the money amount from its purchasing power.",
     },
   ),
   mcqPair(
     "credit",
+    ["borrowing", "lending", "bank"],
     {
       id: "borrow-now",
       prompt: "Credit is most directly connected with:",
       choices: [
         "The ability or arrangement to obtain funds now and repay later",
-        "A count of final goods",
-        "A price index base year",
-        "The number of workers employed",
+        "A count of objects on a shelf",
+        "A time of day",
+        "A person's height",
       ],
       correctChoice: 0,
       explanation:
@@ -815,20 +862,21 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     {
       id: "credit-constraint",
       prompt:
-        "A household being denied a loan because the lender doubts repayment ability is facing a:",
+        "A bank refuses a requested loan because it doubts the household can repay. What does this show about credit?",
       choices: [
-        "Credit constraint",
-        "Goods surplus",
-        "GDP deflator",
-        "Labour-force participation rate",
+        "Access to borrowing is limited",
+        "The household has received a payment",
+        "The bank has sold a good",
+        "The household's population has changed",
       ],
       correctChoice: 0,
       explanation:
-        "A credit constraint limits access to borrowing even if the household wants to spend.",
+        "Credit concerns the ability to borrow and repay. When a lender refuses the loan, access to borrowing is limited.",
     },
   ),
   mcqPair(
     "catch-up-growth",
+    ["convergence", "technology-ideas", "institutions-property-rights"],
     {
       id: "convergence",
       prompt: "Catch-up growth means a country initially behind the frontier:",
@@ -845,16 +893,16 @@ const skills: readonly GuidedKnowledgeCheckSkill[] = [
     {
       id: "growth-rate-gap",
       prompt:
-        "Why can a small persistent growth-rate advantage help a poorer country catch up?",
+        "If a poorer country's output grows faster than a richer country's output for many years, what can happen?",
       choices: [
-        "Compounding makes the level gap shrink over time",
-        "Growth rates never compound",
-        "The price level must be zero",
-        "Population becomes irrelevant",
+        "The poorer country's output level can move closer to the richer country's level",
+        "The poorer country's output level must move farther away",
+        "Both output levels must become zero",
+        "The comparison becomes impossible immediately",
       ],
       correctChoice: 0,
       explanation:
-        "Repeated differences in growth rates compound into increasingly different output levels.",
+        "A persistent difference in growth rates changes the two output levels at different speeds, allowing the initially poorer country to narrow the gap.",
     },
   ),
 ];

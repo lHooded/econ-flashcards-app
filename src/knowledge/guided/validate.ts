@@ -24,6 +24,8 @@ export interface GuidedValidationStats {
   readonly generatedFuzzInstances: number;
   readonly canonicalCardCollisions: number;
   readonly missingSourceSupport: number;
+  readonly unknownRequiredConcepts: number;
+  readonly prerequisiteUnsafeVariants: number;
 }
 
 export class GuidedLearningValidationError extends Error {
@@ -62,6 +64,8 @@ export function validateGuidedKnowledgeChecks(
   let generatedFuzzInstances = 0;
   let canonicalCardCollisions = 0;
   let missingSourceSupport = 0;
+  const unknownRequiredConcepts = new Set<string>();
+  const prerequisiteUnsafeVariants = new Set<string>();
   const variantIds = new Set<string>();
   const variantFingerprints = new Set<string>();
 
@@ -139,7 +143,15 @@ export function validateGuidedKnowledgeChecks(
           );
           break;
         }
-        validateVariant(variant, skill, `generator ${skill.id} seed ${seed}`, issues);
+        validateVariant(
+          variant,
+          skill,
+          `generator ${skill.id} seed ${seed}`,
+          conceptById,
+          unknownRequiredConcepts,
+          prerequisiteUnsafeVariants,
+          issues,
+        );
         generatedFuzzInstances += 1;
       }
       const generated = generatedVariants(skill, Math.min(fuzzSeeds, 500));
@@ -182,7 +194,15 @@ export function validateGuidedKnowledgeChecks(
           issues.push(`duplicate guided variant fingerprint "${variant.fingerprint}"`);
         }
         variantFingerprints.add(variant.fingerprint);
-        validateVariant(variant, skill, `skill ${skill.id}`, issues);
+        validateVariant(
+          variant,
+          skill,
+          `skill ${skill.id} variant ${variant.id}`,
+          conceptById,
+          unknownRequiredConcepts,
+          prerequisiteUnsafeVariants,
+          issues,
+        );
       }
     }
   }
@@ -221,6 +241,8 @@ export function validateGuidedKnowledgeChecks(
     generatedFuzzInstances,
     canonicalCardCollisions,
     missingSourceSupport,
+    unknownRequiredConcepts: unknownRequiredConcepts.size,
+    prerequisiteUnsafeVariants: prerequisiteUnsafeVariants.size,
   };
 }
 
@@ -228,6 +250,9 @@ function validateVariant(
   variant: GuidedCheckVariant,
   skill: GuidedKnowledgeCheckSkill,
   context: string,
+  conceptById: ReadonlyMap<string, KnowledgeConcept>,
+  unknownRequiredConcepts: Set<string>,
+  prerequisiteUnsafeVariants: Set<string>,
   issues: string[],
 ): void {
   if (variant.kind !== skill.kind) {
@@ -239,6 +264,33 @@ function validateVariant(
   if (variant.prompt.trim() === "") issues.push(`${context} has an empty prompt`);
   if (variant.explanation.trim() === "") {
     issues.push(`${context} has an empty explanation`);
+  }
+
+  if (!Array.isArray(variant.requiredConceptIds)) {
+    prerequisiteUnsafeVariants.add(context);
+    issues.push(`${context} has no requiredConceptIds metadata`);
+  } else {
+    const seen = new Set<string>();
+    const ancestors = prerequisiteAncestors(skill.conceptId, conceptById);
+    for (const requiredConceptId of variant.requiredConceptIds) {
+      if (seen.has(requiredConceptId)) {
+        prerequisiteUnsafeVariants.add(context);
+        issues.push(`${context} repeats required concept "${requiredConceptId}"`);
+      }
+      seen.add(requiredConceptId);
+      if (!conceptById.has(requiredConceptId)) {
+        unknownRequiredConcepts.add(requiredConceptId);
+        issues.push(`${context} requires unknown concept "${requiredConceptId}"`);
+      } else if (
+        requiredConceptId === skill.conceptId ||
+        !ancestors.has(requiredConceptId)
+      ) {
+        prerequisiteUnsafeVariants.add(context);
+        issues.push(
+          `${context} requires "${requiredConceptId}", which is not a strict prerequisite ancestor of target "${skill.conceptId}"`,
+        );
+      }
+    }
   }
   if (variant.kind === "mcq") {
     if (
@@ -270,6 +322,27 @@ function validateVariant(
     if (!isNumericUnit(variant.unit))
       issues.push(`${context} has an invalid answer unit`);
   }
+}
+
+function prerequisiteAncestors(
+  conceptId: string,
+  conceptById: ReadonlyMap<string, KnowledgeConcept>,
+): ReadonlySet<string> {
+  const ancestors = new Set<string>();
+  const visiting = new Set<string>();
+  const visit = (currentId: string): void => {
+    if (visiting.has(currentId)) return;
+    visiting.add(currentId);
+    for (const prerequisiteId of conceptById.get(currentId)?.prerequisites ?? []) {
+      if (!ancestors.has(prerequisiteId)) {
+        ancestors.add(prerequisiteId);
+        visit(prerequisiteId);
+      }
+    }
+    visiting.delete(currentId);
+  };
+  visit(conceptId);
+  return ancestors;
 }
 
 function generatedVariants(

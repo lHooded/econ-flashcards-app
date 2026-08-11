@@ -41,8 +41,9 @@ one concise lesson at a time. After the lesson:
 
 1. a no-card concept gets its registered Guided Knowledge Check;
 2. a canonical-backed prerequisite gets a suitable linked canonical card;
-3. when all relevant concepts have positive evidence, the selected canonical
-   card is shown.
+3. when the prerequisite frontier is ready and the target bundle has been
+   lesson-introduced, the selected canonical card is shown as retrieval
+   evidence for that bundle.
 
 The selector does not require every prerequisite to be `Solid`. “Introduced
 enough” is a transient derived condition: any positive retrieval evidence,
@@ -55,6 +56,28 @@ unreachable.
 
 Reading an article, clicking “I understand”, and advancing a lesson never
 creates evidence.
+
+### Failed frontiers and recursive preparation
+
+If an unseen anchor depends on a check that has failed and is still in its
+relearning interval, with no historical positive retrieval evidence, Guided
+Cram returns a typed temporarily-blocked frontier rather than continuing down
+that same branch. It then inspects the remaining unseen canonical anchors in
+the ordinary Exam-SRS order and chooses the first independent branch that can
+make useful progress. An urgent canonical review is still returned directly;
+graph preparation applies only to unseen canonical material. Only after all
+useful ranked branches are blocked does the deterministic coverage fallback
+allow the selected unseen anchor through. That fallback is a deadlock escape,
+not normal progression.
+
+Every unseen canonical card, including a card selected as evidence for a
+canonical-backed prerequisite, goes through the same recursive preparation
+operation. Its whole mapped target bundle is lesson-introduced before the card
+is returned. A visited-card guard terminates cycle-shaped card-to-concept
+evidence dependencies deterministically. A weak success remains positive
+introduction evidence and may unlock a dependent lesson immediately; a failure
+remains unrehearsed/relearning and returns through the ordinary Exam-SRS due
+logic.
 
 ## Guided Knowledge Checks
 
@@ -70,6 +93,63 @@ stable skill ID, review count, and transient session seed; it never uses raw
 `Math.random()` and the parameters are not persisted. `npm run
 validate:guided-learning` checks all static variants and fuzzes each generated
 template over 500 deterministic seeds.
+
+### Prerequisite-safety audit
+
+Each emitted check variant carries `requiredConceptIds`. These are concepts
+needed to reason through the prompt, excluding the skill's target concept. The
+validator requires every required ID to be a strict transitive prerequisite of
+the target; a descendant, the target itself, an unknown ID, or missing metadata
+fails validation. This prevents a foundation check from quietly testing a
+future lesson. The audit below covers all 28 current no-card skills. Source
+labels are the existing source references inherited from the audited concept
+articles; the underlying local files are listed in `knowledge/sources.json`.
+
+| Target concept           | Variants / generator              | Required concepts                                           | Course source references                                       |
+| ------------------------ | --------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------- |
+| `percentage`             | generated `percentage-out-of-100` | none                                                        | Textbook p. 19                                                 |
+| `percentage-point`       | 2 static                          | `percentage`                                                | Textbook p. 40                                                 |
+| `ratio`                  | generated `ratio-per-unit`        | none                                                        | Textbook p. 56                                                 |
+| `rate`                   | 2 static                          | `ratio`                                                     | Week 1 Lecture 2 p. 29                                         |
+| `price`                  | 2 static                          | `market,buyer,seller`; second variant `buyer`               | Textbook p. 19                                                 |
+| `quantity`               | 2 static                          | none                                                        | Week 1 Lecture 1 p. 23                                         |
+| `market`                 | 2 static                          | `buyer,seller`                                              | Textbook p. 70                                                 |
+| `buyer`                  | 2 static                          | none                                                        | Textbook p. 164                                                |
+| `seller`                 | 2 static                          | none                                                        | Textbook p. 198                                                |
+| `supply`                 | 2 static                          | `market,price,quantity`                                     | Textbook p. 70; Week 8 Lecture 2 p. 46                         |
+| `demand`                 | 2 static                          | `market,price,quantity`                                     | Textbook p. 171; Week 8 Lecture 2 p. 57                        |
+| `equilibrium`            | 2 static                          | `supply,demand,quantity`                                    | Textbook p. 123; Week 7 Lecture 1 p. 50                        |
+| `shortage`               | 2 static                          | `supply,demand`                                             | Textbook p. 125                                                |
+| `surplus`                | 2 static                          | `supply,demand`                                             | Week 3 Lecture 1 p. 18                                         |
+| `income`                 | 2 static                          | `flow`                                                      | Week 1 Lecture 1 p. 53; Textbook p. 97                         |
+| `expenditure`            | 2 static                          | `flow`                                                      | Week 1 Lecture 1 p. 49; Week 3 Lecture 1 p. 10                 |
+| `lending`                | 2 static                          | `asset,flow`                                                | Textbook p. 164; Week 5 Lecture 1 p. 18                        |
+| `index`                  | 2 static                          | `ratio,price,quantity`                                      | Week 1 Lecture 2 p. 4; Textbook p. 39                          |
+| `graph-intercept`        | 2 static                          | `graph-axis`                                                | Week 3 Lecture 1 p. 36; Textbook p. 121                        |
+| `income-approach`        | 2 static                          | `gross-domestic-product,income,value-added`                 | Week 1 Lecture 1 p. 53; Textbook p. 26                         |
+| `exports`                | 2 static                          | `gross-domestic-product,expenditure,market`                 | Week 1 Lecture 1 p. 50; Week 8 Lecture 1 p. 8; Textbook p. 247 |
+| `disinflation`           | 2 static                          | `inflation,price-level,percentage-point`                    | Textbook p. 40; Week 1 Lecture 2 p. 19                         |
+| `population`             | 2 static                          | `stock`                                                     | Week 1 Lecture 1 p. 78; Week 1 Lecture 2 p. 22; Textbook p. 56 |
+| `working-age-population` | 2 static                          | `population,stock`                                          | Week 1 Lecture 2 p. 22; Textbook p. 56                         |
+| `expectations`           | 2 static                          | none                                                        | Textbook p. 86                                                 |
+| `wage`                   | 2 static                          | `income,price`                                              | Textbook p. 70; Week 2 Lecture 1 p. 43                         |
+| `credit`                 | 2 static                          | `borrowing,lending,bank`                                    | Textbook p. 164; Week 5 Lecture 1 p. 75                        |
+| `catch-up-growth`        | 2 static                          | `convergence,technology-ideas,institutions-property-rights` | Week 9 Lecture 1 p. 10; Textbook p. 281                        |
+
+The percentage generator deliberately uses only whole-number “marked squares
+out of 100” prompts. It does not ask for a percentage change, use the original
+amount as a denominator, or rely on the `ratio` lesson. The lending variants
+use a plain “give funds now, repay later” scenario rather than a bond; wage
+uses a direct payment-for-one-hour scenario rather than nominal versus real
+wages; index uses the index scale rather than an inflation calculation; and
+catch-up growth asks about narrowing an output-level gap without requiring a
+separate compounding lesson. Distractors were also simplified where later
+course vocabulary would add noise rather than test the target.
+
+The current audit result is 28 / 28 prerequisite-safe skills, 0 descendant
+dependencies, 0 unknown required concepts, and 0 prerequisite-unsafe emitted
+variants. The validator reports these counts in CI. The source PDFs used for
+this pass remain local reference material and are not bundled or committed.
 
 The command runs explicitly in pull-request CI and is also part of `prebuild`,
 so a production bundle cannot omit the check-registry validation.

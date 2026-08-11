@@ -22,4 +22,6 @@ console.log(`Static variants: ${stats.staticVariants}`);
 console.log(`Generated check templates: ${stats.generatedCheckTemplates}`);
 console.log(`Generated check fuzz instances: ${stats.generatedFuzzInstances}`);
 console.log(`Canonical card collisions: ${stats.canonicalCardCollisions}`);
+console.log(`Unknown required concepts: ${stats.unknownRequiredConcepts}`);
+console.log(`Prerequisite-unsafe check variants: ${stats.prerequisiteUnsafeVariants}`);
 console.log(`Missing source support: ${stats.missingSourceSupport}`);

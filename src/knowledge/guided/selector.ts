@@ -3,6 +3,7 @@ import type { AppSettings, ReviewEvent } from "../../domain/progress";
 import {
   getExamSrsPriority,
   getExamSrsStatePriority,
+  rankExamSrsCandidatesFromSnapshot,
   selectNextCardFromSnapshot,
 } from "../../study/examSrs/selector";
 import { deriveExamSrsSnapshot } from "../../study/examSrs/deriveState";
@@ -83,6 +84,20 @@ export interface GuidedSelectionContext {
   readonly guidedCheckStates: Readonly<Record<string, ExamSrsCardState>>;
 }
 
+type GuidedAnchorResolution =
+  | { readonly kind: "step"; readonly step: GuidedStep }
+  | {
+      readonly kind: "ready";
+      readonly card: Flashcard;
+      readonly state: ExamSrsCardState;
+      readonly targetConceptIds: readonly string[];
+    }
+  | {
+      readonly kind: "temporarily-blocked";
+      readonly conceptId: string;
+      readonly dueAt: string | null;
+    };
+
 const RECENT_LIMIT = 3;
 
 /**
@@ -113,88 +128,66 @@ export function selectGuidedNextStep(input: SelectGuidedNextStepInput): GuidedSt
 
   const selected = canonical.selection;
   if (selected.state.learningState !== "unseen") {
-    return {
-      kind: "canonical-card",
-      card: selected.card,
-      state: selected.state,
-      reason: reasonForState(selected.state),
-      targetConceptIds: cardConceptMap[selected.card.id] ?? [],
-    };
+    return canonicalCardStep(
+      selected.card,
+      selected.state,
+      reasonForState(selected.state),
+    );
   }
 
-  const targetConceptIds = cardConceptMap[selected.card.id] ?? [];
-  const path = orderedUnique(
-    targetConceptIds.flatMap((conceptId) => getLearningPath(conceptId)),
-  );
   const lessonCompleted = input.lessonCompletedConceptIds ?? new Set<string>();
-  for (const conceptId of path) {
-    if (isConceptIntroducedEnough(conceptId, input.reviews)) continue;
+  const rankedCandidates = rankExamSrsCandidatesFromSnapshot({
+    cards: input.cards,
+    scheduler: context.scheduler,
+    nowMs: input.nowMs,
+    recentlyShownCardIds: input.recentlyShownIds,
+    newCardPrerequisiteReadyByCardId: readiness,
+  });
 
-    const concept = knowledgeConceptById.get(conceptId);
-    if (concept === undefined) continue;
-    const reason: GuidedReason = targetConceptIds.includes(conceptId)
-      ? "new-exam-concept"
-      : "new-prerequisite";
-    if (!lessonCompleted.has(conceptId)) {
-      return {
-        kind: "lesson",
-        conceptId,
-        targetCardId: selected.card.id,
-        targetConceptIds,
-        reason,
-      };
+  // Search the same deterministic Exam-SRS order. A blocked unseen anchor
+  // yields to a useful independent branch, not to an arbitrary new card.
+  for (const candidate of rankedCandidates) {
+    if (candidate.state.learningState !== "unseen") {
+      return canonicalCardStep(
+        candidate.card,
+        candidate.state,
+        reasonForState(candidate.state),
+      );
     }
-
-    const skills = getGuidedCheckSkillsForConcept(conceptId);
-    const skill = skills[0];
-    if (skill !== undefined) {
-      const state = context.guidedCheckStates[skill.id];
-      if (state !== undefined && (state.reviewCount === 0 || state.isDue)) {
-        return {
-          kind: "knowledge-check",
-          skill,
-          state,
-          reason,
-          targetCardId: selected.card.id,
-          targetConceptIds,
-        };
-      }
-      // A failed, not-yet-due check must not be repeated immediately. The
-      // final canonical fallback below keeps the curriculum moving.
-      continue;
-    }
-
-    // A card can intentionally provide evidence for a small concept bundle.
-    // Do not surface that card after introducing only the first target in the
-    // topological order; let the loop teach each remaining target concept
-    // before the shared retrieval question appears.
-    if (targetConceptIds.includes(conceptId)) continue;
-    const linked = chooseLinkedCanonicalCard(
-      concept.linkedCardIds,
+    const resolution = prepareUnseenCanonicalCard(
+      candidate.card,
+      candidate.state,
       input,
       context,
-      selected.card.id,
+      lessonCompleted,
+      new Set<string>(),
     );
-    if (linked !== null) {
-      return {
-        kind: "canonical-card",
-        card: linked.card,
-        state: linked.state,
-        reason: "prerequisite-for-selected-card",
-        targetConceptIds: cardConceptMap[linked.card.id] ?? [conceptId],
-      };
+    if (resolution.kind === "step") return resolution.step;
+    if (resolution.kind === "ready") {
+      const isSelected = candidate.card.id === selected.card.id;
+      return canonicalCardStep(
+        resolution.card,
+        resolution.state,
+        isSelected && resolution.card.tags.includes("high-yield")
+          ? "high-yield"
+          : isSelected
+            ? "new-exam-concept"
+            : candidate.card.tags.includes("high-yield")
+              ? "high-yield"
+              : "new-exam-concept",
+        resolution.targetConceptIds,
+      );
     }
   }
 
-  return {
-    kind: "canonical-card",
-    card: selected.card,
-    state: selected.state,
-    reason: selected.card.tags.includes("high-yield")
-      ? "high-yield"
-      : "new-exam-concept",
-    targetConceptIds,
-  };
+  // Last-resort coverage fallback. This is deliberately after every ranked
+  // unseen branch has been inspected; it is the only place where a blocked
+  // anchor may proceed without fresh prerequisite evidence.
+  return canonicalCardStep(
+    selected.card,
+    selected.state,
+    selected.card.tags.includes("high-yield") ? "high-yield" : "new-exam-concept",
+  );
 }
 
 export function deriveGuidedSelectionContext(
@@ -267,34 +260,196 @@ function chooseDueCheck(
   };
 }
 
-function chooseLinkedCanonicalCard(
+function prepareUnseenCanonicalCard(
+  card: Flashcard,
+  state: ExamSrsCardState,
+  input: SelectGuidedNextStepInput,
+  context: GuidedSelectionContext,
+  lessonCompleted: ReadonlySet<string>,
+  preparingCardIds: ReadonlySet<string>,
+): GuidedAnchorResolution {
+  const targetConceptIds = cardConceptMap[card.id] ?? [];
+  if (preparingCardIds.has(card.id)) {
+    // The prerequisite DAG is validated separately, but a future card map
+    // could still form an evidence loop. Returning the current card is a
+    // deterministic finite safety valve rather than recursing forever.
+    return { kind: "ready", card, state, targetConceptIds };
+  }
+  const nextPreparingCardIds = new Set(preparingCardIds);
+  nextPreparingCardIds.add(card.id);
+  const path = orderedUnique(
+    targetConceptIds.flatMap((conceptId) => getLearningPath(conceptId)),
+  );
+
+  for (const conceptId of path) {
+    if (isConceptIntroducedEnough(conceptId, input.reviews)) continue;
+    const concept = knowledgeConceptById.get(conceptId);
+    if (concept === undefined) continue;
+
+    const blocked = findFailedNotDueEvidence(conceptId, input, context);
+    if (blocked !== null) return blocked;
+
+    const reason: GuidedReason = targetConceptIds.includes(conceptId)
+      ? "new-exam-concept"
+      : "new-prerequisite";
+    if (!lessonCompleted.has(conceptId)) {
+      return {
+        kind: "step",
+        step: {
+          kind: "lesson",
+          conceptId,
+          targetCardId: card.id,
+          targetConceptIds,
+          reason,
+        },
+      };
+    }
+
+    const skill = getGuidedCheckSkillsForConcept(conceptId)[0];
+    if (skill !== undefined) {
+      const checkState = context.guidedCheckStates[skill.id];
+      if (
+        checkState !== undefined &&
+        (checkState.reviewCount === 0 || checkState.isDue)
+      ) {
+        return {
+          kind: "step",
+          step: {
+            kind: "knowledge-check",
+            skill,
+            state: checkState,
+            reason,
+            targetCardId: card.id,
+            targetConceptIds,
+          },
+        };
+      }
+      // A failed, not-yet-due check was handled as a blocked frontier above.
+      // Other unreviewable states remain soft guidance so coverage cannot
+      // deadlock.
+      continue;
+    }
+
+    // The selected card supplies evidence for its own target bundle. Teach
+    // every target lesson first, but do not recursively select that same card
+    // as a prerequisite before the bundle is ready.
+    if (targetConceptIds.includes(conceptId)) continue;
+
+    const linked = prepareLinkedCanonicalEvidence(
+      concept.linkedCardIds,
+      input,
+      context,
+      card.id,
+      nextPreparingCardIds,
+      lessonCompleted,
+    );
+    if (linked !== null) return linked;
+  }
+
+  return { kind: "ready", card, state, targetConceptIds };
+}
+
+function prepareLinkedCanonicalEvidence(
   linkedCardIds: readonly string[],
   input: SelectGuidedNextStepInput,
   context: GuidedSelectionContext,
   currentCardId: string,
-): { readonly card: Flashcard; readonly state: ExamSrsCardState } | null {
-  const candidates = new Set(linkedCardIds);
-  const selection = selectNextCardFromSnapshot({
+  preparingCardIds: ReadonlySet<string>,
+  lessonCompleted: ReadonlySet<string>,
+): GuidedAnchorResolution | null {
+  const candidates = rankExamSrsCandidatesFromSnapshot({
     cards: input.cards,
     scheduler: context.scheduler,
     nowMs: input.nowMs,
-    candidateCardIds: candidates,
+    candidateCardIds: new Set(linkedCardIds),
     recentlyShownCardIds: input.recentlyShownIds,
-  }).selection;
-  if (selection === null) return null;
-  if (selection.card.id === currentCardId && linkedCardIds.length > 1) {
-    const alternative = input.cards.find(
-      (card) =>
-        candidates.has(card.id) &&
-        card.id !== currentCardId &&
-        context.scheduler.stateByCardId[card.id]?.learningState === "unseen",
-    );
-    if (alternative !== undefined) {
-      const state = context.scheduler.stateByCardId[alternative.id];
-      if (state !== undefined) return { card: alternative, state };
+  });
+  let blocked: GuidedAnchorResolution | null = null;
+  for (const candidate of candidates) {
+    if (
+      candidate.card.id === currentCardId ||
+      preparingCardIds.has(candidate.card.id)
+    ) {
+      continue;
     }
+    if (candidate.state.learningState !== "unseen") {
+      return {
+        kind: "step",
+        step: canonicalCardStep(
+          candidate.card,
+          candidate.state,
+          "prerequisite-for-selected-card",
+        ),
+      };
+    }
+    const resolution = prepareUnseenCanonicalCard(
+      candidate.card,
+      candidate.state,
+      input,
+      context,
+      lessonCompleted,
+      preparingCardIds,
+    );
+    if (resolution.kind === "step") return resolution;
+    if (resolution.kind === "ready") {
+      return {
+        kind: "step",
+        step: canonicalCardStep(
+          resolution.card,
+          resolution.state,
+          "prerequisite-for-selected-card",
+          resolution.targetConceptIds,
+        ),
+      };
+    }
+    blocked ??= resolution;
   }
-  return { card: selection.card, state: selection.state };
+  return blocked;
+}
+
+function findFailedNotDueEvidence(
+  conceptId: string,
+  input: SelectGuidedNextStepInput,
+  context: GuidedSelectionContext,
+): GuidedAnchorResolution | null {
+  if (isConceptIntroducedEnough(conceptId, input.reviews)) return null;
+  const concept = knowledgeConceptById.get(conceptId);
+  if (concept === undefined) return null;
+  const evidenceIds =
+    concept.linkedCardIds.length > 0
+      ? concept.linkedCardIds
+      : getGuidedCheckSkillsForConcept(conceptId).map((skill) => skill.id);
+  const states = evidenceIds
+    .map((id) =>
+      id.startsWith("knowledge-check:")
+        ? context.guidedCheckStates[id]
+        : context.scheduler.stateByCardId[id],
+    )
+    .filter((candidate): candidate is ExamSrsCardState => candidate !== undefined);
+  const failed = states.find(
+    (candidate) =>
+      candidate.reviewCount > 0 &&
+      candidate.learningState === "relearning" &&
+      !candidate.isDue,
+  );
+  return failed === undefined
+    ? null
+    : { kind: "temporarily-blocked", conceptId, dueAt: failed.dueAt };
+}
+
+function canonicalCardStep(
+  card: Flashcard,
+  state: ExamSrsCardState,
+  reason: GuidedReason,
+  targetConceptIds: readonly string[] = cardConceptMap[card.id] ?? [],
+): GuidedCanonicalCardStep {
+  return {
+    kind: "canonical-card",
+    card,
+    state,
+    reason,
+    targetConceptIds,
+  };
 }
 
 function orderedUnique(ids: readonly string[]): readonly string[] {

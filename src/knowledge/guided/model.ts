@@ -9,6 +9,8 @@ export interface GuidedMcqVariant {
   readonly kind: "mcq";
   readonly id: string;
   readonly fingerprint: string;
+  /** Other concepts assumed by the question, excluding the target concept. */
+  readonly requiredConceptIds: readonly string[];
   readonly prompt: string;
   readonly choices: readonly string[];
   readonly correctChoice: number;
@@ -19,6 +21,8 @@ export interface GuidedCalculationVariant {
   readonly kind: "calculation";
   readonly id: string;
   readonly fingerprint: string;
+  /** Other concepts assumed by the question, excluding the target concept. */
+  readonly requiredConceptIds: readonly string[];
   readonly prompt: string;
   readonly answer: number;
   readonly unit: NumericUnit;

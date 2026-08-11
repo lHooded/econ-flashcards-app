@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { cards } from "../data/deck";
 import { createReviewEvent, type ReviewEvent } from "../domain/progress";
 import { knowledgeConcepts } from "../knowledge/data";
+import { cardConceptMap } from "../knowledge/contentMap";
 import {
   deriveConceptStatuses,
   deriveGuidedCheckStates,
@@ -15,7 +16,10 @@ import {
   guidedKnowledgeCheckSkills,
 } from "../knowledge/guided/checks";
 import { selectGuidedNextStep } from "../knowledge/guided/selector";
-import { validateGuidedKnowledgeChecks } from "../knowledge/guided/validate";
+import {
+  GuidedLearningValidationError,
+  validateGuidedKnowledgeChecks,
+} from "../knowledge/guided/validate";
 import rawSources from "../../knowledge/sources.json";
 import type { KnowledgeSource } from "../knowledge/model";
 import { deriveCardState } from "../study/examSrs/deriveState";
@@ -63,6 +67,8 @@ describe("Guided Knowledge Check registry", () => {
     expect(stats.coveredNoCardConcepts).toBe(28);
     expect(stats.skillCount).toBe(28);
     expect(stats.canonicalCardCollisions).toBe(0);
+    expect(stats.unknownRequiredConcepts).toBe(0);
+    expect(stats.prerequisiteUnsafeVariants).toBe(0);
     const percentage = guidedKnowledgeCheckSkills.find(
       (skill) => skill.conceptId === "percentage",
     )!;
@@ -72,6 +78,63 @@ describe("Guided Knowledge Check registry", () => {
     expect(getGuidedCheckVariant(percentage, 0).fingerprint).not.toBe(
       getGuidedCheckVariant(percentage, 1).fingerprint,
     );
+    const percentageVariant = getGuidedCheckVariant(percentage, 0);
+    expect(percentageVariant.prompt).toContain("among 100 squares");
+    expect(percentageVariant.prompt).not.toContain("percentage increase");
+    expect(percentageVariant.requiredConceptIds).toEqual([]);
+    expect(percentageVariant.explanation).not.toContain("${marked}");
+  });
+
+  it("rejects a guided check that assumes a descendant concept", () => {
+    const percentage = guidedKnowledgeCheckSkills.find(
+      (skill) => skill.conceptId === "percentage",
+    )!;
+    const invalid = {
+      ...percentage,
+      generator: (seed: number) => ({
+        ...percentage.generator!(seed),
+        requiredConceptIds: ["percentage-change"],
+      }),
+    };
+    expect(() =>
+      validateGuidedKnowledgeChecks(
+        {
+          concepts: knowledgeConcepts,
+          cards,
+          sources: rawSources as readonly KnowledgeSource[],
+          skills: guidedKnowledgeCheckSkills.map((skill) =>
+            skill.id === percentage.id ? invalid : skill,
+          ),
+        },
+        1,
+      ),
+    ).toThrow(GuidedLearningValidationError);
+  });
+
+  it("rejects an unknown required concept ID", () => {
+    const percentage = guidedKnowledgeCheckSkills.find(
+      (skill) => skill.conceptId === "percentage",
+    )!;
+    const invalid = {
+      ...percentage,
+      generator: (seed: number) => ({
+        ...percentage.generator!(seed),
+        requiredConceptIds: ["not-in-the-course-graph"],
+      }),
+    };
+    expect(() =>
+      validateGuidedKnowledgeChecks(
+        {
+          concepts: knowledgeConcepts,
+          cards,
+          sources: rawSources as readonly KnowledgeSource[],
+          skills: guidedKnowledgeCheckSkills.map((skill) =>
+            skill.id === percentage.id ? invalid : skill,
+          ),
+        },
+        1,
+      ),
+    ).toThrow(/requires unknown concept/);
   });
 });
 
@@ -277,6 +340,180 @@ describe("Guided concept readiness and progression", () => {
     expect(next.kind).not.toBe("idle");
   });
 
+  it("blocks a failed prerequisite branch but chooses an independent Exam-SRS branch", () => {
+    const targetAndIndependent = cards.filter((card) =>
+      ["ch01-019", "ch06-001"].includes(card.id),
+    );
+    const failedPercentage = review(
+      "percentage-failure",
+      "knowledge-check:percentage",
+      "2026-08-10T23:55:00.000Z",
+      { mode: "calculation", correct: false, rating: null },
+    );
+    const introducedBuyer = review(
+      "introduced-buyer",
+      "knowledge-check:buyer",
+      "2026-08-10T20:00:00.000Z",
+      { mode: "mcq", rating: null },
+    );
+    const next = selectGuidedNextStep({
+      cards: targetAndIndependent,
+      reviews: [failedPercentage, introducedBuyer],
+      settings: NO_EXAM,
+      nowMs: NOW,
+      lessonCompletedConceptIds: new Set(["buyer", "percentage"]),
+    });
+    expect(next.kind).toBe("lesson");
+    if (next.kind === "lesson") {
+      expect(next.conceptId).not.toBe("percentage-change");
+      expect(next.conceptId).not.toBe("price-index");
+      expect(next.targetCardId).toBe("ch06-001");
+    }
+
+    const dueAgain = selectGuidedNextStep({
+      cards: targetAndIndependent,
+      reviews: [failedPercentage, introducedBuyer],
+      settings: NO_EXAM,
+      nowMs: NOW + 11 * 60 * 1000,
+      lessonCompletedConceptIds: new Set(["buyer", "percentage"]),
+    });
+    expect(dueAgain.kind).toBe("knowledge-check");
+    if (dueAgain.kind === "knowledge-check") {
+      expect(dueAgain.skill.id).toBe("knowledge-check:percentage");
+      expect(dueAgain.reason).toBe("relearning");
+    }
+
+    const finalFallback = selectGuidedNextStep({
+      cards: cards.filter((card) => card.id === "ch01-019"),
+      reviews: [failedPercentage, introducedBuyer],
+      settings: NO_EXAM,
+      nowMs: NOW,
+      lessonCompletedConceptIds: new Set(["buyer", "percentage"]),
+    });
+    expect(finalFallback.kind).toBe("canonical-card");
+    if (finalFallback.kind === "canonical-card") {
+      expect(finalFallback.card.id).toBe("ch01-019");
+    }
+  });
+
+  it("lets weak positive evidence progress down the same branch", () => {
+    const targetCard = cards.filter((card) => card.id === "ch01-019");
+    const weakPercentage = review(
+      "percentage-weak-progress",
+      "knowledge-check:percentage",
+      "2026-08-10T23:55:00.000Z",
+      { mode: "calculation", rating: "struggled" },
+    );
+    const next = selectGuidedNextStep({
+      cards: targetCard,
+      reviews: [weakPercentage],
+      settings: NO_EXAM,
+      nowMs: NOW,
+      lessonCompletedConceptIds: new Set(["percentage"]),
+    });
+    expect(next.kind).toBe("lesson");
+    if (next.kind === "lesson") {
+      expect(next.conceptId).not.toBe("percentage");
+      expect(next.targetCardId).toBe("ch01-019");
+    }
+
+    const historicalPositiveThenFailure = [
+      review(
+        "percentage-old-success",
+        "knowledge-check:percentage",
+        "2026-08-01T00:00:00.000Z",
+        {
+          mode: "calculation",
+          rating: null,
+        },
+      ),
+      review(
+        "percentage-latest-failure",
+        "knowledge-check:percentage",
+        "2026-08-10T23:55:00.000Z",
+        {
+          mode: "calculation",
+          correct: false,
+          rating: null,
+        },
+      ),
+    ];
+    expect(isConceptIntroducedEnough("percentage", historicalPositiveThenFailure)).toBe(
+      true,
+    );
+    const afterHistoricalPositive = selectGuidedNextStep({
+      cards: targetCard,
+      reviews: historicalPositiveThenFailure,
+      settings: NO_EXAM,
+      nowMs: NOW,
+      lessonCompletedConceptIds: new Set(["percentage"]),
+    });
+    expect(afterHistoricalPositive.kind).toBe("lesson");
+    if (afterHistoricalPositive.kind === "lesson") {
+      expect(afterHistoricalPositive.conceptId).not.toBe("percentage");
+    }
+  });
+
+  it("recursively prepares a real multi-concept linked canonical card", () => {
+    const subset = cards.filter((card) => ["ch01-005", "mix-001"].includes(card.id));
+    const evidenceIds = [
+      "knowledge-check:buyer",
+      "knowledge-check:seller",
+      "knowledge-check:market",
+      "knowledge-check:quantity",
+      "knowledge-check:price",
+      "ch03-010",
+    ];
+    const evidence = evidenceIds.map((cardId, index) =>
+      review(`multi-concept-${index}`, cardId, "2026-08-10T20:00:00.000Z", {
+        mode: cardId.startsWith("knowledge-check:") ? "mcq" : "recall",
+        rating: cardId.startsWith("knowledge-check:") ? null : "got_it",
+      }),
+    );
+    const step = selectGuidedNextStep({
+      cards: subset,
+      reviews: evidence,
+      settings: NO_EXAM,
+      nowMs: NOW,
+      lessonCompletedConceptIds: new Set([
+        "buyer",
+        "seller",
+        "market",
+        "quantity",
+        "price",
+        "flow",
+        "final-good",
+      ]),
+    });
+    expect(cardConceptMap["mix-001"]).toEqual(["gross-domestic-product", "final-good"]);
+    expect(step.kind).toBe("lesson");
+    if (step.kind === "lesson") {
+      expect(step.conceptId).toBe("gross-domestic-product");
+      expect(step.targetCardId).toBe("mix-001");
+    }
+  });
+
+  it("terminates deterministically on a cycle-shaped card evidence mapping", () => {
+    const subset = cards.filter((card) => ["ch06-015", "ch03-022"].includes(card.id));
+    const completed = new Set(knowledgeConcepts.map((concept) => concept.id));
+    const step = selectGuidedNextStep({
+      cards: subset,
+      reviews: [],
+      settings: NO_EXAM,
+      nowMs: NOW,
+      lessonCompletedConceptIds: completed,
+    });
+    const repeated = selectGuidedNextStep({
+      cards: subset,
+      reviews: [],
+      settings: NO_EXAM,
+      nowMs: NOW,
+      lessonCompletedConceptIds: completed,
+    });
+    expect(step).toEqual(repeated);
+    expect(step.kind).not.toBe("idle");
+  });
+
   it("walks a real percentage-to-inflation path before presenting its canonical card", () => {
     const targetCard = cards.filter((card) => card.id === "ch01-019");
     const lessons = new Set<string>();
@@ -302,7 +539,7 @@ describe("Guided concept readiness and progression", () => {
         reviews = [
           ...reviews,
           review(`path-${index}`, step.skill.id, new Date(nowMs).toISOString(), {
-            mode: "mcq",
+            mode: step.skill.kind,
             rating: null,
           }),
         ];
@@ -486,6 +723,82 @@ describe("Guided concept readiness and progression", () => {
     expect(Date.parse(near.dueAt!) - start).toBeLessThan(
       Date.parse(far.dueAt!) - start,
     );
+  });
+
+  it("keeps mixed failure, weak, and successful cram simulations moving", () => {
+    const start = Date.parse("2026-08-11T00:00:00.000Z");
+    const hour = 60 * 60 * 1000;
+    const horizons = [
+      { label: "48h", examOffset: 48 * hour, buffer: 2, startOffset: 0 },
+      { label: "12h", examOffset: 12 * hour, buffer: 2, startOffset: 0 },
+      { label: "4h", examOffset: 4 * hour, buffer: 1, startOffset: 0 },
+      { label: "buffer", examOffset: 4 * hour, buffer: 1, startOffset: 3.5 * hour },
+    ];
+
+    for (const horizon of horizons) {
+      let nowMs = start + horizon.startOffset;
+      const reviews: ReviewEvent[] = [];
+      const lessons = new Set<string>();
+      const seenCanonical = new Set<string>();
+      let failures = 0;
+      let weak = 0;
+      for (let index = 0; index < 60; index += 1) {
+        const step = selectGuidedNextStep({
+          cards,
+          reviews,
+          settings: {
+            examAt: new Date(start + horizon.examOffset).toISOString(),
+            studyBufferHours: horizon.buffer,
+          },
+          nowMs,
+          lessonCompletedConceptIds: lessons,
+          sessionSeed: index,
+        });
+        expect(step.kind, horizon.label).not.toBe("idle");
+        if (step.kind === "lesson") {
+          lessons.add(step.conceptId);
+        } else if (step.kind === "knowledge-check") {
+          const isFailure = index % 11 === 0;
+          const isWeak = !isFailure && index % 5 === 0;
+          if (isFailure) failures += 1;
+          if (isWeak) weak += 1;
+          reviews.push(
+            review(
+              `mixed-${horizon.label}-${index}`,
+              step.skill.id,
+              new Date(nowMs).toISOString(),
+              {
+                mode: step.skill.kind,
+                correct: !isFailure,
+                rating: isFailure ? null : isWeak ? "struggled" : null,
+              },
+            ),
+          );
+        } else if (step.kind === "canonical-card") {
+          seenCanonical.add(step.card.id);
+          const isFailure = index % 13 === 0;
+          const isWeak = !isFailure && index % 7 === 0;
+          if (isFailure) failures += 1;
+          if (isWeak) weak += 1;
+          reviews.push(
+            review(
+              `mixed-card-${horizon.label}-${index}`,
+              step.card.id,
+              new Date(nowMs).toISOString(),
+              {
+                correct: !isFailure,
+                rating: isFailure ? "forgot" : isWeak ? "struggled" : "got_it",
+              },
+            ),
+          );
+        }
+        nowMs += 5 * 60 * 1000;
+      }
+      expect(failures, horizon.label).toBeGreaterThan(0);
+      expect(weak, horizon.label).toBeGreaterThan(0);
+      expect(seenCanonical.size, horizon.label).toBeGreaterThan(0);
+      expect(lessons.size, horizon.label).toBeGreaterThan(0);
+    }
   });
 
   it("contracts strong-success intervals at 48h, 12h, 4h, and in the buffer", () => {

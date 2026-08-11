@@ -61,8 +61,13 @@ describe("Guided Cram interaction safeguards", () => {
     fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
     await waitFor(() => expect(screen.getByText("Correct")).toBeInTheDocument());
     expect(onSubmitReview).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole("button", { name: /Explain percentage/ }));
-    expect(screen.getByRole("dialog")).toHaveTextContent(/percentage change compares/i);
+    const explanationButtons = screen.getAllByRole("button", {
+      name: /Explain percentage/,
+    });
+    fireEvent.click(explanationButtons.at(-1)!);
+    expect(screen.getByRole("dialog")).toHaveTextContent(
+      /percentage expresses a quantity out of 100/i,
+    );
   });
 
   it("keeps the exact check event and variant across a failed save retry", async () => {
