@@ -7,6 +7,7 @@ export interface SyncContextValue {
   readonly joinGroup: (pairingCode: string) => Promise<void>;
   readonly syncNow: () => Promise<void>;
   readonly getPairingCode: () => Promise<string>;
+  readonly getPairingLink: () => Promise<string>;
   readonly disconnect: () => Promise<void>;
   readonly deleteRemote: () => Promise<void>;
 }

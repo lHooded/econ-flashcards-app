@@ -17,6 +17,7 @@ export function SyncProvider({
       joinGroup: (pairingCode) => coordinator.joinGroup(pairingCode),
       syncNow: () => coordinator.syncNow(),
       getPairingCode: () => coordinator.getPairingCode(),
+      getPairingLink: () => coordinator.getPairingLink(),
       disconnect: () => coordinator.disconnect(),
       deleteRemote: () => coordinator.deleteRemote(),
     }),

@@ -3,6 +3,7 @@ import {
   decryptSyncPayload,
   encryptSyncPayload,
   SyncCryptoError,
+  SyncPayloadTooLargeError,
 } from "../sync/crypto";
 import {
   buildPairingDeepLink,
@@ -15,6 +16,7 @@ import { toBase64Url } from "../sync/encoding";
 import { SyncApiClient } from "../sync/client";
 import type { SyncPayloadV1 } from "../sync/model";
 import QRCode from "qrcode";
+import { createReviewEvent } from "../domain/progress";
 
 const deviceA = toBase64Url(new Uint8Array(16).fill(1));
 const payload: SyncPayloadV1 = {
@@ -97,12 +99,10 @@ describe("sync credentials and AES-GCM encryption", () => {
   it("builds a fragment-only deep link", () => {
     const credentials = createSyncGroupCredentials();
     const code = serializePairingCredential(credentials);
-    const link = buildPairingDeepLink(
-      code,
-      "https://lhooded.github.io/econ-flashcards-app/",
-    );
+    const link = buildPairingDeepLink(code, "https://macro.example.com/study-app/");
     const parsed = new URL(link);
-    expect(parsed.pathname).toBe("/econ-flashcards-app/");
+    expect(parsed.origin).toBe("https://macro.example.com");
+    expect(parsed.pathname).toBe("/study-app/");
     expect(parsed.search).toBe("");
     expect(parsed.hash).toContain("#/settings?pair=");
     expect(link.slice(0, link.indexOf("#"))).not.toContain(code);
@@ -110,7 +110,44 @@ describe("sync credentials and AES-GCM encryption", () => {
 
   it("renders the QR locally from the deep link", async () => {
     const code = serializePairingCredential(createSyncGroupCredentials());
-    const dataUrl = await QRCode.toDataURL(buildPairingDeepLink(code));
+    const dataUrl = await QRCode.toDataURL(
+      buildPairingDeepLink(code, "https://macro.example.com/"),
+    );
     expect(dataUrl.startsWith("data:image/png;base64,")).toBe(true);
+  });
+
+  it("classifies a decoded oversized envelope as a size error", () => {
+    return expect(
+      decryptSyncPayload(
+        {
+          format: "econ-flashcards-sync-ciphertext",
+          version: 1,
+          iv: toBase64Url(new Uint8Array(12).fill(1)),
+          ciphertext: toBase64Url(new Uint8Array(1024 * 1024 + 1)),
+        },
+        createSyncGroupCredentials(),
+      ),
+    ).rejects.toBeInstanceOf(SyncPayloadTooLargeError);
+  });
+
+  it("classifies an oversized local plaintext payload before upload", async () => {
+    const largeReviews = Array.from({ length: 10_000 }, (_, index) =>
+      createReviewEvent({
+        id: `large-${index}`,
+        cardId: "ch01-001",
+        reviewedAt: "2026-08-11T00:00:00.000Z",
+        mode: "recall",
+        correct: true,
+        rating: "got_it",
+        responseTimeMs: null,
+        selectedChoice: null,
+      }),
+    );
+    await expect(
+      encryptSyncPayload(
+        { ...payload, reviews: largeReviews },
+        createSyncGroupCredentials(),
+      ),
+    ).rejects.toBeInstanceOf(SyncPayloadTooLargeError);
   });
 });

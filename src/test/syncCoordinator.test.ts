@@ -86,7 +86,6 @@ function createCoordinator(
     repository,
     api,
     validCardIds: cardIds,
-    validQuestionIds: questionIds,
     now: () => now,
     debounceMs: 0,
   });

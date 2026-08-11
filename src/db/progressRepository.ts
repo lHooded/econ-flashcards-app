@@ -17,9 +17,11 @@ import {
   buildSyncPayload,
   deriveSyncedCardStates,
   mergeSyncPayloads,
+  syncPayloadsEqual,
   type SyncPayloadSource,
 } from "../sync/merge";
 import type {
+  SyncGroupCredentials,
   SyncConfig,
   SyncLocalState,
   SyncPayloadV1,
@@ -130,6 +132,71 @@ export class ProgressRepository {
     const validated = validateSyncConfig(syncConfig);
     const database = await this.database;
     await database.put("syncConfig", validated);
+  }
+
+  /**
+   * Atomically transitions a disconnected device to a connected group while
+   * stamping the settings value that is current at the transaction boundary.
+   * Reviews and mock history are read by the first reconciliation pass after
+   * this operation; no stale pre-network snapshot is installed here.
+   */
+  public async connectSyncConfig(
+    credentials: SyncGroupCredentials,
+    remoteVersion: number,
+    settingsStamp: SettingsStamp,
+    initialPayload: SyncPayloadV1,
+    completedAt: string,
+  ): Promise<{ readonly config: SyncConfig; readonly reconciled: boolean }> {
+    const database = await this.database;
+    const transaction = database.transaction(
+      ["settings", "reviewEvents", "mockAttempts", "syncConfig"],
+      "readwrite",
+    );
+    const syncStore = transaction.objectStore("syncConfig");
+    const settingsStore = transaction.objectStore("settings");
+    const current = (await syncStore.get(SYNC_CONFIG_KEY)) as SyncConfig | undefined;
+    if (current === undefined) {
+      throw new Error("Sync configuration is missing from the local database.");
+    }
+    if (current.group !== null) {
+      throw new Error("This device is already connected.");
+    }
+    const settingsRecord = (await settingsStore.get(SETTINGS_KEY)) as
+      SettingsRecord | undefined;
+    const currentReviews = (await transaction
+      .objectStore("reviewEvents")
+      .getAll()) as ReviewEvent[];
+    const currentAttempts = (await transaction
+      .objectStore("mockAttempts")
+      .getAll()) as MockAttempt[];
+    const currentSettings = settingsRecord?.value ?? DEFAULT_APP_SETTINGS;
+    const currentStamp: SettingsStamp = {
+      ...settingsStamp,
+      value: currentSettings,
+      deviceId: current.deviceId,
+      updatedAt: settingsEqual(currentSettings, settingsStamp.value)
+        ? settingsStamp.updatedAt
+        : nextTimestamp(settingsStamp.updatedAt),
+    };
+    const currentPayload = buildSyncPayload(
+      {
+        settings: currentSettings,
+        reviews: currentReviews,
+        mockAttempts: currentAttempts,
+      },
+      currentStamp,
+    );
+    const reconciled = syncPayloadsEqual(currentPayload, initialPayload);
+    const connected: SyncConfig = {
+      ...current,
+      group: { ...credentials, remoteVersion },
+      lastSyncedAt: reconciled ? completedAt : null,
+      settingsStamp: currentStamp,
+    };
+    const validated = validateSyncConfig(connected);
+    syncStore.put(validated);
+    await transaction.done;
+    return { config: validated, reconciled };
   }
 
   public async recordReview(input: NewReviewEvent): Promise<RecordedReview> {
@@ -337,4 +404,16 @@ export class ProgressRepository {
     const database = await this.database;
     database.close();
   }
+}
+
+function settingsEqual(left: AppSettings, right: AppSettings): boolean {
+  return (
+    left.examAt === right.examAt && left.studyBufferHours === right.studyBufferHours
+  );
+}
+
+function nextTimestamp(previous: string): string {
+  const parsed = Date.parse(previous);
+  const base = Number.isFinite(parsed) ? parsed : Date.now();
+  return new Date(Math.max(base + 1, Date.now())).toISOString();
 }

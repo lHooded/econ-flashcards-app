@@ -1,8 +1,16 @@
-import { validateEncryptedSyncEnvelope } from "./crypto";
+import { SyncPayloadTooLargeError, validateEncryptedSyncEnvelope } from "./crypto";
+import { configuredSyncRuntime, type SyncRuntimeConfig } from "./config";
 import type { EncryptedSyncEnvelope, SyncGroupCredentials } from "./model";
 
 export type SyncApiErrorKind =
-  "network" | "auth" | "not-found" | "conflict" | "too-large" | "invalid" | "server";
+  | "network"
+  | "auth"
+  | "not-found"
+  | "conflict"
+  | "too-large"
+  | "rate-limited"
+  | "invalid"
+  | "server";
 
 export class SyncApiError extends Error {
   public constructor(
@@ -23,13 +31,15 @@ export interface SyncApi {
   ): Promise<{ readonly version: number }>;
   pull(
     credentials: SyncGroupCredentials,
+    signal?: AbortSignal,
   ): Promise<{ readonly version: number; readonly envelope: EncryptedSyncEnvelope }>;
   push(
     credentials: SyncGroupCredentials,
     expectedVersion: number,
     envelope: EncryptedSyncEnvelope,
+    signal?: AbortSignal,
   ): Promise<{ readonly version: number }>;
-  delete(credentials: SyncGroupCredentials): Promise<void>;
+  delete(credentials: SyncGroupCredentials, signal?: AbortSignal): Promise<void>;
 }
 
 export class SyncApiClient implements SyncApi {
@@ -49,13 +59,18 @@ export class SyncApiClient implements SyncApi {
     credentials: SyncGroupCredentials,
     envelope: EncryptedSyncEnvelope,
   ): Promise<{ readonly version: number }> {
-    return this.put(credentials, null, envelope);
+    const response = await this.request("POST", credentials, {
+      expectedVersion: null,
+      envelope,
+    });
+    return parseVersionResponse(await parseJson(response));
   }
 
   public async pull(
     credentials: SyncGroupCredentials,
+    signal?: AbortSignal,
   ): Promise<{ readonly version: number; readonly envelope: EncryptedSyncEnvelope }> {
-    const response = await this.request("GET", credentials, undefined);
+    const response = await this.request("GET", credentials, undefined, signal);
     const body = await parseJson(response);
     return parseBlobResponse(body);
   }
@@ -64,12 +79,16 @@ export class SyncApiClient implements SyncApi {
     credentials: SyncGroupCredentials,
     expectedVersion: number,
     envelope: EncryptedSyncEnvelope,
+    signal?: AbortSignal,
   ): Promise<{ readonly version: number }> {
-    return this.put(credentials, expectedVersion, envelope);
+    return this.put(credentials, expectedVersion, envelope, signal);
   }
 
-  public async delete(credentials: SyncGroupCredentials): Promise<void> {
-    const response = await this.request("DELETE", credentials, undefined);
+  public async delete(
+    credentials: SyncGroupCredentials,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const response = await this.request("DELETE", credentials, undefined, signal);
     if (response.status !== 204) {
       throw new SyncApiError(
         "invalid",
@@ -83,18 +102,22 @@ export class SyncApiClient implements SyncApi {
     credentials: SyncGroupCredentials,
     expectedVersion: number | null,
     envelope: EncryptedSyncEnvelope,
+    signal?: AbortSignal,
   ): Promise<{ readonly version: number }> {
-    const response = await this.request("PUT", credentials, {
-      expectedVersion,
-      envelope,
-    });
+    const response = await this.request(
+      "PUT",
+      credentials,
+      { expectedVersion, envelope },
+      signal,
+    );
     return parseVersionResponse(await parseJson(response));
   }
 
   private async request(
-    method: "GET" | "PUT" | "DELETE",
+    method: "GET" | "POST" | "PUT" | "DELETE",
     credentials: SyncGroupCredentials,
     body: unknown,
+    signal?: AbortSignal,
   ): Promise<Response> {
     const url = `${this.baseUrl}/v1/sync/${encodeURIComponent(credentials.syncId)}`;
     try {
@@ -106,6 +129,7 @@ export class SyncApiClient implements SyncApi {
         },
         body: body === undefined ? undefined : JSON.stringify(body),
         cache: "no-store",
+        signal,
       });
       if (!response.ok) throw responseError(response.status);
       return response;
@@ -118,11 +142,12 @@ export class SyncApiClient implements SyncApi {
   }
 }
 
-export function configuredSyncApi(): SyncApi | undefined {
-  const value = import.meta.env.VITE_SYNC_API_URL as string | undefined;
-  return value === undefined || value.trim() === ""
-    ? undefined
-    : new SyncApiClient(value);
+export function configuredSyncApi(
+  runtime: SyncRuntimeConfig = configuredSyncRuntime(),
+): SyncApi | undefined {
+  return runtime.enabled && runtime.apiUrl !== null
+    ? new SyncApiClient(runtime.apiUrl)
+    : undefined;
 }
 
 async function parseJson(response: Response): Promise<unknown> {
@@ -172,6 +197,11 @@ function parseBlobResponse(value: unknown): {
       envelope: validateEncryptedSyncEnvelope(value.envelope),
     };
   } catch (error: unknown) {
+    if (error instanceof SyncPayloadTooLargeError) {
+      throw new SyncApiError("too-large", "Sync data is too large for v1.", 200, {
+        cause: error,
+      });
+    }
     throw new SyncApiError(
       "invalid",
       "Sync server returned an invalid encrypted envelope.",
@@ -194,6 +224,12 @@ function responseError(status: number): SyncApiError {
     return new SyncApiError("conflict", "Remote sync state changed; retrying.", status);
   if (status === 413)
     return new SyncApiError("too-large", "Sync data is too large for v1.", status);
+  if (status === 429)
+    return new SyncApiError(
+      "rate-limited",
+      "Sync is temporarily rate-limited; try again shortly.",
+      status,
+    );
   if (status >= 500)
     return new SyncApiError("server", "The sync server is unavailable.", status);
   return new SyncApiError("invalid", "The sync request was rejected.", status);

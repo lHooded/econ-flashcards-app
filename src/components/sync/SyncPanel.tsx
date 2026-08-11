@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { useSync } from "../../app/syncContext";
-import { buildPairingDeepLink } from "../../sync/pairing";
 
 export function SyncPanel({
   initialPairingCode,
@@ -14,6 +13,7 @@ export function SyncPanel({
     joinGroup,
     syncNow,
     getPairingCode,
+    getPairingLink,
     disconnect,
     deleteRemote,
   } = useSync();
@@ -25,24 +25,36 @@ export function SyncPanel({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const autoJoinAttempted = useRef(false);
+  const previousConnected = useRef(status.connected);
 
-  const run = useCallback(async (operation: () => Promise<void>, success: string) => {
-    setBusy(true);
-    setError(null);
-    setMessage(null);
-    try {
-      await operation();
-      setMessage(success);
-    } catch (operationError: unknown) {
-      setError(
-        operationError instanceof Error
-          ? operationError.message
-          : "Sync operation failed.",
-      );
-    } finally {
-      setBusy(false);
-    }
+  const clearPairingDetails = useCallback(() => {
+    setShownPairingCode(null);
+    setPairingLink(null);
+    setQrDataUrl(null);
+    setPairingInput("");
   }, []);
+
+  const run = useCallback(
+    async (operation: () => Promise<void>, success: string) => {
+      setBusy(true);
+      setError(null);
+      setMessage(null);
+      try {
+        await operation();
+        clearPairingDetails();
+        setMessage(success);
+      } catch (operationError: unknown) {
+        setError(
+          operationError instanceof Error
+            ? operationError.message
+            : "Sync operation failed.",
+        );
+      } finally {
+        setBusy(false);
+      }
+    },
+    [clearPairingDetails],
+  );
 
   const join = useCallback(
     (code: string, automatic = false) =>
@@ -68,6 +80,11 @@ export function SyncPanel({
     }
   }, [initialPairingCode, join, status.connected]);
 
+  useEffect(() => {
+    if (previousConnected.current !== status.connected) clearPairingDetails();
+    previousConnected.current = status.connected;
+  }, [clearPairingDetails, status.connected]);
+
   if (!status.apiConfigured) {
     return (
       <section className="panel sync-panel">
@@ -76,13 +93,13 @@ export function SyncPanel({
           <h2>Optional encrypted device sync.</h2>
         </div>
         <p>
-          Progress is stored locally first. This deployment has no sync backend URL
-          configured, so local Study, Practice, Settings, and JSON backup continue to
-          work normally.
+          Progress is stored locally first. Sync is unavailable on this deployment, so
+          local Study, Practice, Settings, and JSON backup continue to work normally.
         </p>
         <p className="field-help">
-          An owner can configure <code>VITE_SYNC_API_URL</code> for the GitHub Pages
-          build.
+          Sync requires both <code>VITE_SYNC_API_URL</code> and a dedicated-origin{" "}
+          <code>VITE_SYNC_APP_URL</code>. The shared github.io project site remains
+          intentionally local-only.
         </p>
       </section>
     );
@@ -94,7 +111,7 @@ export function SyncPanel({
     setMessage(null);
     try {
       const code = await getPairingCode();
-      const link = buildPairingDeepLink(code);
+      const link = await getPairingLink();
       const qr = await QRCode.toDataURL(link, {
         errorCorrectionLevel: "M",
         margin: 1,
@@ -236,7 +253,7 @@ export function SyncPanel({
                   <button
                     className="secondary-button"
                     type="button"
-                    onClick={() => setShownPairingCode(null)}
+                    onClick={clearPairingDetails}
                   >
                     Hide pairing details
                   </button>

@@ -25,6 +25,13 @@ export class SyncCryptoError extends Error {
   }
 }
 
+export class SyncPayloadTooLargeError extends Error {
+  public constructor(message = "Sync data is too large for v1.") {
+    super(message);
+    this.name = "SyncPayloadTooLargeError";
+  }
+}
+
 export function validateEncryptedSyncEnvelope(value: unknown): EncryptedSyncEnvelope {
   if (
     !isRecord(value) ||
@@ -44,10 +51,14 @@ export function validateEncryptedSyncEnvelope(value: unknown): EncryptedSyncEnve
   try {
     if (fromBase64Url(value.iv).length !== AES_GCM_IV_BYTES) throw new Error();
     const ciphertextBytes = fromBase64Url(value.ciphertext);
-    if (ciphertextBytes.length > MAX_CIPHERTEXT_BYTES || ciphertextBytes.length < 16) {
+    if (ciphertextBytes.length > MAX_CIPHERTEXT_BYTES) {
+      throw new SyncPayloadTooLargeError();
+    }
+    if (ciphertextBytes.length < 16) {
       throw new Error();
     }
-  } catch {
+  } catch (error: unknown) {
+    if (error instanceof SyncPayloadTooLargeError) throw error;
     throw new SyncCryptoError();
   }
 

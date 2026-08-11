@@ -188,10 +188,14 @@ and Practice Lab questions render optional graph/table stimuli without knowing t
 underlying representation.
 
 Optional sync adds a Cloudflare Worker plus SQLite-backed Durable Object. The PWA
-remains local-first and usable without `VITE_SYNC_API_URL`; when configured, the client
-encrypts progress with AES-256-GCM before HTTP transport. Active mock attempts remain
-local to their starting device until terminal finalisation. See [docs/SYNC.md](docs/SYNC.md)
-for owner setup, protocol, pairing, merge, privacy, and local-development details.
+remains local-first and usable without sync configuration; the existing shared
+`https://lhooded.github.io/econ-flashcards-app/` project site is intentionally
+sync-disabled because its origin is shared by other project paths. A sync-enabled
+build must run on an explicitly configured dedicated frontend origin. There, the
+client encrypts progress with AES-256-GCM before HTTP transport. Active mock attempts
+remain local to their starting device until terminal finalisation. See
+[docs/SYNC.md](docs/SYNC.md) for owner setup, protocol, pairing, merge, privacy, and
+local-development details.
 
 No malformed economics records were found in the supplied 349-card JSON. The 31
 authored MCQs have valid zero-based correct-choice indexes, and the 318 non-MCQ cards

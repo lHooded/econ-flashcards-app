@@ -23,20 +23,10 @@ export interface DurableObjectContextLike {
 }
 
 export class SqliteSyncRecordStore implements SyncRecordStore {
-  public constructor(private readonly sql: SqlExecutor) {
-    this.sql.exec(`
-      CREATE TABLE IF NOT EXISTS sync_record (
-        record_id INTEGER PRIMARY KEY CHECK (record_id = 1),
-        auth_hash TEXT NOT NULL,
-        blob_version INTEGER NOT NULL,
-        envelope TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      )
-    `);
-  }
+  public constructor(private readonly sql: SqlExecutor) {}
 
   public get(): StoredSyncRecord | undefined {
+    if (!this.hasTable()) return undefined;
     const rows = this.sql.exec<{
       auth_hash: string;
       blob_version: number;
@@ -58,6 +48,7 @@ export class SqliteSyncRecordStore implements SyncRecordStore {
   }
 
   public put(record: StoredSyncRecord): void {
+    this.ensureTable();
     this.sql.exec(
       `INSERT INTO sync_record (record_id, auth_hash, blob_version, envelope, created_at, updated_at)
        VALUES (1, ?, ?, ?, ?, ?)
@@ -76,7 +67,28 @@ export class SqliteSyncRecordStore implements SyncRecordStore {
   }
 
   public delete(): void {
+    if (!this.hasTable()) return;
     this.sql.exec("DELETE FROM sync_record WHERE record_id = 1");
+  }
+
+  private hasTable(): boolean {
+    const rows = this.sql.exec<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sync_record'",
+    );
+    return [...rows].length > 0;
+  }
+
+  private ensureTable(): void {
+    this.sql.exec(`
+      CREATE TABLE IF NOT EXISTS sync_record (
+        record_id INTEGER PRIMARY KEY CHECK (record_id = 1),
+        auth_hash TEXT NOT NULL,
+        blob_version INTEGER NOT NULL,
+        envelope TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    `);
   }
 }
 
@@ -116,32 +128,44 @@ export async function handleSyncGroupRequest(
 ): Promise<Response> {
   try {
     const token = parseBearer(request);
-    const current = store.get();
     if (request.method === "GET") {
+      const suppliedHash = await hashAuthToken(token);
+      const current = store.get();
       if (current === undefined)
         throw new WorkerProtocolError(404, "Sync group was not found.");
-      await assertAuth(current, token);
+      assertAuth(current, suppliedHash);
       return jsonResponse({ version: current.blobVersion, envelope: current.envelope });
     }
 
     if (request.method === "DELETE") {
+      const suppliedHash = await hashAuthToken(token);
+      const current = store.get();
       if (current === undefined)
         throw new WorkerProtocolError(404, "Sync group was not found.");
-      await assertAuth(current, token);
+      assertAuth(current, suppliedHash);
       store.delete();
       return emptyResponse(204);
     }
 
-    if (request.method !== "PUT")
+    if (request.method !== "POST" && request.method !== "PUT")
       throw new WorkerProtocolError(400, "Method is not supported.");
-    if (current !== undefined) await assertAuth(current, token);
     const input = await parsePutRequest(request);
+    const suppliedHash = await hashAuthToken(token);
+    const current = store.get();
     const timestamp = now();
-    if (current === undefined) {
-      if (input.expectedVersion !== null)
-        throw new WorkerProtocolError(404, "Sync group was not found.");
+    if (request.method === "POST") {
+      if (input.expectedVersion !== null) {
+        throw new WorkerProtocolError(
+          400,
+          "Group creation must use an empty expected version.",
+        );
+      }
+      if (current !== undefined) {
+        assertAuth(current, suppliedHash);
+        throw new WorkerProtocolError(409, "Sync group is already initialized.");
+      }
       store.put({
-        authHash: await hashAuthToken(token),
+        authHash: suppliedHash,
         blobVersion: 1,
         envelope: input.envelope,
         createdAt: timestamp,
@@ -149,6 +173,9 @@ export async function handleSyncGroupRequest(
       });
       return jsonResponse({ version: 1 });
     }
+    if (current === undefined)
+      throw new WorkerProtocolError(404, "Sync group was not found.");
+    assertAuth(current, suppliedHash);
     if (input.expectedVersion === null)
       throw new WorkerProtocolError(409, "Sync group is already initialized.");
     if (input.expectedVersion !== current.blobVersion) {
@@ -168,9 +195,8 @@ export async function handleSyncGroupRequest(
   }
 }
 
-async function assertAuth(record: StoredSyncRecord, token: string): Promise<void> {
-  const supplied = await hashAuthToken(token);
-  if (!constantTimeEqual(record.authHash, supplied)) {
+function assertAuth(record: StoredSyncRecord, suppliedHash: string): void {
+  if (!constantTimeEqual(record.authHash, suppliedHash)) {
     throw new WorkerProtocolError(401, "Authentication failed.");
   }
 }

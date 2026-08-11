@@ -28,8 +28,17 @@ jobs:
       - name: Test sync Worker
         run: npm run sync:test
 
+      - name: Test sync Worker Durable Object runtime
+        run: npm run sync:integration-test
+
       - name: Deploy Cloudflare Worker
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npm run sync:deploy
+          SYNC_APP_URL: ${{ vars.SYNC_APP_URL }}
+        run: |
+          if [ -z "$SYNC_APP_URL" ]; then
+            echo "SYNC_APP_URL must be configured before deploying the sync Worker."
+            exit 1
+          fi
+          npm run sync:deploy -- --var "SYNC_ALLOWED_ORIGIN:${SYNC_APP_URL}"

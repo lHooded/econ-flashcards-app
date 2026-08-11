@@ -2,13 +2,19 @@ import { describe, expect, it } from "vitest";
 import { cardIds } from "../data/deck";
 import { createReviewEvent, type ReviewEvent } from "../domain/progress";
 import { buildMockExam } from "../exam/mock/selector";
-import { createMockAttempt, type MockAttempt } from "../exam/mock/model";
+import {
+  buildMockReviewEvents,
+  createMockAttempt,
+  type MockQuestionManifest,
+  type MockAttempt,
+} from "../exam/mock/model";
 import { examQuestions } from "../exam/questionBank";
 import {
   buildSyncPayload,
   deriveSyncedCardStates,
   mergeSyncPayloads,
   SyncMergeConflictError,
+  SyncValidationError,
   syncPayloadsEqual,
   validateSyncPayload,
 } from "../sync/merge";
@@ -73,18 +79,7 @@ function submittedAttempt(id: string): {
     submittedAt: active.writingEndsAt,
     reviewEventsCommittedAt: active.writingEndsAt,
   };
-  const reviews = submitted.manifest.map((manifest) =>
-    createReviewEvent({
-      id: `mock:${id}:${manifest.questionId}`,
-      cardId: manifest.reviewCardId,
-      reviewedAt: submitted.writingEndsAt,
-      mode: "mcq",
-      correct: true,
-      rating: null,
-      responseTimeMs: 0,
-      selectedChoice: manifest.correctChoice,
-    }),
-  );
+  const reviews = buildMockReviewEvents(submitted);
   return { active, submitted, reviews };
 }
 
@@ -191,7 +186,7 @@ describe("sync merge algebra", () => {
     expect(outgoing.mockAttempts).toEqual([]);
   });
 
-  it("rejects terminal mock questions outside the shipped question bank", () => {
+  it("accepts historical terminal mocks whose display question is no longer shipped", () => {
     const one = submittedAttempt("unknown-question");
     const firstState = one.submitted.questionStates[0];
     const firstManifest = one.submitted.manifest[0];
@@ -207,13 +202,59 @@ describe("sync merge algebra", () => {
         ...one.submitted.questionStates.slice(1),
       ],
     };
+    const historicalReviews = buildMockReviewEvents(invalid);
 
+    expect(
+      validateSyncPayload(
+        payload(historicalReviews, deviceA, undefined, [invalid]),
+        cardIds,
+      ),
+    ).toMatchObject({ mockAttempts: [invalid] });
+  });
+
+  it.each([
+    ["correct", true],
+    ["selectedChoice", 1],
+    ["cardId", "ch01-002"],
+    ["mode", "recall"],
+    ["rating", "got_it"],
+    ["reviewedAt", "2026-08-11T05:00:00.000Z"],
+    ["responseTimeMs", 1234],
+  ] as const)("rejects a submitted mock with forged %s evidence", (field, value) => {
+    const one = submittedAttempt(`forged-${field}`);
+    const expected = one.reviews[0];
+    const forged = { ...expected, [field]: value } as ReviewEvent;
+    const reviews = [forged, ...one.reviews.slice(1)];
     expect(() =>
       validateSyncPayload(
-        payload(one.reviews, deviceA, undefined, [invalid]),
+        payload(reviews, deviceA, undefined, [one.submitted]),
         cardIds,
-        new Set(examQuestions.map((question) => question.id)),
       ),
-    ).toThrow(/mockAttempts\[0\] is invalid/);
+    ).toThrow(SyncValidationError);
+  });
+
+  it("rejects a same-ID remote terminal mock with a different immutable identity", () => {
+    const one = submittedAttempt("identity-conflict");
+    const changedManifest: MockQuestionManifest[] = one.submitted.manifest.map(
+      (entry, index) =>
+        index === 0
+          ? {
+              ...entry,
+              correctChoice: ((entry.correctChoice + 1) %
+                4) as MockQuestionManifest["correctChoice"],
+            }
+          : entry,
+    );
+    const changed: MockAttempt = {
+      ...one.submitted,
+      manifest: changedManifest,
+    };
+    expect(() =>
+      mergeSyncPayloads(
+        payload([], deviceA),
+        payload(buildMockReviewEvents(changed), deviceB, undefined, [changed]),
+        { activeAttempt: one.active },
+      ),
+    ).toThrow(SyncMergeConflictError);
   });
 });

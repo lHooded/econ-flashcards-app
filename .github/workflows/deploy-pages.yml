@@ -44,6 +44,7 @@ jobs:
       - name: Build production site
         env:
           VITE_SYNC_API_URL: ${{ vars.SYNC_API_URL }}
+          VITE_SYNC_APP_URL: ${{ vars.SYNC_APP_URL }}
         run: npm run build
 
       - name: Upload Pages artifact

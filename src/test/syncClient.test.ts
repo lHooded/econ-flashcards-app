@@ -40,6 +40,7 @@ describe("sync HTTP client", () => {
     expect(calls[0].headers).toMatchObject({
       Authorization: `Bearer ${credentials.authToken}`,
     });
+    expect(calls[0].method).toBe("POST");
     expect(calls[0].cache).toBe("no-store");
     expect(calls[2].body).toContain('"expectedVersion":1');
   });
@@ -50,6 +51,7 @@ describe("sync HTTP client", () => {
     [404, "not-found"],
     [409, "conflict"],
     [413, "too-large"],
+    [429, "rate-limited"],
     [500, "server"],
   ] as const)("does not classify HTTP %s as offline", async (status, kind) => {
     const credentials = createSyncGroupCredentials();

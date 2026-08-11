@@ -31,7 +31,7 @@ export interface SyncRecordStore {
 
 export class WorkerProtocolError extends Error {
   public constructor(
-    public readonly status: 400 | 401 | 404 | 409 | 413 | 500,
+    public readonly status: 400 | 401 | 404 | 409 | 413 | 429 | 500,
     message: string,
   ) {
     super(message);
@@ -179,7 +179,12 @@ function decodeBase64Url(value: string): Uint8Array | null {
   } catch {
     return null;
   }
-  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  const canonical = btoa(binary)
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replace(/=+$/u, "");
+  return canonical === value ? bytes : null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

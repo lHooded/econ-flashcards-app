@@ -17,4 +17,22 @@
       "storage": "sqlite",
     },
   },
+  "ratelimits": [
+    {
+      "name": "CREATION_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 10,
+        "period": 60,
+      },
+    },
+    {
+      "name": "GROUP_LIMITER",
+      "namespace_id": "1002",
+      "simple": {
+        "limit": 120,
+        "period": 60,
+      },
+    },
+  ],
 }

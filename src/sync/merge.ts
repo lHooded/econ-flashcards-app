@@ -6,7 +6,11 @@ import {
   type AppSettings,
   type ReviewEvent,
 } from "../domain/progress";
-import { validateMockAttempt, type MockAttempt } from "../exam/mock/model";
+import {
+  buildMockReviewEvents,
+  validateMockAttempt,
+  type MockAttempt,
+} from "../exam/mock/model";
 import { fromBase64Url, hasExactKeys, isRecord } from "./encoding";
 import {
   SYNC_PAYLOAD_FORMAT,
@@ -63,7 +67,6 @@ export function buildSyncPayload(
 export function validateSyncPayload(
   value: unknown,
   validCardIds: ReadonlySet<string>,
-  validQuestionIds?: ReadonlySet<string>,
 ): SyncPayloadV1 {
   if (
     !isRecord(value) ||
@@ -133,7 +136,9 @@ export function validateSyncPayload(
   const mockAttempts = value.mockAttempts.map((entry, index) => {
     let attempt: MockAttempt;
     try {
-      attempt = validateMockAttempt(entry, validQuestionIds);
+      // Terminal history is validated from its stored manifest. The current
+      // question bank is not authoritative for historical display material.
+      attempt = validateMockAttempt(entry);
       if (attempt.status === "active") throw new Error("active");
     } catch {
       throw new SyncValidationError(`mockAttempts[${index}] is invalid.`);
@@ -145,20 +150,18 @@ export function validateSyncPayload(
     return attempt;
   });
 
-  const byReviewId = new Map(reviews.map((review) => [review.id, review]));
-  for (const attempt of mockAttempts) {
-    if (attempt.status !== "submitted") continue;
-    for (const manifest of attempt.manifest) {
-      const id = `mock:${attempt.id}:${manifest.questionId}`;
-      const review = byReviewId.get(id);
-      if (
-        review === undefined ||
-        review.cardId !== manifest.reviewCardId ||
-        review.mode !== "mcq"
-      ) {
-        throw new SyncValidationError(`Committed mock review ${id} is missing.`);
-      }
-    }
+  try {
+    ensureTerminalReviews({
+      format: SYNC_PAYLOAD_FORMAT,
+      version: SYNC_PROTOCOL_VERSION,
+      reviews,
+      settings,
+      mockAttempts,
+    });
+  } catch (error: unknown) {
+    throw new SyncValidationError(
+      error instanceof Error ? error.message : "Committed mock reviews are invalid.",
+    );
   }
 
   return {
@@ -222,6 +225,11 @@ export function mergeSyncPayloads(
           `Active mock ${active.id} conflicts with terminal history.`,
         );
       }
+      if (!sameMockIdentity(active, sameId)) {
+        throw new SyncMergeConflictError(
+          `Active mock ${active.id} has a different immutable identity in terminal history.`,
+        );
+      }
       ensureAttemptReviews(sameId, merged.reviews);
     }
   }
@@ -247,17 +255,47 @@ export function ensureAttemptReviews(
 ): void {
   if (attempt.status !== "submitted") return;
   const reviewById = new Map(reviews.map((review) => [review.id, review]));
-  for (const manifest of attempt.manifest) {
-    const id = `mock:${attempt.id}:${manifest.questionId}`;
-    const review = reviewById.get(id);
-    if (
-      review === undefined ||
-      review.cardId !== manifest.reviewCardId ||
-      review.mode !== "mcq"
-    ) {
-      throw new SyncMergeConflictError(`Committed mock review ${id} is missing.`);
+  const expected = buildMockReviewEvents(attempt);
+  const expectedIds = new Set(expected.map((review) => review.id));
+  for (const review of expected) {
+    const id = review.id;
+    const actual = reviewById.get(id);
+    if (actual === undefined || !reviewEventsEqual(actual, review)) {
+      throw new SyncMergeConflictError(`Committed mock review ${id} is inconsistent.`);
     }
   }
+  const prefix = `mock:${attempt.id}:`;
+  for (const review of reviews) {
+    if (review.id.startsWith(prefix) && !expectedIds.has(review.id)) {
+      throw new SyncMergeConflictError(
+        `Unexpected committed mock review ${review.id}.`,
+      );
+    }
+  }
+}
+
+export function sameMockIdentity(left: MockAttempt, right: MockAttempt): boolean {
+  return (
+    left.id === right.id &&
+    stableEqual(
+      {
+        seed: left.seed,
+        createdAt: left.createdAt,
+        readingEndsAt: left.readingEndsAt,
+        writingEndsAt: left.writingEndsAt,
+        questionOrder: left.questionOrder,
+        manifest: left.manifest,
+      },
+      {
+        seed: right.seed,
+        createdAt: right.createdAt,
+        readingEndsAt: right.readingEndsAt,
+        writingEndsAt: right.writingEndsAt,
+        questionOrder: right.questionOrder,
+        manifest: right.manifest,
+      },
+    )
+  );
 }
 
 function parseSettingsStamp(value: unknown): SettingsStamp {

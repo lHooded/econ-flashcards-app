@@ -6,9 +6,8 @@ import {
   type RandomValues,
   toBase64Url,
 } from "./encoding";
+import { validateSyncAppUrl } from "./config";
 import { PAIRING_PREFIX, type SyncGroupCredentials } from "./model";
-
-export const DEFAULT_APP_URL = "https://lhooded.github.io/econ-flashcards-app/";
 
 export function createDeviceId(randomValues?: RandomValues): string {
   return randomBase64Url(16, randomValues);
@@ -76,12 +75,9 @@ export function parsePairingCredential(value: string): SyncGroupCredentials {
   return credentials;
 }
 
-export function buildPairingDeepLink(
-  pairingCode: string,
-  baseUrl = DEFAULT_APP_URL,
-): string {
+export function buildPairingDeepLink(pairingCode: string, baseUrl: string): string {
   parsePairingCredential(pairingCode);
-  const url = new URL(baseUrl);
+  const url = validateSyncAppUrl(baseUrl);
   url.search = "";
   url.hash = `#/settings?pair=${encodeURIComponent(pairingCode)}`;
   return url.toString();

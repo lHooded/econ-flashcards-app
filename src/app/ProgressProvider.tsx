@@ -20,6 +20,7 @@ import { MockExamRepository } from "../db/mockExamRepository";
 import { examQuestions } from "../exam/questionBank";
 import type { MockAttempt, MockQuestionAttemptState } from "../exam/mock/model";
 import { configuredSyncApi } from "../sync/client";
+import { configuredSyncRuntime } from "../sync/config";
 import { SyncCoordinator } from "../sync/coordinator";
 
 function toSnapshot(
@@ -52,7 +53,8 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       ),
     [],
   );
-  const syncApi = useMemo(() => configuredSyncApi(), []);
+  const syncRuntime = useMemo(() => configuredSyncRuntime(), []);
+  const syncApi = useMemo(() => configuredSyncApi(syncRuntime), [syncRuntime]);
   const [snapshot, setSnapshot] = useState<ProgressSnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,12 +73,13 @@ export function ProgressProvider({ children }: PropsWithChildren) {
         repository,
         api: syncApi,
         validCardIds: cardIds,
-        validQuestionIds: new Set(examQuestions.map((question) => question.id)),
+        syncAppUrl: syncRuntime.appUrl ?? undefined,
+        unavailableMessage: syncRuntime.reason ?? undefined,
         onApplied: async () => {
           setSnapshot(await loadSnapshot());
         },
       }),
-    [loadSnapshot, repository, syncApi],
+    [loadSnapshot, repository, syncApi, syncRuntime],
   );
 
   useEffect(() => {
