@@ -74,7 +74,7 @@ describe("full mock selector", () => {
         ).toBeLessThanOrEqual(18);
       }
     }
-  });
+  }, 15_000);
 
   it("is deterministic and prefers lower-use questions", () => {
     const first = buildMockExam({

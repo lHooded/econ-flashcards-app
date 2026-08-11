@@ -1701,3 +1701,111 @@ h3 {
     padding: 0.5rem;
   }
 }
+
+/* Generated numeric calculation practice */
+.generated-calculation-mode-panel {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.generated-calculation-mode-panel p {
+  margin: 0;
+}
+
+.generated-calculation-mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.generated-calculation-mode-tabs [role="tab"] {
+  min-height: 2.7rem;
+}
+
+.generated-calculation-freshness,
+.generated-calculation-session-note {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.generated-calculation-freshness-error {
+  margin: 0.85rem 0 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #d8b36a;
+  border-radius: 0.55rem;
+  background: #fff8e8;
+  color: #654b14;
+  line-height: 1.45;
+}
+
+.generated-calculation-session-note {
+  margin: -0.35rem 0 0;
+}
+
+.generated-calculation-answer-field {
+  max-width: 30rem;
+  margin-top: 1rem;
+}
+
+.generated-calculation-input-row {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.generated-calculation-input-row input {
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: 1.1rem;
+}
+
+.generated-calculation-unit {
+  flex: 0 0 auto;
+  min-width: max-content;
+  color: var(--navy);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.generated-calculation-answer-help {
+  margin: 0.45rem 0 0;
+}
+
+.generated-calculation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.generated-calculation-solution {
+  margin-top: 1.1rem;
+  padding: 0.85rem;
+  border: 1px solid #b9ddea;
+  border-radius: 0.55rem;
+  background: #f5fbfe;
+}
+
+.generated-calculation-solution ol {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.6rem 0 0;
+  padding-left: 1.35rem;
+  line-height: 1.55;
+}
+
+.generated-calculation-result > p {
+  line-height: 1.5;
+}
+
+@media (max-width: 37.99rem) {
+  .generated-calculation-actions > button {
+    flex: 1 1 10rem;
+  }
+
+  .generated-calculation-unit {
+    font-size: 0.9rem;
+  }
+}
