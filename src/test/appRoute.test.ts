@@ -19,6 +19,10 @@ describe("hash routing", () => {
       route: "/study",
       studyScope: { preset: "needs_work", chapter: 9 },
     });
+    expect(parseHashLocation("#/study?concept=bond")).toMatchObject({
+      route: "/study",
+      conceptId: "bond",
+    });
   });
 
   it("falls back safely for unknown presets and malformed chapters", () => {
@@ -51,6 +55,11 @@ describe("hash routing", () => {
     expect(parseHashLocation("#/practice?mode=stimulus")).toMatchObject({
       route: "/practice",
       practiceMode: "stimulus",
+    });
+    expect(parseHashLocation("#/practice?mode=mcq&concept=bond")).toMatchObject({
+      route: "/practice",
+      practiceMode: "mcq",
+      conceptId: "bond",
     });
     expect(parseHashLocation("#/practice?mode=not-real").practiceMode).toBeNull();
   });

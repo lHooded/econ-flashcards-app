@@ -1,0 +1,1564 @@
+[
+  {
+    "cardId": "mix-001",
+    "conceptIds": ["gross-domestic-product", "final-good"]
+  },
+  {
+    "cardId": "mix-002",
+    "conceptIds": ["nominal-gdp", "real-gdp", "nominal", "real"]
+  },
+  {
+    "cardId": "mix-003",
+    "conceptIds": [
+      "labour-force",
+      "unemployed",
+      "not-in-labour-force",
+      "unemployment-rate"
+    ]
+  },
+  {
+    "cardId": "mix-004",
+    "conceptIds": ["okun-law", "output-gap", "cyclical-unemployment"]
+  },
+  {
+    "cardId": "mix-005",
+    "conceptIds": ["saving", "macro-investment"]
+  },
+  {
+    "cardId": "mix-006",
+    "conceptIds": ["crowding-out", "saving-investment-equilibrium", "fiscal-policy"]
+  },
+  {
+    "cardId": "mix-007",
+    "conceptIds": ["planned-aggregate-expenditure", "pae-equilibrium", "inventory"]
+  },
+  {
+    "cardId": "mix-008",
+    "conceptIds": ["multiplier", "multiplier-process"]
+  },
+  {
+    "cardId": "mix-009",
+    "conceptIds": ["fiscal-policy", "government-spending-multiplier", "tax-multiplier"]
+  },
+  {
+    "cardId": "mix-010",
+    "conceptIds": ["balanced-budget-multiplier", "fiscal-policy"]
+  },
+  {
+    "cardId": "mix-011",
+    "conceptIds": ["debt-sustainability", "debt-dynamics", "debt-gdp"]
+  },
+  {
+    "cardId": "mix-012",
+    "conceptIds": ["bond", "bond-price", "interest-rate"]
+  },
+  {
+    "cardId": "mix-013",
+    "conceptIds": ["money-demand", "real-money-demand", "interest-rate"]
+  },
+  {
+    "cardId": "mix-014",
+    "conceptIds": ["bank-lending", "money-creation", "money-stock"]
+  },
+  {
+    "cardId": "mix-015",
+    "conceptIds": ["quantity-equation", "quantity-theory", "velocity", "inflation"]
+  },
+  {
+    "cardId": "mix-016",
+    "conceptIds": ["open-market-operation", "settlement-balances", "cash-rate"]
+  },
+  {
+    "cardId": "mix-017",
+    "conceptIds": ["taylor-rule", "policy-reaction-function", "taylor-principle"]
+  },
+  {
+    "cardId": "mix-018",
+    "conceptIds": ["aggregate-demand", "ad-shift", "movement-along-ad"]
+  },
+  {
+    "cardId": "mix-019",
+    "conceptIds": ["aggregate-supply", "supply-shock", "inflation-dynamics"]
+  },
+  {
+    "cardId": "mix-020",
+    "conceptIds": [
+      "aggregate-demand",
+      "aggregate-supply",
+      "short-run-equilibrium",
+      "self-correction"
+    ]
+  },
+  {
+    "cardId": "mix-021",
+    "conceptIds": [
+      "current-account",
+      "open-economy-saving-identity",
+      "national-saving",
+      "macro-investment"
+    ]
+  },
+  {
+    "cardId": "mix-022",
+    "conceptIds": ["small-open-economy", "public-saving", "current-account"]
+  },
+  {
+    "cardId": "mix-023",
+    "conceptIds": [
+      "exchange-rate",
+      "nominal-exchange-rate",
+      "aud-quotation",
+      "appreciation"
+    ]
+  },
+  {
+    "cardId": "mix-024",
+    "conceptIds": ["foreign-exchange-market", "aud-demand", "aud-supply"]
+  },
+  {
+    "cardId": "mix-025",
+    "conceptIds": ["fixed-exchange-rate", "overvalued-peg", "defending-peg"]
+  },
+  {
+    "cardId": "mix-026",
+    "conceptIds": [
+      "economic-growth",
+      "growth-accounting",
+      "total-factor-productivity",
+      "productivity"
+    ]
+  },
+  {
+    "cardId": "mix-027",
+    "conceptIds": ["production-function", "cobb-douglas", "constant-returns-to-scale"]
+  },
+  {
+    "cardId": "mix-028",
+    "conceptIds": [
+      "economic-growth",
+      "capital-deepening",
+      "diminishing-marginal-product"
+    ]
+  },
+  {
+    "cardId": "mix-029",
+    "conceptIds": [
+      "pae-equilibrium",
+      "saving-investment-equilibrium",
+      "long-run-equilibrium"
+    ]
+  },
+  {
+    "cardId": "mix-030",
+    "conceptIds": [
+      "monetary-policy",
+      "monetary-transmission",
+      "real-rate-channel",
+      "aggregate-demand"
+    ]
+  },
+  {
+    "cardId": "ch01-001",
+    "conceptIds": ["gross-domestic-product"]
+  },
+  {
+    "cardId": "ch01-002",
+    "conceptIds": ["gross-domestic-product"]
+  },
+  {
+    "cardId": "ch01-003",
+    "conceptIds": ["gross-domestic-product"]
+  },
+  {
+    "cardId": "ch01-004",
+    "conceptIds": ["gross-domestic-product", "imports"]
+  },
+  {
+    "cardId": "ch01-005",
+    "conceptIds": ["intermediate-good"]
+  },
+  {
+    "cardId": "ch01-006",
+    "conceptIds": ["value-added"]
+  },
+  {
+    "cardId": "ch01-007",
+    "conceptIds": ["expenditure-approach", "gross-domestic-product"]
+  },
+  {
+    "cardId": "ch01-008",
+    "conceptIds": ["consumption"]
+  },
+  {
+    "cardId": "ch01-009",
+    "conceptIds": ["macro-investment"]
+  },
+  {
+    "cardId": "ch01-010",
+    "conceptIds": ["inventory-investment"]
+  },
+  {
+    "cardId": "ch01-011",
+    "conceptIds": ["government-spending"]
+  },
+  {
+    "cardId": "ch01-012",
+    "conceptIds": ["net-exports"]
+  },
+  {
+    "cardId": "ch01-013",
+    "conceptIds": ["gdp-vs-gni"]
+  },
+  {
+    "cardId": "ch01-014",
+    "conceptIds": ["nominal-gdp", "real-gdp", "nominal", "real"]
+  },
+  {
+    "cardId": "ch01-015",
+    "conceptIds": ["real-gdp"]
+  },
+  {
+    "cardId": "ch01-016",
+    "conceptIds": ["real-gdp"]
+  },
+  {
+    "cardId": "ch01-017",
+    "conceptIds": ["gdp-deflator", "price-index"]
+  },
+  {
+    "cardId": "ch01-018",
+    "conceptIds": ["cpi"]
+  },
+  {
+    "cardId": "ch01-019",
+    "conceptIds": ["inflation", "price-level", "percentage-change"]
+  },
+  {
+    "cardId": "ch01-020",
+    "conceptIds": ["cpi", "gdp-deflator"]
+  },
+  {
+    "cardId": "ch01-021",
+    "conceptIds": ["cpi", "price-index"]
+  },
+  {
+    "cardId": "ch01-022",
+    "conceptIds": ["cpi", "price-index"]
+  },
+  {
+    "cardId": "ch01-023",
+    "conceptIds": ["gdp-welfare"]
+  },
+  {
+    "cardId": "ch01-024",
+    "conceptIds": ["gdp-growth", "growth-rate", "percentage-change"]
+  },
+  {
+    "cardId": "ch01-025",
+    "conceptIds": ["business-cycle"]
+  },
+  {
+    "cardId": "ch01-026",
+    "conceptIds": ["technical-recession", "business-cycle"]
+  },
+  {
+    "cardId": "ch01-027",
+    "conceptIds": ["inflation", "nominal-interest-rate", "real-interest-rate"]
+  },
+  {
+    "cardId": "ch01-028",
+    "conceptIds": ["inflation", "inflation-expectations"]
+  },
+  {
+    "cardId": "ch01-029",
+    "conceptIds": ["inflation"]
+  },
+  {
+    "cardId": "ch01-030",
+    "conceptIds": ["inflation"]
+  },
+  {
+    "cardId": "ch01-031",
+    "conceptIds": ["inflation", "tax"]
+  },
+  {
+    "cardId": "ch01-032",
+    "conceptIds": ["inflation-target", "inflation"]
+  },
+  {
+    "cardId": "ch01-033",
+    "conceptIds": ["deflation", "inflation", "price-level"]
+  },
+  {
+    "cardId": "ch02-001",
+    "conceptIds": ["labour-force", "employment", "unemployed", "not-in-labour-force"]
+  },
+  {
+    "cardId": "ch02-002",
+    "conceptIds": ["unemployed"]
+  },
+  {
+    "cardId": "ch02-003",
+    "conceptIds": ["labour-force", "employment", "unemployed"]
+  },
+  {
+    "cardId": "ch02-004",
+    "conceptIds": ["unemployment-rate"]
+  },
+  {
+    "cardId": "ch02-005",
+    "conceptIds": ["participation-rate"]
+  },
+  {
+    "cardId": "ch02-006",
+    "conceptIds": ["employment-population-ratio"]
+  },
+  {
+    "cardId": "ch02-007",
+    "conceptIds": ["labour-force", "unemployment-rate", "participation-rate"]
+  },
+  {
+    "cardId": "ch02-008",
+    "conceptIds": ["discouraged-workers", "not-in-labour-force"]
+  },
+  {
+    "cardId": "ch02-009",
+    "conceptIds": ["frictional-unemployment"]
+  },
+  {
+    "cardId": "ch02-010",
+    "conceptIds": ["structural-unemployment"]
+  },
+  {
+    "cardId": "ch02-011",
+    "conceptIds": ["cyclical-unemployment"]
+  },
+  {
+    "cardId": "ch02-012",
+    "conceptIds": [
+      "natural-rate-unemployment",
+      "frictional-unemployment",
+      "structural-unemployment",
+      "cyclical-unemployment"
+    ]
+  },
+  {
+    "cardId": "ch02-013",
+    "conceptIds": ["natural-rate-unemployment", "labour-market-flows"]
+  },
+  {
+    "cardId": "ch02-014",
+    "conceptIds": ["natural-rate-unemployment", "labour-market-flows"]
+  },
+  {
+    "cardId": "ch02-015",
+    "conceptIds": ["labour-market-flows"]
+  },
+  {
+    "cardId": "ch02-016",
+    "conceptIds": ["potential-output"]
+  },
+  {
+    "cardId": "ch02-017",
+    "conceptIds": ["output-gap", "potential-output"]
+  },
+  {
+    "cardId": "ch02-018",
+    "conceptIds": ["okun-law", "output-gap", "cyclical-unemployment"]
+  },
+  {
+    "cardId": "ch02-019",
+    "conceptIds": ["okun-law", "output-gap"]
+  },
+  {
+    "cardId": "ch02-020",
+    "conceptIds": ["marginal-product-labour"]
+  },
+  {
+    "cardId": "ch02-021",
+    "conceptIds": ["value-marginal-product-labour", "marginal-product-labour"]
+  },
+  {
+    "cardId": "ch02-022",
+    "conceptIds": ["firm-labour-demand", "labour-demand"]
+  },
+  {
+    "cardId": "ch02-023",
+    "conceptIds": ["aggregate-labour-demand", "labour-demand"]
+  },
+  {
+    "cardId": "ch02-024",
+    "conceptIds": ["labour-demand"]
+  },
+  {
+    "cardId": "ch02-025",
+    "conceptIds": ["labour-demand", "productivity", "marginal-product-labour"]
+  },
+  {
+    "cardId": "ch02-026",
+    "conceptIds": ["labour-supply"]
+  },
+  {
+    "cardId": "ch02-027",
+    "conceptIds": ["wage-floor", "labour-demand", "labour-supply"]
+  },
+  {
+    "cardId": "ch02-028",
+    "conceptIds": ["labour-tax-wedge", "labour-demand", "labour-supply"]
+  },
+  {
+    "cardId": "ch02-029",
+    "conceptIds": ["nominal-wage", "real-wage", "nominal", "real"]
+  },
+  {
+    "cardId": "ch02-030",
+    "conceptIds": ["structural-change", "structural-unemployment"]
+  },
+  {
+    "cardId": "ch02-031",
+    "conceptIds": ["business-cycle", "unemployment-rate", "cyclical-unemployment"]
+  },
+  {
+    "cardId": "ch03-001",
+    "conceptIds": ["nominal-interest-rate", "interest-rate"]
+  },
+  {
+    "cardId": "ch03-002",
+    "conceptIds": ["nominal-interest-rate", "interest"]
+  },
+  {
+    "cardId": "ch03-003",
+    "conceptIds": ["real-interest-rate", "nominal-interest-rate", "inflation"]
+  },
+  {
+    "cardId": "ch03-004",
+    "conceptIds": ["real-interest-rate", "nominal-interest-rate", "inflation"]
+  },
+  {
+    "cardId": "ch03-005",
+    "conceptIds": ["ex-post-real-rate", "expected-real-rate", "inflation-expectations"]
+  },
+  {
+    "cardId": "ch03-006",
+    "conceptIds": [
+      "fisher-relationship",
+      "nominal-interest-rate",
+      "real-interest-rate",
+      "inflation-expectations"
+    ]
+  },
+  {
+    "cardId": "ch03-007",
+    "conceptIds": ["fisher-relationship", "nominal-interest-rate", "real-interest-rate"]
+  },
+  {
+    "cardId": "ch03-008",
+    "conceptIds": ["zero-lower-bound", "nominal-interest-rate"]
+  },
+  {
+    "cardId": "ch03-009",
+    "conceptIds": ["macro-investment", "capital"]
+  },
+  {
+    "cardId": "ch03-010",
+    "conceptIds": ["capital-stock", "stock", "flow"]
+  },
+  {
+    "cardId": "ch03-011",
+    "conceptIds": ["capital-accumulation", "capital-stock", "depreciation"]
+  },
+  {
+    "cardId": "ch03-012",
+    "conceptIds": ["net-investment", "capital-accumulation", "depreciation"]
+  },
+  {
+    "cardId": "ch03-013",
+    "conceptIds": ["capital-accumulation", "net-investment", "capital-stock"]
+  },
+  {
+    "cardId": "ch03-014",
+    "conceptIds": ["marginal-product-capital"]
+  },
+  {
+    "cardId": "ch03-015",
+    "conceptIds": ["value-marginal-product-capital", "marginal-product-capital"]
+  },
+  {
+    "cardId": "ch03-016",
+    "conceptIds": ["user-cost-capital"]
+  },
+  {
+    "cardId": "ch03-017",
+    "conceptIds": ["user-cost-capital", "nominal-interest-rate", "depreciation"]
+  },
+  {
+    "cardId": "ch03-018",
+    "conceptIds": ["user-cost-capital", "real-interest-rate", "depreciation"]
+  },
+  {
+    "cardId": "ch03-019",
+    "conceptIds": ["investment-demand", "user-cost-capital", "macro-investment"]
+  },
+  {
+    "cardId": "ch03-020",
+    "conceptIds": ["investment-demand"]
+  },
+  {
+    "cardId": "ch03-021",
+    "conceptIds": ["household-saving", "saving", "disposable-income"]
+  },
+  {
+    "cardId": "ch03-022",
+    "conceptIds": ["wealth", "asset"]
+  },
+  {
+    "cardId": "ch03-023",
+    "conceptIds": ["wealth", "capital-gains", "saving"]
+  },
+  {
+    "cardId": "ch03-024",
+    "conceptIds": ["life-cycle-saving", "household-saving"]
+  },
+  {
+    "cardId": "ch03-025",
+    "conceptIds": ["saving", "real-interest-rate"]
+  },
+  {
+    "cardId": "ch03-026",
+    "conceptIds": ["public-saving", "saving"]
+  },
+  {
+    "cardId": "ch03-027",
+    "conceptIds": ["national-saving", "public-saving", "household-saving"]
+  },
+  {
+    "cardId": "ch03-028",
+    "conceptIds": [
+      "saving-investment-equilibrium",
+      "national-saving",
+      "macro-investment"
+    ]
+  },
+  {
+    "cardId": "ch03-029",
+    "conceptIds": ["crowding-out", "saving-investment-equilibrium", "public-saving"]
+  },
+  {
+    "cardId": "ch03-030",
+    "conceptIds": ["macro-investment", "investment-demand"]
+  },
+  {
+    "cardId": "ch03-031",
+    "conceptIds": ["saving", "macro-investment"]
+  },
+  {
+    "cardId": "ch03-032",
+    "conceptIds": ["macro-investment", "borrowing"]
+  },
+  {
+    "cardId": "ch04-001",
+    "conceptIds": ["planned-aggregate-expenditure", "short-run-equilibrium"]
+  },
+  {
+    "cardId": "ch04-002",
+    "conceptIds": [
+      "actual-expenditure",
+      "planned-aggregate-expenditure",
+      "inventory",
+      "unplanned-inventory-change"
+    ]
+  },
+  {
+    "cardId": "ch04-003",
+    "conceptIds": ["planned-aggregate-expenditure", "open-economy-pae"]
+  },
+  {
+    "cardId": "ch04-004",
+    "conceptIds": ["pae-equilibrium", "short-run-equilibrium", "45-degree-line"]
+  },
+  {
+    "cardId": "ch04-005",
+    "conceptIds": ["inventory", "unplanned-inventory-change", "output-adjustment"]
+  },
+  {
+    "cardId": "ch04-006",
+    "conceptIds": ["inventory", "unplanned-inventory-change", "output-adjustment"]
+  },
+  {
+    "cardId": "ch04-007",
+    "conceptIds": [
+      "consumption-function",
+      "consumption",
+      "marginal-propensity-to-consume"
+    ]
+  },
+  {
+    "cardId": "ch04-008",
+    "conceptIds": ["marginal-propensity-to-consume"]
+  },
+  {
+    "cardId": "ch04-009",
+    "conceptIds": ["average-propensity-to-consume"]
+  },
+  {
+    "cardId": "ch04-010",
+    "conceptIds": [
+      "autonomous-expenditure",
+      "induced-expenditure",
+      "planned-aggregate-expenditure"
+    ]
+  },
+  {
+    "cardId": "ch04-011",
+    "conceptIds": ["pae-equilibrium", "linear-equation", "algebraic-substitution"]
+  },
+  {
+    "cardId": "ch04-012",
+    "conceptIds": ["multiplier"]
+  },
+  {
+    "cardId": "ch04-013",
+    "conceptIds": ["multiplier"]
+  },
+  {
+    "cardId": "ch04-014",
+    "conceptIds": ["multiplier-process", "multiplier"]
+  },
+  {
+    "cardId": "ch04-015",
+    "conceptIds": ["45-degree-line", "graph-axis", "graph-slope"]
+  },
+  {
+    "cardId": "ch04-016",
+    "conceptIds": ["planned-aggregate-expenditure", "output-adjustment"]
+  },
+  {
+    "cardId": "ch04-017",
+    "conceptIds": ["saving-function", "saving"]
+  },
+  {
+    "cardId": "ch04-018",
+    "conceptIds": ["saving-investment-equilibrium", "planned-aggregate-expenditure"]
+  },
+  {
+    "cardId": "ch04-019",
+    "conceptIds": ["paradox-of-thrift", "saving", "multiplier"]
+  },
+  {
+    "cardId": "ch04-020",
+    "conceptIds": ["open-economy-pae", "imports"]
+  },
+  {
+    "cardId": "ch04-021",
+    "conceptIds": ["open-economy-pae", "planned-aggregate-expenditure"]
+  },
+  {
+    "cardId": "ch04-022",
+    "conceptIds": ["open-economy-multiplier", "multiplier", "imports"]
+  },
+  {
+    "cardId": "ch04-023",
+    "conceptIds": ["leakages-injections", "open-economy-pae"]
+  },
+  {
+    "cardId": "ch04-024",
+    "conceptIds": ["open-economy-multiplier", "open-economy-pae", "linear-equation"]
+  },
+  {
+    "cardId": "ch04-025",
+    "conceptIds": ["output-adjustment", "inventory"]
+  },
+  {
+    "cardId": "ch04-026",
+    "conceptIds": ["algebraic-substitution", "linear-equation"]
+  },
+  {
+    "cardId": "ch04-027",
+    "conceptIds": ["multiplier"]
+  },
+  {
+    "cardId": "ch04-028",
+    "conceptIds": ["open-economy-multiplier", "multiplier"]
+  },
+  {
+    "cardId": "ch04-029",
+    "conceptIds": [
+      "actual-expenditure",
+      "planned-aggregate-expenditure",
+      "pae-equilibrium",
+      "unplanned-inventory-change"
+    ]
+  },
+  {
+    "cardId": "ch05-001",
+    "conceptIds": ["fiscal-policy"]
+  },
+  {
+    "cardId": "ch05-002",
+    "conceptIds": ["tax-function"]
+  },
+  {
+    "cardId": "ch05-003",
+    "conceptIds": ["marginal-tax-rate", "average-tax-rate"]
+  },
+  {
+    "cardId": "ch05-004",
+    "conceptIds": ["consumption-function", "tax", "disposable-income"]
+  },
+  {
+    "cardId": "ch05-005",
+    "conceptIds": [
+      "planned-aggregate-expenditure",
+      "fiscal-policy",
+      "government-spending"
+    ]
+  },
+  {
+    "cardId": "ch05-006",
+    "conceptIds": ["pae-equilibrium", "fiscal-policy", "linear-equation"]
+  },
+  {
+    "cardId": "ch05-007",
+    "conceptIds": ["government-spending-multiplier", "multiplier", "fiscal-policy"]
+  },
+  {
+    "cardId": "ch05-008",
+    "conceptIds": ["tax-multiplier", "multiplier", "fiscal-policy"]
+  },
+  {
+    "cardId": "ch05-009",
+    "conceptIds": [
+      "government-spending-multiplier",
+      "tax-multiplier",
+      "balanced-budget-multiplier"
+    ]
+  },
+  {
+    "cardId": "ch05-010",
+    "conceptIds": ["balanced-budget-multiplier"]
+  },
+  {
+    "cardId": "ch05-011",
+    "conceptIds": ["balanced-budget-multiplier"]
+  },
+  {
+    "cardId": "ch05-012",
+    "conceptIds": ["automatic-stabilisers", "fiscal-policy"]
+  },
+  {
+    "cardId": "ch05-013",
+    "conceptIds": ["automatic-stabilisers", "fiscal-policy"]
+  },
+  {
+    "cardId": "ch05-014",
+    "conceptIds": ["discretionary-fiscal-policy", "fiscal-policy"]
+  },
+  {
+    "cardId": "ch05-015",
+    "conceptIds": ["fiscal-policy-lags"]
+  },
+  {
+    "cardId": "ch05-016",
+    "conceptIds": ["fiscal-output-gap", "fiscal-policy", "output-gap"]
+  },
+  {
+    "cardId": "ch05-017",
+    "conceptIds": ["fiscal-output-gap", "fiscal-policy", "output-gap"]
+  },
+  {
+    "cardId": "ch05-018",
+    "conceptIds": ["budget-balance", "deficit"]
+  },
+  {
+    "cardId": "ch05-019",
+    "conceptIds": ["primary-budget-balance", "budget-balance"]
+  },
+  {
+    "cardId": "ch05-020",
+    "conceptIds": ["debt-stock", "deficit", "stock", "flow"]
+  },
+  {
+    "cardId": "ch05-021",
+    "conceptIds": ["debt-dynamics", "debt-stock", "deficit"]
+  },
+  {
+    "cardId": "ch05-022",
+    "conceptIds": ["government-budget-constraint", "deficit", "debt-stock"]
+  },
+  {
+    "cardId": "ch05-023",
+    "conceptIds": ["debt-stock", "government-budget-constraint"]
+  },
+  {
+    "cardId": "ch05-024",
+    "conceptIds": ["debt-gdp"]
+  },
+  {
+    "cardId": "ch05-025",
+    "conceptIds": ["debt-sustainability"]
+  },
+  {
+    "cardId": "ch05-026",
+    "conceptIds": ["debt-dynamics", "debt-sustainability"]
+  },
+  {
+    "cardId": "ch05-027",
+    "conceptIds": ["debt-dynamics", "debt-sustainability"]
+  },
+  {
+    "cardId": "ch05-028",
+    "conceptIds": ["public-debt-costs"]
+  },
+  {
+    "cardId": "ch05-029",
+    "conceptIds": ["golden-rule"]
+  },
+  {
+    "cardId": "ch05-030",
+    "conceptIds": ["budget-balance", "fiscal-policy"]
+  },
+  {
+    "cardId": "ch05-031",
+    "conceptIds": ["open-economy-pae", "planned-aggregate-expenditure", "net-exports"]
+  },
+  {
+    "cardId": "ch05-032",
+    "conceptIds": ["open-economy-multiplier", "multiplier", "fiscal-policy"]
+  },
+  {
+    "cardId": "ch05-033",
+    "conceptIds": ["leakages-injections", "open-economy-pae"]
+  },
+  {
+    "cardId": "ch06-001",
+    "conceptIds": ["asset-return"]
+  },
+  {
+    "cardId": "ch06-002",
+    "conceptIds": [
+      "bond",
+      "face-value",
+      "coupon-payment",
+      "maturity",
+      "principal",
+      "future-payment"
+    ]
+  },
+  {
+    "cardId": "ch06-003",
+    "conceptIds": ["bond", "bond-price", "present-value", "interest-rate"]
+  },
+  {
+    "cardId": "ch06-004",
+    "conceptIds": ["bond-price", "interest-rate"]
+  },
+  {
+    "cardId": "ch06-005",
+    "conceptIds": ["bond", "bond-price", "present-value", "interest-rate"]
+  },
+  {
+    "cardId": "ch06-006",
+    "conceptIds": ["money", "money-functions"]
+  },
+  {
+    "cardId": "ch06-007",
+    "conceptIds": ["liquidity", "financial-asset"]
+  },
+  {
+    "cardId": "ch06-008",
+    "conceptIds": ["fiat-money", "money"]
+  },
+  {
+    "cardId": "ch06-009",
+    "conceptIds": ["money-stock"]
+  },
+  {
+    "cardId": "ch06-010",
+    "conceptIds": ["money-demand"]
+  },
+  {
+    "cardId": "ch06-011",
+    "conceptIds": ["money-demand", "real-money-demand"]
+  },
+  {
+    "cardId": "ch06-012",
+    "conceptIds": ["money-demand", "interest-rate"]
+  },
+  {
+    "cardId": "ch06-013",
+    "conceptIds": ["nominal-money-demand", "real-money-demand", "nominal", "real"]
+  },
+  {
+    "cardId": "ch06-014",
+    "conceptIds": ["money-demand", "real-money-demand", "linear-equation"]
+  },
+  {
+    "cardId": "ch06-015",
+    "conceptIds": [
+      "bank-balance-sheet",
+      "bank",
+      "deposit",
+      "asset",
+      "liability",
+      "reserves"
+    ]
+  },
+  {
+    "cardId": "ch06-016",
+    "conceptIds": ["bank-balance-sheet", "liability", "asset"]
+  },
+  {
+    "cardId": "ch06-017",
+    "conceptIds": ["bank-lending", "money-creation", "money-stock", "deposit"]
+  },
+  {
+    "cardId": "ch06-018",
+    "conceptIds": ["interbank-payment", "reserves", "bank-balance-sheet"]
+  },
+  {
+    "cardId": "ch06-019",
+    "conceptIds": ["bank-leverage"]
+  },
+  {
+    "cardId": "ch06-020",
+    "conceptIds": ["reserve-deposit-ratio", "reserves", "deposit"]
+  },
+  {
+    "cardId": "ch06-021",
+    "conceptIds": ["solvency", "liquidity"]
+  },
+  {
+    "cardId": "ch06-022",
+    "conceptIds": ["bank-run", "liquidity", "solvency"]
+  },
+  {
+    "cardId": "ch06-023",
+    "conceptIds": ["lender-last-resort", "central-bank", "bank-run"]
+  },
+  {
+    "cardId": "ch06-024",
+    "conceptIds": ["deposit-insurance", "bank-run"]
+  },
+  {
+    "cardId": "ch06-025",
+    "conceptIds": ["prudential-regulation", "bank", "solvency"]
+  },
+  {
+    "cardId": "ch06-026",
+    "conceptIds": ["quantity-equation"]
+  },
+  {
+    "cardId": "ch06-027",
+    "conceptIds": ["velocity", "quantity-equation"]
+  },
+  {
+    "cardId": "ch06-028",
+    "conceptIds": ["quantity-theory", "quantity-equation"]
+  },
+  {
+    "cardId": "ch06-029",
+    "conceptIds": ["quantity-theory", "quantity-equation", "percentage-change"]
+  },
+  {
+    "cardId": "ch06-030",
+    "conceptIds": ["quantity-theory", "quantity-equation", "linear-equation"]
+  },
+  {
+    "cardId": "ch06-031",
+    "conceptIds": ["quantity-theory", "inflation", "percentage-change"]
+  },
+  {
+    "cardId": "ch07-001",
+    "conceptIds": ["central-bank-objectives", "central-bank", "RBA"]
+  },
+  {
+    "cardId": "ch07-002",
+    "conceptIds": ["inflation-target", "central-bank-objectives", "RBA", "inflation"]
+  },
+  {
+    "cardId": "ch07-003",
+    "conceptIds": ["headline-underlying-inflation", "inflation", "cpi"]
+  },
+  {
+    "cardId": "ch07-004",
+    "conceptIds": ["policy-instrument-vs-target", "monetary-policy", "cash-rate-target"]
+  },
+  {
+    "cardId": "ch07-005",
+    "conceptIds": ["cash-rate", "cash-market", "interest-rate"]
+  },
+  {
+    "cardId": "ch07-006",
+    "conceptIds": ["exchange-settlement-account", "settlement-balances", "reserves"]
+  },
+  {
+    "cardId": "ch07-007",
+    "conceptIds": ["cash-rate-corridor", "cash-rate", "reserve-demand"]
+  },
+  {
+    "cardId": "ch07-008",
+    "conceptIds": ["cash-rate-corridor", "interest-rate"]
+  },
+  {
+    "cardId": "ch07-009",
+    "conceptIds": ["reserve-demand", "reserves", "cash-rate"]
+  },
+  {
+    "cardId": "ch07-010",
+    "conceptIds": ["reserve-demand", "reserves"]
+  },
+  {
+    "cardId": "ch07-011",
+    "conceptIds": [
+      "open-market-purchase",
+      "open-market-operation",
+      "settlement-balances",
+      "cash-rate"
+    ]
+  },
+  {
+    "cardId": "ch07-012",
+    "conceptIds": [
+      "open-market-sale",
+      "open-market-operation",
+      "settlement-balances",
+      "cash-rate"
+    ]
+  },
+  {
+    "cardId": "ch07-013",
+    "conceptIds": [
+      "government-payments-esa",
+      "exchange-settlement-account",
+      "settlement-balances"
+    ]
+  },
+  {
+    "cardId": "ch07-014",
+    "conceptIds": ["interbank-payment", "settlement-balances", "reserves"]
+  },
+  {
+    "cardId": "ch07-015",
+    "conceptIds": ["cash-rate-target", "cash-rate", "monetary-policy"]
+  },
+  {
+    "cardId": "ch07-016",
+    "conceptIds": [
+      "monetary-transmission",
+      "cash-rate",
+      "real-rate-channel",
+      "aggregate-demand"
+    ]
+  },
+  {
+    "cardId": "ch07-017",
+    "conceptIds": ["real-rate-channel", "real-interest-rate"]
+  },
+  {
+    "cardId": "ch07-018",
+    "conceptIds": ["yield-curve", "interest-rate", "bond-yield"]
+  },
+  {
+    "cardId": "ch07-019",
+    "conceptIds": ["expectations-hypothesis", "yield-curve", "bond-yield"]
+  },
+  {
+    "cardId": "ch07-020",
+    "conceptIds": ["expectations-hypothesis", "yield-curve", "bond-yield"]
+  },
+  {
+    "cardId": "ch07-021",
+    "conceptIds": ["term-premium", "yield-curve", "bond-yield"]
+  },
+  {
+    "cardId": "ch07-022",
+    "conceptIds": ["policy-reaction-function", "monetary-policy"]
+  },
+  {
+    "cardId": "ch07-023",
+    "conceptIds": [
+      "taylor-rule",
+      "policy-reaction-function",
+      "inflation-target",
+      "output-gap"
+    ]
+  },
+  {
+    "cardId": "ch07-024",
+    "conceptIds": ["taylor-principle", "taylor-rule", "real-interest-rate"]
+  },
+  {
+    "cardId": "ch07-025",
+    "conceptIds": ["zero-lower-bound", "monetary-policy", "nominal-interest-rate"]
+  },
+  {
+    "cardId": "ch07-026",
+    "conceptIds": ["policy-reaction-function", "taylor-rule"]
+  },
+  {
+    "cardId": "ch07-027",
+    "conceptIds": ["policy-reaction-function", "monetary-policy"]
+  },
+  {
+    "cardId": "ch07-028",
+    "conceptIds": ["inflation-target", "monetary-policy", "central-bank-objectives"]
+  },
+  {
+    "cardId": "ch08-001",
+    "conceptIds": [
+      "aggregate-demand",
+      "planned-aggregate-expenditure",
+      "real-rate-channel",
+      "policy-reaction-function"
+    ]
+  },
+  {
+    "cardId": "ch08-002",
+    "conceptIds": [
+      "real-rate-channel",
+      "real-interest-rate",
+      "planned-aggregate-expenditure"
+    ]
+  },
+  {
+    "cardId": "ch08-003",
+    "conceptIds": [
+      "planned-aggregate-expenditure",
+      "real-rate-channel",
+      "linear-equation"
+    ]
+  },
+  {
+    "cardId": "ch08-004",
+    "conceptIds": [
+      "planned-aggregate-expenditure",
+      "real-rate-channel",
+      "aggregate-demand"
+    ]
+  },
+  {
+    "cardId": "ch08-005",
+    "conceptIds": ["aggregate-demand", "ad-equation", "algebraic-substitution"]
+  },
+  {
+    "cardId": "ch08-006",
+    "conceptIds": ["ad-slope", "aggregate-demand", "real-rate-channel"]
+  },
+  {
+    "cardId": "ch08-007",
+    "conceptIds": ["movement-along-ad", "aggregate-demand"]
+  },
+  {
+    "cardId": "ch08-008",
+    "conceptIds": ["ad-shift", "aggregate-demand", "net-exports"]
+  },
+  {
+    "cardId": "ch08-009",
+    "conceptIds": ["ad-shift", "aggregate-demand", "policy-reaction-function"]
+  },
+  {
+    "cardId": "ch08-010",
+    "conceptIds": ["ad-shift", "aggregate-demand"]
+  },
+  {
+    "cardId": "ch08-011",
+    "conceptIds": ["output-gap", "potential-output"]
+  },
+  {
+    "cardId": "ch08-012",
+    "conceptIds": ["aggregate-supply"]
+  },
+  {
+    "cardId": "ch08-013",
+    "conceptIds": ["adaptive-expectations", "inflation-expectations"]
+  },
+  {
+    "cardId": "ch08-014",
+    "conceptIds": ["short-run-aggregate-supply", "aggregate-supply"]
+  },
+  {
+    "cardId": "ch08-015",
+    "conceptIds": ["inflation-dynamics", "aggregate-supply", "output-gap"]
+  },
+  {
+    "cardId": "ch08-016",
+    "conceptIds": ["inflation-dynamics", "aggregate-supply", "output-gap"]
+  },
+  {
+    "cardId": "ch08-017",
+    "conceptIds": ["long-run-equilibrium", "potential-output", "aggregate-supply"]
+  },
+  {
+    "cardId": "ch08-018",
+    "conceptIds": ["demand-shock", "aggregate-demand", "inflation-dynamics"]
+  },
+  {
+    "cardId": "ch08-019",
+    "conceptIds": ["adverse-demand-shock", "aggregate-demand", "inflation-dynamics"]
+  },
+  {
+    "cardId": "ch08-020",
+    "conceptIds": ["demand-stabilisation", "monetary-transmission", "aggregate-demand"]
+  },
+  {
+    "cardId": "ch08-021",
+    "conceptIds": ["self-correction", "demand-stabilisation", "long-run-equilibrium"]
+  },
+  {
+    "cardId": "ch08-022",
+    "conceptIds": ["adverse-supply-shock", "supply-shock", "aggregate-supply"]
+  },
+  {
+    "cardId": "ch08-023",
+    "conceptIds": ["favourable-supply-shock", "supply-shock", "aggregate-supply"]
+  },
+  {
+    "cardId": "ch08-024",
+    "conceptIds": ["supply-shock", "demand-stabilisation", "inflation-dynamics"]
+  },
+  {
+    "cardId": "ch08-025",
+    "conceptIds": ["accommodating-inflation", "monetary-policy", "supply-shock"]
+  },
+  {
+    "cardId": "ch08-026",
+    "conceptIds": ["potential-output-shock", "potential-output", "aggregate-supply"]
+  },
+  {
+    "cardId": "ch08-027",
+    "conceptIds": ["potential-output-shock", "potential-output", "productivity"]
+  },
+  {
+    "cardId": "ch08-028",
+    "conceptIds": ["inflation-target", "monetary-policy", "long-run-equilibrium"]
+  },
+  {
+    "cardId": "ch08-029",
+    "conceptIds": ["fiscal-policy-lags", "fiscal-policy", "ad-shift"]
+  },
+  {
+    "cardId": "ch08-030",
+    "conceptIds": ["financial-crisis", "aggregate-demand", "demand-shock"]
+  },
+  {
+    "cardId": "ch08-031",
+    "conceptIds": ["ad-equation", "ad-slope", "aggregate-demand"]
+  },
+  {
+    "cardId": "ch08-032",
+    "conceptIds": ["policy-reaction-function", "ad-slope", "aggregate-demand"]
+  },
+  {
+    "cardId": "ch09-001",
+    "conceptIds": ["balance-of-payments"]
+  },
+  {
+    "cardId": "ch09-002",
+    "conceptIds": ["current-account"]
+  },
+  {
+    "cardId": "ch09-003",
+    "conceptIds": ["trade-balance", "net-exports"]
+  },
+  {
+    "cardId": "ch09-004",
+    "conceptIds": ["primary-income"]
+  },
+  {
+    "cardId": "ch09-005",
+    "conceptIds": ["secondary-income"]
+  },
+  {
+    "cardId": "ch09-006",
+    "conceptIds": ["financial-account"]
+  },
+  {
+    "cardId": "ch09-007",
+    "conceptIds": ["bop-identity", "balance-of-payments"]
+  },
+  {
+    "cardId": "ch09-008",
+    "conceptIds": ["balance-of-payments", "current-account", "financial-account"]
+  },
+  {
+    "cardId": "ch09-009",
+    "conceptIds": ["balance-of-payments", "current-account", "financial-account"]
+  },
+  {
+    "cardId": "ch09-010",
+    "conceptIds": [
+      "open-economy-saving-identity",
+      "current-account",
+      "national-saving",
+      "macro-investment"
+    ]
+  },
+  {
+    "cardId": "ch09-011",
+    "conceptIds": ["current-account"]
+  },
+  {
+    "cardId": "ch09-012",
+    "conceptIds": ["current-account"]
+  },
+  {
+    "cardId": "ch09-013",
+    "conceptIds": ["small-open-economy", "open-economy-saving-identity"]
+  },
+  {
+    "cardId": "ch09-014",
+    "conceptIds": ["small-open-economy", "public-saving", "current-account"]
+  },
+  {
+    "cardId": "ch09-015",
+    "conceptIds": ["small-open-economy", "macro-investment", "current-account"]
+  },
+  {
+    "cardId": "ch09-016",
+    "conceptIds": ["nominal-exchange-rate", "aud-quotation", "exchange-rate"]
+  },
+  {
+    "cardId": "ch09-017",
+    "conceptIds": ["appreciation", "exchange-rate"]
+  },
+  {
+    "cardId": "ch09-018",
+    "conceptIds": ["currency-depreciation", "exchange-rate"]
+  },
+  {
+    "cardId": "ch09-019",
+    "conceptIds": ["currency-conversion", "nominal-exchange-rate", "aud-quotation"]
+  },
+  {
+    "cardId": "ch09-020",
+    "conceptIds": ["currency-conversion", "nominal-exchange-rate", "aud-quotation"]
+  },
+  {
+    "cardId": "ch09-021",
+    "conceptIds": ["cross-rate", "currency-conversion", "exchange-rate"]
+  },
+  {
+    "cardId": "ch09-022",
+    "conceptIds": ["real-exchange-rate", "nominal-exchange-rate", "price-level"]
+  },
+  {
+    "cardId": "ch09-023",
+    "conceptIds": ["real-appreciation", "real-exchange-rate", "appreciation"]
+  },
+  {
+    "cardId": "ch09-024",
+    "conceptIds": ["law-one-price"]
+  },
+  {
+    "cardId": "ch09-025",
+    "conceptIds": ["law-one-price", "currency-conversion", "nominal-exchange-rate"]
+  },
+  {
+    "cardId": "ch09-026",
+    "conceptIds": ["purchasing-power-parity", "law-one-price"]
+  },
+  {
+    "cardId": "ch09-027",
+    "conceptIds": ["ppp-limitations", "purchasing-power-parity"]
+  },
+  {
+    "cardId": "ch09-028",
+    "conceptIds": ["relative-ppp", "purchasing-power-parity", "currency-depreciation"]
+  },
+  {
+    "cardId": "ch09-029",
+    "conceptIds": ["aud-demand", "foreign-exchange-market"]
+  },
+  {
+    "cardId": "ch09-030",
+    "conceptIds": ["aud-supply", "foreign-exchange-market"]
+  },
+  {
+    "cardId": "ch09-031",
+    "conceptIds": [
+      "foreign-exchange-market",
+      "aud-demand",
+      "aud-supply",
+      "appreciation"
+    ]
+  },
+  {
+    "cardId": "ch09-032",
+    "conceptIds": [
+      "foreign-exchange-market",
+      "aud-demand",
+      "aud-supply",
+      "currency-depreciation"
+    ]
+  },
+  {
+    "cardId": "ch09-033",
+    "conceptIds": ["interest-rate", "foreign-exchange-market", "capital"]
+  },
+  {
+    "cardId": "ch09-034",
+    "conceptIds": ["flexible-exchange-rate", "foreign-exchange-market"]
+  },
+  {
+    "cardId": "ch09-035",
+    "conceptIds": ["fixed-exchange-rate", "foreign-exchange-market"]
+  },
+  {
+    "cardId": "ch09-036",
+    "conceptIds": ["overvalued-peg", "fixed-exchange-rate", "defending-peg"]
+  },
+  {
+    "cardId": "ch09-037",
+    "conceptIds": ["undervalued-peg", "fixed-exchange-rate", "defending-peg"]
+  },
+  {
+    "cardId": "ch09-038",
+    "conceptIds": ["speculative-attack", "fixed-exchange-rate"]
+  },
+  {
+    "cardId": "ch09-039",
+    "conceptIds": ["defending-peg", "fixed-exchange-rate"]
+  },
+  {
+    "cardId": "ch09-040",
+    "conceptIds": [
+      "monetary-transmission",
+      "exchange-rate",
+      "net-exports",
+      "foreign-exchange-market"
+    ]
+  },
+  {
+    "cardId": "ch10-001",
+    "conceptIds": ["economic-growth", "gdp-per-capita"]
+  },
+  {
+    "cardId": "ch10-002",
+    "conceptIds": ["growth-rate", "percentage-change", "economic-growth"]
+  },
+  {
+    "cardId": "ch10-003",
+    "conceptIds": ["compound-growth", "growth-rate"]
+  },
+  {
+    "cardId": "ch10-004",
+    "conceptIds": ["rule-of-70", "compound-growth", "growth-rate"]
+  },
+  {
+    "cardId": "ch10-005",
+    "conceptIds": ["rule-of-70", "compound-growth", "growth-rate"]
+  },
+  {
+    "cardId": "ch10-006",
+    "conceptIds": ["growth-rate", "economic-growth"]
+  },
+  {
+    "cardId": "ch10-007",
+    "conceptIds": ["convergence", "economic-growth"]
+  },
+  {
+    "cardId": "ch10-008",
+    "conceptIds": ["production-function"]
+  },
+  {
+    "cardId": "ch10-009",
+    "conceptIds": ["cobb-douglas", "production-function"]
+  },
+  {
+    "cardId": "ch10-010",
+    "conceptIds": ["constant-returns-to-scale", "production-function"]
+  },
+  {
+    "cardId": "ch10-011",
+    "conceptIds": [
+      "diminishing-marginal-product",
+      "marginal-product-capital",
+      "marginal-product-labour"
+    ]
+  },
+  {
+    "cardId": "ch10-012",
+    "conceptIds": ["diminishing-marginal-product", "marginal-product-capital"]
+  },
+  {
+    "cardId": "ch10-013",
+    "conceptIds": ["marginal-product-labour", "labour-productivity"]
+  },
+  {
+    "cardId": "ch10-014",
+    "conceptIds": ["output-per-worker", "cobb-douglas", "labour-productivity"]
+  },
+  {
+    "cardId": "ch10-015",
+    "conceptIds": ["capital-deepening", "economic-growth"]
+  },
+  {
+    "cardId": "ch10-016",
+    "conceptIds": [
+      "capital-accumulation-limits",
+      "diminishing-marginal-product",
+      "capital-stock"
+    ]
+  },
+  {
+    "cardId": "ch10-017",
+    "conceptIds": ["capital"]
+  },
+  {
+    "cardId": "ch10-018",
+    "conceptIds": ["productivity", "total-factor-productivity"]
+  },
+  {
+    "cardId": "ch10-019",
+    "conceptIds": ["technology-ideas"]
+  },
+  {
+    "cardId": "ch10-020",
+    "conceptIds": ["public-good-properties", "technology-ideas"]
+  },
+  {
+    "cardId": "ch10-021",
+    "conceptIds": ["innovation-incentives", "technology-ideas"]
+  },
+  {
+    "cardId": "ch10-022",
+    "conceptIds": ["institutions-property-rights", "economic-growth"]
+  },
+  {
+    "cardId": "ch10-023",
+    "conceptIds": ["social-capital", "economic-growth"]
+  },
+  {
+    "cardId": "ch10-024",
+    "conceptIds": ["natural-capital", "economic-growth"]
+  },
+  {
+    "cardId": "ch10-025",
+    "conceptIds": ["growth-accounting", "total-factor-productivity", "productivity"]
+  },
+  {
+    "cardId": "ch10-026",
+    "conceptIds": ["growth-accounting", "total-factor-productivity", "productivity"]
+  },
+  {
+    "cardId": "ch10-027",
+    "conceptIds": ["growth-accounting", "total-factor-productivity", "productivity"]
+  },
+  {
+    "cardId": "ch10-028",
+    "conceptIds": ["labour-productivity", "output-per-worker", "productivity"]
+  },
+  {
+    "cardId": "ch10-029",
+    "conceptIds": [
+      "convergence",
+      "economic-growth",
+      "technology-ideas",
+      "capital-deepening"
+    ]
+  },
+  {
+    "cardId": "ch10-030",
+    "conceptIds": ["economic-growth", "productivity", "institutions-property-rights"]
+  }
+]

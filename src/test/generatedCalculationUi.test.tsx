@@ -101,7 +101,9 @@ describe("generated calculation UI lifecycle", () => {
       </KnowledgeProvider>,
     );
     expect(
-      screen.getAllByRole("button", { name: /Explain bond/i }).length,
+      screen.getAllByRole("button", {
+        name: /bond is part of the current question/i,
+      }).length,
     ).toBeGreaterThan(0);
   });
 

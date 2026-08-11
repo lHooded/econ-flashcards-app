@@ -1544,6 +1544,20 @@ h3 {
   font-size: 0.85rem;
 }
 
+.knowledge-blocked-message {
+  padding: 0.85rem;
+  border-left: 4px solid var(--yellow);
+  border-radius: 0.25rem;
+  color: var(--navy);
+  background: #fff8e6;
+  line-height: 1.55;
+}
+
+.knowledge-study-actions {
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--line);
+}
+
 .knowledge-graph-section {
   padding-top: 0.6rem;
   border-top: 1px solid var(--line);

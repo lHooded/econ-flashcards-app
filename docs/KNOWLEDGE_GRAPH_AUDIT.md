@@ -25,13 +25,57 @@ The chapter counts overlap where a reusable concept belongs to more than one
 chapter. The 10 graph roots are asset, buyer, expectations, flow, graph axes,
 percentage, quantity, ratio, seller, and stock. Maximum prerequisite depth is 15. There are 894 prerequisite edges and 1,132 related-concept edges.
 
+## Explicit card-mapping audit
+
+The production map is `knowledge/card-concept-map.json`. It contains one
+readable row per canonical stable card ID, with the concept IDs selected after
+reviewing each card’s chapter, topic, kind, front, answer, explanation,
+common-trap text, and tags. It is the source of truth for reverse card links;
+topic matching is not a runtime mapping mechanism.
+
+| Metric                                 |    Result |
+| -------------------------------------- | --------: |
+| Explicit canonical card mappings       | 349 / 349 |
+| Production fallback mappings           |         0 |
+| Duplicate/unknown/missing mapping rows |         0 |
+
+Representative rows from the full JSON audit table:
+
+| Card ID    | Chapter | Topic                        | Mapped concept IDs                                                                |
+| ---------- | ------: | ---------------------------- | --------------------------------------------------------------------------------- |
+| `mix-001`  |       0 | GDP synthesis                | `gross-domestic-product`, `final-good`                                            |
+| `ch01-006` |       1 | Value added formula          | `value-added`                                                                     |
+| `ch01-018` |       1 | CPI definition               | `cpi`                                                                             |
+| `ch02-004` |       2 | Unemployment rate            | `unemployment-rate`, `labour-force`                                               |
+| `ch03-006` |       3 | Fisher relationship          | `fisher-relationship`, `nominal-interest-rate`, `real-interest-rate`              |
+| `ch04-012` |       4 | Multiplier                   | `multiplier`, `planned-aggregate-expenditure`                                     |
+| `ch05-010` |       5 | Balanced-budget multiplier   | `balanced-budget-multiplier`, `multiplier`                                        |
+| `ch06-001` |       6 | Asset return                 | `asset-return`                                                                    |
+| `ch06-002` |       6 | Bond terminology             | `bond`, `face-value`, `coupon-payment`, `maturity`, `principal`, `future-payment` |
+| `ch06-003` |       6 | Bond price formula           | `bond`, `bond-price`, `present-value`, `interest-rate`                            |
+| `ch06-004` |       6 | Bond price and interest rate | `bond-price`, `interest-rate`                                                     |
+| `ch07-005` |       7 | Cash rate                    | `cash-rate`, `cash-market`, `interest-rate`                                       |
+| `ch08-008` |       8 | Aggregate demand shift       | `aggregate-demand`, `ad-shift`, `net-exports`                                     |
+| `ch09-017` |       9 | Appreciation                 | `appreciation`, `exchange-rate`                                                   |
+| `ch10-005` |      10 | Rule of 70                   | `rule-of-70`, `compound-growth`, `growth-rate`                                    |
+
+The mandatory audit cases are intentional: `ch06-001` does not map to the
+generic `money` concept, and `ch06-002` does not receive any chapter fallback.
+Every other row is available for direct review in the JSON file; there are no
+unmapped canonical cards or opaque production rules.
+
 ## Coverage and source checks
 
 - Canonical cards: **349 / 349** mapped.
+- Explicit canonical card mappings: **349 / 349**.
+- Production fallback mappings: **0**.
 - Exam questions: **161 / 161** mapped transitively through `reviewCardId`.
 - Concepts with at least one lecture reference: **287**.
 - Concepts with at least one textbook reference: **290**.
 - Concepts lacking source support: **0**.
+- Concepts with at least one linked canonical card: **269**.
+- Concepts with no linked canonical card: **28** (background/bridge concepts,
+  not discarded from the foundation curriculum).
 - Cycles: **0**.
 - Ambiguous inline aliases: **1** (the deliberate everyday `depreciation` chooser).
 - Source page checks: all references are within the local PDF page counts.
@@ -83,10 +127,20 @@ nodes such as flow, ratio, income, price, inflation, market, and PAE are shared
 foundations by design; their explanations stay short and link onward rather than
 duplicating chapter prose.
 
-237 concepts currently have no directly mapped canonical card. This is expected
-for background foundations and bridge concepts; they are still reachable from
-course concepts and are not treated as a readiness blocker. The validator only
-requires the reverse guarantee: every canonical card has at least one concept.
+The scheduler and curriculum intentionally use different readiness functions.
+An unreviewable no-card prerequisite is non-blocking for the Exam-SRS unseen-card
+tie-break, so the full deck cannot deadlock. The learner-facing foundation
+curriculum includes those same concepts and treats them as needing explanation;
+for concepts with linked cards, only derived `Solid` is sufficient for a
+foundation recommendation to move on. This does not persist a second mastery
+state.
+
+Pre-answer disclosure is also explicit rather than global: the active card’s
+mapped concept IDs are blocked, while incidental concepts can show only a short
+meaning and intuition. After grading, the full article and graph navigation are
+available. This protects CPI construction, bond-price/interest-rate direction,
+Fisher, Rule-of-70, unemployment-rate construction, and exchange-rate
+conversion questions from being answered by their own explanations.
 
 No PDF files were copied or added to Git. The source paths actually consulted
 are listed in `docs/KNOWLEDGE_GRAPH.md` and in `knowledge/sources.json`.

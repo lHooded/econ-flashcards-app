@@ -23,12 +23,13 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
   const query = queryIndex === -1 ? "" : rawLocation.slice(queryIndex + 1);
 
   if (path === "/study") {
+    const params = safeParams(query);
     return {
       route: "/study",
       studyScope: parseStudyScopeQuery(query),
       attemptId: null,
       practiceMode: null,
-      conceptId: null,
+      conceptId: params.get("concept")?.trim() || null,
     };
   }
 
@@ -76,7 +77,8 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
   }
 
   if (path === "/practice") {
-    const mode = safeParams(query).get("mode");
+    const params = safeParams(query);
+    const mode = params.get("mode");
     return {
       route: "/practice",
       studyScope: DEFAULT_STUDY_SCOPE,
@@ -88,7 +90,7 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
         mode === "calculations"
           ? mode
           : null,
-      conceptId: null,
+      conceptId: params.get("concept")?.trim() || null,
     };
   }
 

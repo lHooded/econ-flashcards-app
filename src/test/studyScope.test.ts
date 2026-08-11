@@ -203,6 +203,24 @@ describe("study scope predicates", () => {
     ).toBe("new-3");
   });
 
+  it("keeps concept-focused Study inside the linked card set", () => {
+    const cards = [card("linked-a", 1), card("linked-b", 2), card("unrelated", 3)];
+    const scheduler = snapshot([
+      state("linked-a", "unseen"),
+      state("linked-b", "unseen"),
+      state("unrelated", "unseen"),
+    ]);
+    const result = selectScopedNextCard({
+      cards,
+      scheduler,
+      scope: scope("smart"),
+      candidateCardIds: new Set(["linked-a", "linked-b"]),
+      nowMs: NOW,
+    });
+    expect(["linked-a", "linked-b"]).toContain(result.selection?.card.id);
+    expect(result.selection?.card.id).not.toBe("unrelated");
+  });
+
   it("does not let Due introduce unseen or future-due cards", () => {
     const cards = [card("unseen", 1), card("due", 2), card("future", 3)];
     const scheduler = snapshot([

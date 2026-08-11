@@ -31,7 +31,7 @@ export function deriveCardPrerequisiteReadiness(
         const concept = knowledgeConceptById.get(conceptId);
         return (
           concept?.prerequisites.every((prerequisiteId) =>
-            isConceptReady(prerequisiteId, statuses),
+            isPrerequisiteNonBlockingForScheduler(prerequisiteId, statuses),
           ) ?? true
         );
       });
@@ -40,7 +40,14 @@ export function deriveCardPrerequisiteReadiness(
   );
 }
 
-export function isConceptReady(conceptId: string, statuses: ConceptStatusMap): boolean {
+/**
+ * Scheduler guidance only. A background concept with no reviewable card cannot
+ * block a canonical card from ever being selected.
+ */
+export function isPrerequisiteNonBlockingForScheduler(
+  conceptId: string,
+  statuses: ConceptStatusMap,
+): boolean {
   // A concept with no linked card has no review evidence to wait for. It is
   // treated as an introduced background assumption, preventing deadlock.
   const concept = knowledgeConceptById.get(conceptId);
@@ -50,20 +57,39 @@ export function isConceptReady(conceptId: string, statuses: ConceptStatusMap): b
   return statuses.get(conceptId) !== "unseen";
 }
 
+/** Learner-facing curriculum semantics: no-card foundations still need teaching. */
+export function conceptNeedsFoundationLearning(
+  conceptId: string,
+  statuses: ConceptStatusMap,
+): boolean {
+  const concept = knowledgeConceptById.get(conceptId);
+  if (concept === undefined || concept.linkedCardIds.length === 0) return true;
+  return statuses.get(conceptId) !== "solid";
+}
+
+export function deriveFoundationCurriculum(
+  topologicalOrder: readonly string[],
+  statuses: ConceptStatusMap,
+): readonly string[] {
+  return Object.freeze(
+    topologicalOrder.filter(
+      (conceptId) =>
+        knowledgeConceptById.get(conceptId)?.tags.includes("foundation") === true &&
+        conceptNeedsFoundationLearning(conceptId, statuses),
+    ),
+  );
+}
+
+/** Backwards-compatible single recommendation for existing callers. */
 export function deriveFoundationLearningPath(
   topologicalOrder: readonly string[],
   statuses: ConceptStatusMap,
 ): string | null {
-  return (
-    topologicalOrder.find((conceptId) => {
-      const concept = knowledgeConceptById.get(conceptId);
-      return (
-        concept?.tags.includes("foundation") === true &&
-        !isConceptReady(conceptId, statuses)
-      );
-    }) ?? null
-  );
+  return deriveFoundationCurriculum(topologicalOrder, statuses)[0] ?? null;
 }
+
+/** @deprecated Use the explicit scheduler/curriculum functions above. */
+export const isConceptReady = isPrerequisiteNonBlockingForScheduler;
 
 function deriveStatusForConcept(
   concept: KnowledgeConcept,

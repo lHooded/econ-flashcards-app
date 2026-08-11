@@ -13,10 +13,12 @@ export function KnowledgeSheet({
   stack,
   choiceIds,
   disclosure,
+  blockedLabel,
 }: {
   readonly stack: readonly string[];
   readonly choiceIds: readonly string[];
   readonly disclosure: KnowledgeDisclosure;
+  readonly blockedLabel: string | null;
 }) {
   const { pushConcept, chooseConcept, backConcept, closeConcept } = useKnowledge();
   const dialogRef = useRef<HTMLElement>(null);
@@ -24,9 +26,12 @@ export function KnowledgeSheet({
     stack.length > 0 ? knowledgeConceptById.get(stack[stack.length - 1]) : undefined;
   const conceptId = concept?.id;
   useEffect(() => {
-    if (conceptId !== undefined || choiceIds.length > 0) dialogRef.current?.focus();
-  }, [choiceIds.length, conceptId]);
-  if (concept === undefined && choiceIds.length === 0) return null;
+    if (conceptId !== undefined || choiceIds.length > 0 || blockedLabel !== null) {
+      dialogRef.current?.focus();
+    }
+  }, [blockedLabel, choiceIds.length, conceptId]);
+  if (concept === undefined && choiceIds.length === 0 && blockedLabel === null)
+    return null;
 
   return (
     <div
@@ -59,7 +64,18 @@ export function KnowledgeSheet({
             ×
           </button>
         </div>
-        {choiceIds.length > 0 ? (
+        {blockedLabel !== null ? (
+          <div className="knowledge-choice-dialog">
+            <p className="eyebrow">Term lookup</p>
+            <h2 id="knowledge-sheet-title">
+              Explanation unavailable before your answer
+            </h2>
+            <p className="knowledge-blocked-message" role="alert">
+              <strong>{blockedLabel}</strong> is part of what this question is testing.
+              Its explanation will unlock after you answer.
+            </p>
+          </div>
+        ) : choiceIds.length > 0 ? (
           <div className="knowledge-choice-dialog">
             <p className="eyebrow">Term lookup</p>
             <h2 id="knowledge-sheet-title">Which concept did you mean?</h2>
@@ -111,12 +127,18 @@ export function ConceptArticle({
       </p>
       <h2 id="knowledge-sheet-title">{concept.name}</h2>
       <p className="knowledge-summary">
-        <KnowledgeText text={concept.summary} disclosure={disclosure} />
+        <KnowledgeText
+          text={concept.summary}
+          disclosure={disclosure === "preview" ? "disabled" : disclosure}
+        />
       </p>
       <section>
         <h3>Intuition</h3>
         <p>
-          <KnowledgeText text={concept.intuition} disclosure={disclosure} />
+          <KnowledgeText
+            text={concept.intuition}
+            disclosure={disclosure === "preview" ? "disabled" : disclosure}
+          />
         </p>
       </section>
       {disclosure === "preview" ? (
@@ -211,39 +233,75 @@ export function ConceptArticle({
           )}
         </>
       )}
-      <ConceptLinks
-        title="What you should know first"
-        ids={concept.prerequisites}
-        onNavigate={onNavigate}
-        disclosure={disclosure}
-      />
-      <ConceptLinks
-        title="What this unlocks"
-        ids={dependants}
-        onNavigate={onNavigate}
-        disclosure={disclosure}
-      />
-      <ConceptLinks
-        title="Related concepts"
-        ids={concept.relatedConcepts}
-        onNavigate={onNavigate}
-        disclosure={disclosure}
-      />
-      <section>
-        <h3>Course sources</h3>
-        <ul className="knowledge-source-list">
-          {concept.sourceRefs.map((sourceRef) => (
-            <li key={`${sourceRef.sourceId}-${sourceRef.page}-${sourceRef.note}`}>
-              <span>
-                {sourceLabels.get(sourceRef.sourceId) ?? sourceRef.sourceId}, p.{" "}
-                {sourceRef.page}
-              </span>
-              <small>{sourceRef.note}</small>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {disclosure === "full" && (
+        <>
+          <ConceptLinks
+            title="What you should know first"
+            ids={concept.prerequisites}
+            onNavigate={onNavigate}
+            disclosure={disclosure}
+          />
+          <ConceptLinks
+            title="What this unlocks"
+            ids={dependants}
+            onNavigate={onNavigate}
+            disclosure={disclosure}
+          />
+          <ConceptLinks
+            title="Related concepts"
+            ids={concept.relatedConcepts}
+            onNavigate={onNavigate}
+            disclosure={disclosure}
+          />
+          <ConceptStudyActions concept={concept} />
+        </>
+      )}
+      {disclosure === "full" && (
+        <section>
+          <h3>Course sources</h3>
+          <ul className="knowledge-source-list">
+            {concept.sourceRefs.map((sourceRef) => (
+              <li key={`${sourceRef.sourceId}-${sourceRef.page}-${sourceRef.note}`}>
+                <span>
+                  {sourceLabels.get(sourceRef.sourceId) ?? sourceRef.sourceId}, p.{" "}
+                  {sourceRef.page}
+                </span>
+                <small>{sourceRef.note}</small>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </article>
+  );
+}
+
+function ConceptStudyActions({ concept }: { readonly concept: KnowledgeConcept }) {
+  if (concept.linkedCardIds.length === 0 && concept.linkedQuestionIds.length === 0) {
+    return null;
+  }
+  return (
+    <section className="knowledge-study-actions">
+      <h3>Use this concept in practice</h3>
+      <div className="button-row">
+        {concept.linkedCardIds.length > 0 && (
+          <a
+            className="secondary-button"
+            href={"#/study?concept=" + encodeURIComponent(concept.id)}
+          >
+            Study linked cards
+          </a>
+        )}
+        {concept.linkedQuestionIds.length > 0 && (
+          <a
+            className="secondary-button"
+            href={"#/practice?mode=mcq&concept=" + encodeURIComponent(concept.id)}
+          >
+            Practise linked questions
+          </a>
+        )}
+      </div>
+    </section>
   );
 }
 

@@ -68,8 +68,15 @@ export interface KnowledgeSource {
   readonly description: string;
 }
 
+export interface KnowledgeCardConceptEntry {
+  readonly cardId: string;
+  readonly conceptIds: readonly string[];
+}
+
 export interface KnowledgeContentMap {
   readonly cards: Readonly<Record<string, readonly string[]>>;
+  readonly entries: readonly KnowledgeCardConceptEntry[];
+  readonly fallbackMappings: number;
 }
 
 export interface KnowledgeTermMatch {

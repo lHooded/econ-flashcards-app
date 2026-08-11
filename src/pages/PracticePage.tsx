@@ -8,6 +8,8 @@ import type { NewReviewEvent, ReviewRating } from "../domain/progress";
 import { QuestionStimulus } from "../components/stimulus/QuestionStimulus";
 import { GeneratedCalculationLab } from "../components/calculations/GeneratedCalculationLab";
 import { KnowledgeText } from "../components/knowledge/KnowledgeText";
+import { cardConceptMap } from "../knowledge/contentMap";
+import { knowledgeConceptById } from "../knowledge/data";
 
 type PracticeMode = "mcq" | "stimulus" | "written" | "calculations";
 type CalculationPracticeSubmode = "generated" | "authored";
@@ -16,9 +18,12 @@ type PracticeSavePhase = "answering" | "revealed" | "pending_save" | "completed"
 
 export function PracticePage({
   initialMode,
+  initialConceptId,
 }: {
   readonly initialMode: PracticeMode | null;
+  readonly initialConceptId?: string | null;
 }) {
+  const resolvedConceptId = initialConceptId ?? null;
   const [mode, setMode] = useState<PracticeMode | null>(initialMode);
   const [calculationSubmode, setCalculationSubmode] =
     useState<CalculationPracticeSubmode>("generated");
@@ -37,13 +42,18 @@ export function PracticePage({
       <PracticeOverview
         onChoose={(next) => {
           setMode(next);
-          window.location.hash = `#/practice?mode=${next}`;
+          const conceptQuery =
+            resolvedConceptId === null
+              ? ""
+              : "&concept=" + encodeURIComponent(resolvedConceptId);
+          window.location.hash = "#/practice?mode=" + next + conceptQuery;
         }}
       />
     );
   return (
     <PracticeSession
       mode={mode}
+      conceptId={resolvedConceptId}
       calculationSubmode={calculationSubmode}
       setCalculationSubmode={setCalculationSubmode}
       chapter={chapter}
@@ -142,6 +152,7 @@ function PracticeModeCard({
 
 interface PracticeSessionProps {
   readonly mode: PracticeMode;
+  readonly conceptId: string | null;
   readonly calculationSubmode: CalculationPracticeSubmode;
   readonly setCalculationSubmode: (value: CalculationPracticeSubmode) => void;
   readonly chapter: number | null;
@@ -159,6 +170,7 @@ interface PracticeSessionProps {
 
 function PracticeSession({
   mode,
+  conceptId,
   calculationSubmode,
   setCalculationSubmode,
   chapter,
@@ -185,6 +197,16 @@ function PracticeSession({
   const pendingWrittenPayload = useRef<NewReviewEvent | null>(null);
   const isGeneratedCalculations =
     mode === "calculations" && calculationSubmode === "generated";
+  const conceptQuestionIds = useMemo(() => {
+    if (conceptId === null) return undefined;
+    const concept = knowledgeConceptById.get(conceptId);
+    return new Set(concept?.linkedQuestionIds ?? []);
+  }, [conceptId]);
+  const conceptCardIds = useMemo(() => {
+    if (conceptId === null) return undefined;
+    const concept = knowledgeConceptById.get(conceptId);
+    return new Set(concept?.linkedCardIds ?? []);
+  }, [conceptId]);
 
   const questions = useMemo(
     () =>
@@ -194,19 +216,22 @@ function PracticeSession({
           mode === "calculations" ? "calculation" : mode === "stimulus" ? "all" : style,
         stimulus,
         stimuliOnly: mode === "stimulus",
+        questionIds: conceptQuestionIds,
         size,
         seed,
       }),
-    [chapter, mode, seed, size, stimulus, style],
+    [chapter, conceptQuestionIds, mode, seed, size, stimulus, style],
   );
   const question = questions[index];
   const writtenCards = useMemo(
     () =>
       cards.filter(
         (card) =>
-          card.choices === undefined && (chapter === null || card.chapter === chapter),
+          card.choices === undefined &&
+          (chapter === null || card.chapter === chapter) &&
+          (conceptCardIds?.has(card.id) ?? true),
       ),
-    [chapter],
+    [chapter, conceptCardIds],
   );
   const writtenCard = writtenCards[index % Math.max(1, writtenCards.length)];
 
@@ -220,7 +245,7 @@ function PracticeSession({
     setWrittenRevealed(false);
     setWrittenPhase("answering");
     pendingWrittenPayload.current = null;
-  }, [mode, calculationSubmode, seed, chapter, style, stimulus, size]);
+  }, [mode, calculationSubmode, seed, chapter, style, stimulus, size, conceptId]);
 
   const submitMcq = useCallback(async () => {
     if (question === undefined || selected === null || mcqPhase !== "answering") return;
@@ -519,6 +544,9 @@ function PracticeSession({
       {mode === "written" ? (
         <WrittenResponse
           card={writtenCard}
+          testedConceptIds={
+            writtenCard === undefined ? [] : (cardConceptMap[writtenCard.id] ?? [])
+          }
           text={writtenText}
           setText={setWrittenText}
           revealed={writtenRevealed}
@@ -538,6 +566,7 @@ function PracticeSession({
       ) : (
         <PracticeMcq
           question={question}
+          testedConceptIds={cardConceptMap[question.reviewCardId] ?? []}
           index={index}
           total={questions.length}
           selected={selected}
@@ -563,8 +592,9 @@ function isEditablePracticeTarget(target: EventTarget | null): boolean {
   );
 }
 
-function PracticeMcq({
+export function PracticeMcq({
   question,
+  testedConceptIds,
   index,
   total,
   selected,
@@ -578,6 +608,7 @@ function PracticeMcq({
   onNext,
 }: {
   readonly question: ExamQuestion;
+  readonly testedConceptIds: readonly string[];
   readonly index: number;
   readonly total: number;
   readonly selected: number | null;
@@ -603,7 +634,11 @@ function PracticeMcq({
       </div>
       <QuestionStimulus stimulus={question.stimulus} />
       <h2 className="mock-stem">
-        <KnowledgeText text={question.stem} disclosure="preview" />
+        <KnowledgeText
+          text={question.stem}
+          disclosure={saved ? "full" : "preview"}
+          testedConceptIds={saved ? [] : testedConceptIds}
+        />
       </h2>
       <fieldset className="choice-list">
         <legend>Select an answer, then submit to reveal feedback.</legend>
@@ -676,6 +711,7 @@ function PracticeMcq({
 
 function WrittenResponse({
   card,
+  testedConceptIds,
   text,
   setText,
   revealed,
@@ -688,6 +724,7 @@ function WrittenResponse({
   error,
 }: {
   readonly card: (typeof cards)[number] | undefined;
+  readonly testedConceptIds: readonly string[];
   readonly text: string;
   readonly setText: (value: string) => void;
   readonly revealed: boolean;
@@ -712,7 +749,11 @@ function WrittenResponse({
         <span>{card.topic}</span>
       </div>
       <h2>
-        <KnowledgeText text={card.front} disclosure="preview" />
+        <KnowledgeText
+          text={card.front}
+          disclosure={revealed ? "full" : "preview"}
+          testedConceptIds={revealed ? [] : testedConceptIds}
+        />
       </h2>
       <label className="field-label" htmlFor="written-answer">
         Your working{" "}

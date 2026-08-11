@@ -5,6 +5,7 @@ import { KnowledgeText } from "./knowledge/KnowledgeText";
 
 interface StudyCardProps {
   readonly card: Flashcard;
+  readonly testedConceptIds?: readonly string[];
   readonly onSubmitReview: (input: Omit<NewReviewEvent, "cardId">) => Promise<void>;
   readonly onFinish: () => void;
   readonly onPhaseChange?: (phase: StudyCardPhase) => void;
@@ -20,6 +21,7 @@ function modeForCard(card: Flashcard): NewReviewEvent["mode"] {
 
 export function StudyCard({
   card,
+  testedConceptIds,
   onSubmitReview,
   onFinish,
   onPhaseChange,
@@ -245,7 +247,11 @@ export function StudyCard({
           : "Keyboard: Space / Enter reveal · 1–3 rate"}
       </p>
       <h2 id={`card-${card.id}-prompt`} className="study-prompt">
-        <KnowledgeText text={card.front} disclosure="preview" />
+        <KnowledgeText
+          text={card.front}
+          disclosure={revealed ? "full" : "preview"}
+          testedConceptIds={revealed ? [] : testedConceptIds}
+        />
       </h2>
 
       {isMcq && card.choices !== undefined && card.correctChoice !== undefined ? (

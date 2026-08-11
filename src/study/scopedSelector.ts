@@ -35,6 +35,8 @@ export interface SelectScopedNextCardInput {
   readonly nowMs: number;
   readonly recentlyShownCardIds?: readonly string[];
   readonly studyAhead?: boolean;
+  /** Optional user-directed concept focus; always intersected with scope. */
+  readonly candidateCardIds?: ReadonlySet<string>;
   readonly newCardPrerequisiteReadyByCardId?: ReadonlyMap<string, boolean>;
 }
 
@@ -46,8 +48,10 @@ export function selectScopedNextCard(
   input: SelectScopedNextCardInput,
 ): ScopedNextCardSelection {
   const statesById = input.scheduler.stateByCardId;
-  const contentCards = input.cards.filter((card) =>
-    contentMatchesStudyScope(card, input.scope),
+  const contentCards = input.cards.filter(
+    (card) =>
+      contentMatchesStudyScope(card, input.scope) &&
+      (input.candidateCardIds?.has(card.id) ?? true),
   );
   const matchingCards = contentCards.filter((card) =>
     matchesStudyScope(card, statesById[card.id], input.scope),

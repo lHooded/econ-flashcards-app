@@ -10,6 +10,7 @@ import {
   KnowledgeContext,
   type KnowledgeContextValue,
   type KnowledgeDisclosure,
+  type KnowledgeLookupOptions,
 } from "./KnowledgeContext";
 import { knowledgeConceptById } from "./data";
 
@@ -17,6 +18,7 @@ export function KnowledgeProvider({ children }: PropsWithChildren) {
   const [stack, setStack] = useState<readonly string[]>([]);
   const [choiceIds, setChoiceIds] = useState<readonly string[]>([]);
   const [disclosure, setDisclosure] = useState<KnowledgeDisclosure>("full");
+  const [blockedLabel, setBlockedLabel] = useState<string | null>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const stackRef = useRef<readonly string[]>([]);
 
@@ -25,11 +27,22 @@ export function KnowledgeProvider({ children }: PropsWithChildren) {
   }, [stack]);
 
   const openConcept = useCallback(
-    (conceptId: string, nextDisclosure: KnowledgeDisclosure = "full") => {
+    (
+      conceptId: string,
+      nextDisclosure: KnowledgeDisclosure = "full",
+      options: KnowledgeLookupOptions = {},
+    ) => {
       if (!knowledgeConceptById.has(conceptId)) return;
+      if (
+        nextDisclosure === "preview" &&
+        options.testedConceptIds?.includes(conceptId)
+      ) {
+        return;
+      }
       previousFocus.current =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setChoiceIds([]);
+      setBlockedLabel(null);
       setDisclosure(nextDisclosure);
       setStack([conceptId]);
     },
@@ -37,13 +50,23 @@ export function KnowledgeProvider({ children }: PropsWithChildren) {
   );
 
   const openConceptChoices = useCallback(
-    (conceptIds: readonly string[], nextDisclosure: KnowledgeDisclosure = "full") => {
-      const validIds = conceptIds.filter((conceptId) =>
-        knowledgeConceptById.has(conceptId),
+    (
+      conceptIds: readonly string[],
+      nextDisclosure: KnowledgeDisclosure = "full",
+      options: KnowledgeLookupOptions = {},
+    ) => {
+      const validIds = conceptIds.filter(
+        (conceptId) =>
+          knowledgeConceptById.has(conceptId) &&
+          !(
+            nextDisclosure === "preview" &&
+            options.testedConceptIds?.includes(conceptId)
+          ),
       );
       if (validIds.length === 0) return;
       previousFocus.current =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      setBlockedLabel(null);
       setDisclosure(nextDisclosure);
       setStack([]);
       setChoiceIds(validIds);
@@ -51,20 +74,41 @@ export function KnowledgeProvider({ children }: PropsWithChildren) {
     [],
   );
 
+  const openBlockedTerm = useCallback((label: string) => {
+    previousFocus.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setStack([]);
+    setChoiceIds([]);
+    setDisclosure("preview");
+    setBlockedLabel(label);
+  }, []);
+
   const chooseConcept = useCallback((conceptId: string) => {
     if (!knowledgeConceptById.has(conceptId)) return;
     setChoiceIds([]);
+    setBlockedLabel(null);
     setStack([conceptId]);
   }, []);
 
   const pushConcept = useCallback(
-    (conceptId: string, nextDisclosure: KnowledgeDisclosure = "full") => {
+    (
+      conceptId: string,
+      nextDisclosure: KnowledgeDisclosure = "full",
+      options: KnowledgeLookupOptions = {},
+    ) => {
       if (!knowledgeConceptById.has(conceptId)) return;
+      if (
+        nextDisclosure === "preview" &&
+        options.testedConceptIds?.includes(conceptId)
+      ) {
+        return;
+      }
       if (stackRef.current.length === 0) {
         previousFocus.current =
           document.activeElement instanceof HTMLElement ? document.activeElement : null;
       }
       setChoiceIds([]);
+      setBlockedLabel(null);
       setStack((current) =>
         current.includes(conceptId)
           ? [...current.slice(0, current.indexOf(conceptId) + 1)]
@@ -78,6 +122,7 @@ export function KnowledgeProvider({ children }: PropsWithChildren) {
   const closeConcept = useCallback(() => {
     setStack([]);
     setChoiceIds([]);
+    setBlockedLabel(null);
     window.setTimeout(() => previousFocus.current?.focus(), 0);
   }, []);
 
@@ -90,7 +135,7 @@ export function KnowledgeProvider({ children }: PropsWithChildren) {
   }, [choiceIds.length, closeConcept, stack.length]);
 
   useEffect(() => {
-    if (stack.length === 0 && choiceIds.length === 0) return;
+    if (stack.length === 0 && choiceIds.length === 0 && blockedLabel === null) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -99,12 +144,13 @@ export function KnowledgeProvider({ children }: PropsWithChildren) {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [choiceIds.length, closeConcept, stack.length]);
+  }, [blockedLabel, choiceIds.length, closeConcept, stack.length]);
 
   const value: KnowledgeContextValue = {
     openConcept,
     openConceptChoices,
     pushConcept,
+    openBlockedTerm,
     chooseConcept,
     backConcept,
     closeConcept,
@@ -113,7 +159,12 @@ export function KnowledgeProvider({ children }: PropsWithChildren) {
   return (
     <KnowledgeContext.Provider value={value}>
       {children}
-      <KnowledgeSheet stack={stack} choiceIds={choiceIds} disclosure={disclosure} />
+      <KnowledgeSheet
+        stack={stack}
+        choiceIds={choiceIds}
+        disclosure={disclosure}
+        blockedLabel={blockedLabel}
+      />
     </KnowledgeContext.Provider>
   );
 }

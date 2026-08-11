@@ -11,7 +11,7 @@ import { getKnowledgeTags, searchKnowledge } from "../knowledge/search";
 import { getLearningPath, prerequisiteTopologicalOrder } from "../knowledge/graph";
 import {
   deriveConceptStatuses,
-  deriveFoundationLearningPath,
+  deriveFoundationCurriculum,
 } from "../knowledge/mastery";
 import type { KnowledgeConceptStatus } from "../knowledge/model";
 
@@ -68,11 +68,16 @@ export function KnowledgePage({
       .slice(0, 80);
   }, [browse, chapter, query, searchResults, tag]);
   const selectedPath = selected === undefined ? [] : getLearningPath(selected.id);
-  const nextLearningId =
-    selectedPath.find((id) => statuses.get(id) !== "solid") ??
-    deriveFoundationLearningPath(prerequisiteTopologicalOrder, statuses);
-  const nextLearning =
-    nextLearningId === null ? undefined : knowledgeConceptById.get(nextLearningId);
+  const foundationCurriculum = useMemo(
+    () => deriveFoundationCurriculum(prerequisiteTopologicalOrder, statuses),
+    [statuses],
+  );
+  const selectedFoundationIndex =
+    selectedId === null ? -1 : foundationCurriculum.indexOf(selectedId);
+  const foundationIndex = selectedFoundationIndex >= 0 ? selectedFoundationIndex : 0;
+  const foundationId = foundationCurriculum[foundationIndex] ?? null;
+  const foundationConcept =
+    foundationId === null ? undefined : knowledgeConceptById.get(foundationId);
 
   const openConcept = (conceptId: string) => {
     if (knowledgeConceptById.has(conceptId))
@@ -93,7 +98,11 @@ export function KnowledgePage({
         </div>
         <a
           className="primary-button heading-action"
-          href="#/knowledge?concept=percentage"
+          href={
+            foundationId === null
+              ? "#/knowledge"
+              : "#/knowledge?concept=" + encodeURIComponent(foundationId)
+          }
         >
           Learn from foundations
         </a>
@@ -243,38 +252,75 @@ export function KnowledgePage({
           )}
         </main>
       </div>
-      {nextLearning !== undefined && (
+      {foundationConcept !== undefined && (
         <section className="foundation-callout panel">
           <div>
             <p className="section-kicker">Learn from foundations</p>
-            <h2>Next up: {nextLearning.name}</h2>
+            <h2>
+              Foundation {foundationIndex + 1} of {foundationCurriculum.length}:{" "}
+              {foundationConcept.name}
+            </h2>
             <p>
-              <strong>{nextLearning.summary}</strong> {nextLearning.intuition}
+              <strong>{foundationConcept.summary}</strong> {foundationConcept.intuition}
             </p>
             <p className="muted-text">
-              This choice follows the prerequisite order and uses the existing review
-              system when you open linked study material.
+              This is a deterministic prerequisite-respecting curriculum. Reading is not
+              recorded as mastery; linked cards and questions use the existing review
+              evidence system.
+              {foundationConcept.linkedCardIds.length === 0
+                ? " This background concept has no direct review card, so it remains available for manual learning."
+                : ""}
             </p>
           </div>
           <div className="button-row">
             <button
+              className="secondary-button"
+              type="button"
+              disabled={foundationIndex === 0}
+              onClick={() => {
+                const previous = foundationCurriculum[foundationIndex - 1];
+                if (previous !== undefined) openConcept(previous);
+              }}
+            >
+              Previous foundation
+            </button>
+            <button
               className="primary-button"
               type="button"
-              onClick={() => openConcept(nextLearning.id)}
+              onClick={() => openConcept(foundationConcept.id)}
             >
-              Read the short explanation
+              Read explanation
             </button>
-            {nextLearning.linkedCardIds.length > 0 && (
+            <button
+              className="secondary-button"
+              type="button"
+              disabled={foundationIndex >= foundationCurriculum.length - 1}
+              onClick={() => {
+                const next = foundationCurriculum[foundationIndex + 1];
+                if (next !== undefined) openConcept(next);
+              }}
+            >
+              Next foundation
+            </button>
+            {foundationConcept.linkedCardIds.length > 0 && (
               <a
                 className="secondary-button"
-                href={`#/study?chapter=${nextLearning.chapters[0]}`}
+                href={"#/study?concept=" + encodeURIComponent(foundationConcept.id)}
               >
                 Study linked cards
               </a>
             )}
-            <a className="secondary-button" href="#/practice?mode=mcq">
-              Practise a question
-            </a>
+            {foundationConcept.linkedQuestionIds.length > 0 && (
+              <a
+                className="secondary-button"
+                href={
+                  "#/practice?mode=mcq&concept=" +
+                  encodeURIComponent(foundationConcept.id)
+                }
+              >
+                Practise linked questions
+              </a>
+            )}
           </div>
         </section>
       )}

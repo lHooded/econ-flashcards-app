@@ -7,6 +7,8 @@ export interface KnowledgeValidationInput {
   readonly cards: readonly Flashcard[];
   readonly questions: readonly ExamQuestion[];
   readonly cardConceptMap: KnowledgeContentMap["cards"];
+  readonly cardConceptEntries: KnowledgeContentMap["entries"];
+  readonly fallbackMappings: number;
   readonly sources: readonly KnowledgeSource[];
 }
 
@@ -20,11 +22,15 @@ export interface KnowledgeValidationStats {
   readonly chapterCoverage: Readonly<Record<number, number>>;
   readonly cardsMapped: number;
   readonly totalCards: number;
+  readonly explicitCardMappings: number;
+  readonly fallbackMappings: number;
   readonly questionsMapped: number;
   readonly totalQuestions: number;
   readonly conceptsWithLectureSource: number;
   readonly conceptsWithTextbookSource: number;
   readonly conceptsWithoutSources: number;
+  readonly conceptsWithLinkedCanonicalCards: number;
+  readonly conceptsWithoutLinkedCanonicalCards: number;
   readonly ambiguousInlineAliases: number;
   readonly cycles: number;
 }
@@ -179,6 +185,37 @@ export function validateKnowledgeGraph(
     }
   }
 
+  if (!Number.isInteger(input.fallbackMappings) || input.fallbackMappings !== 0) {
+    issues.push("production card mappings must not use chapter/topic fallbacks");
+  }
+
+  const mappingEntryIds = new Set<string>();
+  for (const entry of input.cardConceptEntries) {
+    if (mappingEntryIds.has(entry.cardId)) {
+      issues.push(`duplicate explicit card mapping "${entry.cardId}"`);
+    }
+    mappingEntryIds.add(entry.cardId);
+    if (!cardIds.has(entry.cardId)) {
+      issues.push(`explicit mapping contains unknown card "${entry.cardId}"`);
+    }
+    const mapValue = input.cardConceptMap[entry.cardId];
+    if (mapValue === undefined) {
+      issues.push(`explicit mapping "${entry.cardId}" is missing from the card map`);
+    } else if (!sameStringArray(mapValue, entry.conceptIds)) {
+      issues.push(`explicit mapping "${entry.cardId}" disagrees with the card map`);
+    }
+  }
+  for (const cardId of cardIds) {
+    if (!mappingEntryIds.has(cardId)) {
+      issues.push(`canonical card "${cardId}" has no explicit mapping entry`);
+    }
+  }
+  if (input.cardConceptEntries.length !== cardIds.size) {
+    issues.push(
+      `explicit card mapping count is ${input.cardConceptEntries.length}, expected ${cardIds.size}`,
+    );
+  }
+
   for (const card of input.cards) {
     const mapped = input.cardConceptMap[card.id];
     if (mapped === undefined || mapped.length === 0)
@@ -193,6 +230,11 @@ export function validateKnowledgeGraph(
   }
   for (const cardId of Object.keys(input.cardConceptMap))
     if (!cardIds.has(cardId)) issues.push(`mapping contains unknown card "${cardId}"`);
+  if (Object.keys(input.cardConceptMap).length !== cardIds.size) {
+    issues.push(
+      `card map key count is ${Object.keys(input.cardConceptMap).length}, expected ${cardIds.size}`,
+    );
+  }
 
   for (const question of input.questions) {
     if (!cardIds.has(question.reviewCardId))
@@ -238,6 +280,10 @@ export function validateKnowledgeGraph(
       (card) => (input.cardConceptMap[card.id]?.length ?? 0) > 0,
     ).length,
     totalCards: input.cards.length,
+    explicitCardMappings: input.cardConceptEntries.filter((entry) =>
+      cardIds.has(entry.cardId),
+    ).length,
+    fallbackMappings: input.fallbackMappings,
     questionsMapped: input.questions.filter(
       (question) => (input.cardConceptMap[question.reviewCardId]?.length ?? 0) > 0,
     ).length,
@@ -246,6 +292,12 @@ export function validateKnowledgeGraph(
     conceptsWithTextbookSource,
     conceptsWithoutSources: input.concepts.filter(
       (concept) => concept.sourceRefs.length === 0,
+    ).length,
+    conceptsWithLinkedCanonicalCards: input.concepts.filter(
+      (concept) => concept.linkedCardIds.length > 0,
+    ).length,
+    conceptsWithoutLinkedCanonicalCards: input.concepts.filter(
+      (concept) => concept.linkedCardIds.length === 0,
     ).length,
     ambiguousInlineAliases: [...aliasToConceptIds.values()].filter(
       (ids) => ids.size > 1,
@@ -328,6 +380,12 @@ function normalise(value: string): string {
 
 function hasDuplicates(values: readonly string[]): boolean {
   return new Set(values).size !== values.length;
+}
+
+function sameStringArray(left: readonly string[], right: readonly string[]): boolean {
+  return (
+    left.length === right.length && left.every((value, index) => value === right[index])
+  );
 }
 
 function compareIds(left: string, right: string): number {

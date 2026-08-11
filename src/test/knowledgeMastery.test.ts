@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { cards } from "../data/deck";
 import {
+  conceptNeedsFoundationLearning,
   deriveCardPrerequisiteReadiness,
   deriveConceptStatuses,
+  deriveFoundationCurriculum,
   isConceptReady,
+  isPrerequisiteNonBlockingForScheduler,
 } from "../knowledge/mastery";
 import { knowledgeConceptById } from "../knowledge/data";
+import { prerequisiteTopologicalOrder } from "../knowledge/graph";
 import type { ExamSrsCardState } from "../study/examSrs/model";
 
 function state(
@@ -60,9 +64,43 @@ describe("derived concept readiness", () => {
 
   it("treats concepts with no linked card as introduced background, avoiding deadlock", () => {
     expect(knowledgeConceptById.get("percentage")?.linkedCardIds).toHaveLength(0);
-    expect(isConceptReady("percentage", new Map([["percentage", "unseen"]]))).toBe(
-      true,
-    );
+    const statuses = new Map([["percentage", "unseen" as const]]);
+    expect(isPrerequisiteNonBlockingForScheduler("percentage", statuses)).toBe(true);
+    expect(isConceptReady("percentage", statuses)).toBe(true);
+    expect(conceptNeedsFoundationLearning("percentage", statuses)).toBe(true);
+    expect(
+      deriveFoundationCurriculum(prerequisiteTopologicalOrder, statuses),
+    ).toContain("percentage");
+  });
+
+  it("does not treat learning or needs-work as finished foundation learning", () => {
+    const concept = knowledgeConceptById.get("growth-rate")!;
+    const learningStatuses = deriveConceptStatuses({
+      stateByCardId: Object.fromEntries([
+        [concept.linkedCardIds[0], state(concept.linkedCardIds[0], "learning")],
+      ]),
+    });
+    expect(learningStatuses.get("growth-rate")).toBe("learning");
+    expect(conceptNeedsFoundationLearning("growth-rate", learningStatuses)).toBe(true);
+
+    const needsWorkStatuses = deriveConceptStatuses({
+      stateByCardId: Object.fromEntries(
+        concept.linkedCardIds.map((id, index) => [
+          id,
+          state(id, index === 0 ? "weak" : "learned"),
+        ]),
+      ),
+    });
+    expect(needsWorkStatuses.get("growth-rate")).toBe("needs-work");
+    expect(conceptNeedsFoundationLearning("growth-rate", needsWorkStatuses)).toBe(true);
+
+    const solidStatuses = deriveConceptStatuses({
+      stateByCardId: Object.fromEntries(
+        concept.linkedCardIds.map((id) => [id, state(id, "learned")]),
+      ),
+    });
+    expect(solidStatuses.get("growth-rate")).toBe("solid");
+    expect(conceptNeedsFoundationLearning("growth-rate", solidStatuses)).toBe(false);
   });
 
   it("produces readiness for every card without removing any candidate", () => {

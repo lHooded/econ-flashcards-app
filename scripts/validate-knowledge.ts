@@ -1,7 +1,11 @@
 import rawSources from "../knowledge/sources.json";
 import { cards } from "../src/data/deck";
 import { examQuestions } from "../src/exam/questionBank";
-import { cardConceptMap } from "../src/knowledge/contentMap";
+import {
+  cardConceptEntries,
+  cardConceptMap,
+  cardConceptMappingStats,
+} from "../src/knowledge/contentMap";
 import { knowledgeConcepts } from "../src/knowledge/data";
 import type { KnowledgeSource } from "../src/knowledge/model";
 import { validateKnowledgeGraph } from "../src/knowledge/validate";
@@ -11,6 +15,8 @@ const stats = validateKnowledgeGraph({
   cards,
   questions: examQuestions,
   cardConceptMap,
+  cardConceptEntries,
+  fallbackMappings: cardConceptMappingStats.fallbackMappings,
   sources: rawSources as readonly KnowledgeSource[],
 });
 
@@ -23,11 +29,21 @@ console.log(`Foundation concepts: ${stats.foundationCount}`);
 console.log(`Maximum prerequisite depth: ${stats.maximumPrerequisiteDepth}`);
 console.log(`Cards mapped: ${stats.cardsMapped} / ${stats.totalCards}`);
 console.log(
+  `Explicit card mappings: ${stats.explicitCardMappings} / ${stats.totalCards}`,
+);
+console.log(`Production fallback mappings: ${stats.fallbackMappings}`);
+console.log(
   `Exam questions mapped: ${stats.questionsMapped} / ${stats.totalQuestions}`,
 );
 console.log(`Concepts with lecture source: ${stats.conceptsWithLectureSource}`);
 console.log(`Concepts with textbook source: ${stats.conceptsWithTextbookSource}`);
 console.log(`Concepts without source support: ${stats.conceptsWithoutSources}`);
+console.log(
+  `Concepts with linked canonical cards: ${stats.conceptsWithLinkedCanonicalCards}`,
+);
+console.log(
+  `Concepts without linked canonical cards: ${stats.conceptsWithoutLinkedCanonicalCards}`,
+);
 console.log(`Ambiguous inline aliases: ${stats.ambiguousInlineAliases}`);
 console.log(`Cycles: ${stats.cycles}`);
 console.log(

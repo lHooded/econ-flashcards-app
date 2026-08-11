@@ -70,7 +70,7 @@ function Application() {
   return (
     <AppShell route={route} error={error} onDismissError={clearError}>
       {route === "/study" ? (
-        <StudyPage scope={studyScope} />
+        <StudyPage scope={studyScope} conceptId={conceptId} />
       ) : route === "/settings" ? (
         <SettingsPage initialPairingCode={pairingCode} />
       ) : route === "/mock" ? (
@@ -78,7 +78,7 @@ function Application() {
       ) : route === "/mock/attempt" && attemptId !== null ? (
         <MockAttemptPage attemptId={attemptId} />
       ) : route === "/practice" ? (
-        <PracticePage initialMode={practiceMode} />
+        <PracticePage initialMode={practiceMode} initialConceptId={conceptId} />
       ) : route === "/knowledge" ? (
         <KnowledgePage initialConceptId={conceptId} />
       ) : (

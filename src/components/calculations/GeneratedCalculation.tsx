@@ -10,6 +10,7 @@ import type { GeneratedCalculationInstance } from "../../calculations/model";
 import { NumericAnswerInput } from "./NumericAnswerInput";
 import { QuestionStimulus } from "../stimulus/QuestionStimulus";
 import { KnowledgeText } from "../knowledge/KnowledgeText";
+import { cardConceptMap } from "../../knowledge/contentMap";
 
 type GeneratedCalculationPhase = "answering" | "pending_save" | "completed";
 
@@ -149,7 +150,13 @@ export function GeneratedCalculation({
       </p>
       <QuestionStimulus stimulus={instance.stimulus} />
       <h2 className="mock-stem">
-        <KnowledgeText text={instance.prompt} disclosure="preview" />
+        <KnowledgeText
+          text={instance.prompt}
+          disclosure={isCompleted ? "full" : "preview"}
+          testedConceptIds={
+            isCompleted ? [] : (cardConceptMap[instance.reviewCardId] ?? [])
+          }
+        />
       </h2>
       <NumericAnswerInput
         answer={instance.answer}
