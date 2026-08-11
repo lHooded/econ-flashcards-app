@@ -112,7 +112,8 @@ export const courseRecordsA = [
     intuition:
       "Flour sold to a bakery is part of the bread’s production chain; counting both flour and the bread at full value would double count the same chain.",
     explanation: [
-      "Intermediate status depends on use. A computer purchased by a firm for production can be an input, while a computer purchased by a household is final consumption in the GDP accounts.",
+      "Intermediate status depends on the item’s role and whether it is used up, transformed, or incorporated into another current product. Flour bought by a bakery and electricity used in current production are intermediate inputs because that production uses their services or output now.",
+      "A business purchase is not automatically an intermediate input. A durable computer bought by a firm and retained as a productive tool across periods is a capital good and, when newly produced, final output recorded as business fixed investment. A computer bought by a household is final consumption. The same physical item can therefore receive a different classification depending on its economic use.",
       "The value of intermediate inputs is captured indirectly through the final product or directly through each firm’s value added.",
     ],
     whyItMatters:
@@ -122,6 +123,15 @@ export const courseRecordsA = [
     sourceRefs: [
       L("lecture-w1-l1", 40, "Lecture definition of intermediate inputs."),
       T(20, "Textbook value-added table."),
+      L(
+        "lecture-w2-l2",
+        2,
+        "Investment as newly produced capital goods used in future production.",
+      ),
+    ],
+    misconceptions: [
+      "A good used by a business is not automatically an intermediate good: inputs used up now differ from durable capital retained for production across periods.",
+      "Buying a newly produced durable computer for ongoing business production is business fixed investment, not an intermediate input; buying a computer for household use is consumption.",
     ],
   }),
   c({

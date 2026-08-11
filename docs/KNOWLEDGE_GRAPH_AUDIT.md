@@ -84,6 +84,42 @@ The mapped course assets are the 349-card canonical deck, the 100 ordinary
 authored questions, the 30 authored stimulus questions, and 31 canonical MCQ
 adaptations (161 validated exam questions after assembly).
 
+## Focused beginner-content consistency audit
+
+On 2026-08-11, 93 unique concept articles across seven high-risk
+near-neighbour families were manually compared with the local lecture PDFs and
+the Playconomics textbook: national accounts (16), rates and prices (18),
+finance (16), labour-market classification (11), fiscal/saving (7),
+international macroeconomics (14), and growth (11). The audit concentrated on
+classification boundaries and direction/sign conventions rather than stylistic
+rewriting.
+
+The source pass used Week 1 Lecture 1 pp. 37–61 and Week 1 Lecture 2 pp. 2–29,
+Week 2 Lecture 2 pp. 2–3 and 45–81, Week 4 Lecture 2 pp. 5 and 20, Week 5
+Lecture 1 pp. 7–24 and 35–75, Week 5 Lecture 2 pp. 20–25, Week 8 Lecture 1
+pp. 8–12 and 30–50, Week 8 Lecture 2 pp. 2–22, and Week 9 pp. 3–9 and 26–69,
+with the corresponding textbook discussions on pp. 18–24, 29, 39–40, 56–61,
+84–87, 97–103, 150–151, 165–176, 243–260, and 273–295.
+
+One factual correction was required: `intermediate-good` no longer presents a
+durable computer bought by a firm for ongoing production as an intermediate
+input. The article now distinguishes flour used up by a bakery and electricity
+used in current production (intermediate inputs) from a durable computer kept
+as a productive tool across periods (a capital good and, when newly produced,
+business fixed investment/final output). A household computer is final
+consumption. The article explicitly states that business use alone does not
+determine intermediate status. Its sourceRefs retain Week 1 Lecture 1 p. 40
+and textbook p. 20, and now also cite Week 2 Lecture 2 p. 2 for the capital-good
+and investment distinction.
+
+The neighbouring `final-good`, `capital`, `macro-investment`, and `consumption`
+articles were checked against the same classification story and required no
+further correction. The remaining audited families were internally consistent;
+no additional concept text or graph edge was changed. The graph statistics and
+the 297-concept corpus are therefore unchanged. The regression is in
+`src/test/knowledgeContent.test.ts` and checks the durable-capital distinction,
+the aligned neighbouring concepts, and the three source references.
+
 ## Manual prerequisite chains inspected
 
 These paths were checked after graph construction; arrows point in learning
