@@ -6,8 +6,10 @@ import type { ExamQuestion } from "../exam/model";
 import { buildPracticeSet } from "../practice/selector";
 import type { NewReviewEvent, ReviewRating } from "../domain/progress";
 import { QuestionStimulus } from "../components/stimulus/QuestionStimulus";
+import { GeneratedCalculationLab } from "../components/calculations/GeneratedCalculationLab";
 
 type PracticeMode = "mcq" | "stimulus" | "written" | "calculations";
+type CalculationPracticeSubmode = "generated" | "authored";
 type StimulusFilter = "all" | "econ_graph" | "table" | "text";
 type PracticeSavePhase = "answering" | "revealed" | "pending_save" | "completed";
 
@@ -17,6 +19,8 @@ export function PracticePage({
   readonly initialMode: PracticeMode | null;
 }) {
   const [mode, setMode] = useState<PracticeMode | null>(initialMode);
+  const [calculationSubmode, setCalculationSubmode] =
+    useState<CalculationPracticeSubmode>("generated");
   const [chapter, setChapter] = useState<number | null>(null);
   const [style, setStyle] = useState<ExamQuestion["style"] | "all">("all");
   const [stimulus, setStimulus] = useState<StimulusFilter>("all");
@@ -39,6 +43,8 @@ export function PracticePage({
   return (
     <PracticeSession
       mode={mode}
+      calculationSubmode={calculationSubmode}
+      setCalculationSubmode={setCalculationSubmode}
       chapter={chapter}
       setChapter={setChapter}
       style={style}
@@ -96,7 +102,7 @@ function PracticeOverview({
         />
         <PracticeModeCard
           title="Calculations"
-          description="Work through authored calculation MCQs without attempting to parse arbitrary numeric answers."
+          description="Practise fresh generated numbers or switch to the unchanged authored calculation MCQs."
           onClick={() => onChoose("calculations")}
         />
       </div>
@@ -135,6 +141,8 @@ function PracticeModeCard({
 
 interface PracticeSessionProps {
   readonly mode: PracticeMode;
+  readonly calculationSubmode: CalculationPracticeSubmode;
+  readonly setCalculationSubmode: (value: CalculationPracticeSubmode) => void;
   readonly chapter: number | null;
   readonly setChapter: (value: number | null) => void;
   readonly style: ExamQuestion["style"] | "all";
@@ -150,6 +158,8 @@ interface PracticeSessionProps {
 
 function PracticeSession({
   mode,
+  calculationSubmode,
+  setCalculationSubmode,
   chapter,
   setChapter,
   style,
@@ -172,6 +182,8 @@ function PracticeSession({
   const [writtenRevealed, setWrittenRevealed] = useState(false);
   const [writtenPhase, setWrittenPhase] = useState<PracticeSavePhase>("answering");
   const pendingWrittenPayload = useRef<NewReviewEvent | null>(null);
+  const isGeneratedCalculations =
+    mode === "calculations" && calculationSubmode === "generated";
 
   const questions = useMemo(
     () =>
@@ -207,7 +219,7 @@ function PracticeSession({
     setWrittenRevealed(false);
     setWrittenPhase("answering");
     pendingWrittenPayload.current = null;
-  }, [mode, seed, chapter, style, stimulus, size]);
+  }, [mode, calculationSubmode, seed, chapter, style, stimulus, size]);
 
   const submitMcq = useCallback(async () => {
     if (question === undefined || selected === null || mcqPhase !== "answering") return;
@@ -316,6 +328,7 @@ function PracticeSession({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (isGeneratedCalculations) return;
       if (isEditablePracticeTarget(event.target)) return;
       if (mode !== "written") {
         if (/^[1-4]$/.test(event.key) && mcqPhase === "answering") {
@@ -346,6 +359,7 @@ function PracticeSession({
   }, [
     mcqPhase,
     mcqSaved,
+    isGeneratedCalculations,
     mode,
     nextMcq,
     nextWritten,
@@ -356,6 +370,22 @@ function PracticeSession({
     writtenPhase,
     writtenSaved,
   ]);
+
+  if (isGeneratedCalculations) {
+    return (
+      <GeneratedCalculationLab
+        chapter={chapter}
+        setChapter={setChapter}
+        size={size}
+        setSize={setSize}
+        seed={seed}
+        onNewSet={onNewSet}
+        onBack={onBack}
+        onUseAuthored={() => setCalculationSubmode("authored")}
+        recordReview={recordReview}
+      />
+    );
+  }
 
   return (
     <div className="page-stack practice-page">
@@ -383,6 +413,32 @@ function PracticeSession({
         </button>
       </section>
       <section className="panel practice-controls">
+        {mode === "calculations" && (
+          <div
+            className="generated-calculation-mode-tabs"
+            role="tablist"
+            aria-label="Calculation practice mode"
+          >
+            <button
+              className="secondary-button"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              disabled={controlsLocked}
+              onClick={() => setCalculationSubmode("generated")}
+            >
+              Generated numeric
+            </button>
+            <button
+              className="primary-button"
+              type="button"
+              role="tab"
+              aria-selected="true"
+            >
+              Authored MCQs
+            </button>
+          </div>
+        )}
         <label className="field-label">
           Chapter
           <select

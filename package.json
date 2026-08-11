@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "npm run validate:deck && npm run validate:exam-questions",
+    "prebuild": "npm run validate:deck && npm run validate:exam-questions && npm run validate:calculations",
     "build": "vite build",
     "preview": "vite preview",
     "validate:deck": "tsx scripts/validate-deck.ts",
     "validate:exam-questions": "tsx scripts/validate-exam-questions.ts",
+    "validate:calculations": "tsx scripts/validate-calculations.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"exam_questions/**/*.json\" eslint.config.js vite.config.ts vitest.config.ts package.json index.html README.md",
