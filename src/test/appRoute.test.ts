@@ -75,6 +75,17 @@ describe("hash routing", () => {
     });
   });
 
+  it("supports the Guided Cram route and current-concept deep link", () => {
+    expect(parseHashLocation("#/guided")).toMatchObject({
+      route: "/guided",
+      conceptId: null,
+    });
+    expect(parseHashLocation("#/guided?concept=percentage")).toMatchObject({
+      route: "/guided",
+      conceptId: "percentage",
+    });
+  });
+
   it("captures a pairing secret from the fragment and removes it from the visible URL", () => {
     const code = serializePairingCredential(createSyncGroupCredentials());
     window.history.replaceState({}, "", `/#/settings?pair=${encodeURIComponent(code)}`);

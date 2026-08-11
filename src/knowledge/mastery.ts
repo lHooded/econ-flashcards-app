@@ -1,19 +1,46 @@
 import type { Flashcard } from "../domain/content";
 import type { KnowledgeConcept, KnowledgeConceptStatus } from "./model";
 import type { ExamSrsCardState, ExamSrsSnapshot } from "../study/examSrs/model";
+import type { AppSettings, ReviewEvent } from "../domain/progress";
+import { deriveCardState, deriveReviewEvidence } from "../study/examSrs/deriveState";
 import { knowledgeConceptById, knowledgeConcepts } from "./data";
 import { cardConceptMap } from "./contentMap";
+import {
+  getGuidedCheckSkillsForConcept,
+  guidedKnowledgeCheckSkills,
+} from "./guided/checks";
 
 export type ConceptStatusMap = ReadonlyMap<string, KnowledgeConceptStatus>;
+
+export type GuidedCheckStateMap = Readonly<Record<string, ExamSrsCardState>>;
+
+export function deriveGuidedCheckStates(
+  reviews: readonly ReviewEvent[],
+  settings: AppSettings,
+  nowMs: number,
+): GuidedCheckStateMap {
+  return Object.fromEntries(
+    guidedKnowledgeCheckSkills.map((skill) => [
+      skill.id,
+      deriveCardState(
+        skill.id,
+        reviews.filter((review) => review.cardId === skill.id),
+        settings,
+        nowMs,
+      ),
+    ]),
+  );
+}
 
 export function deriveConceptStatuses(
   scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
   concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
+  guidedCheckStates: GuidedCheckStateMap = {},
 ): ConceptStatusMap {
   return new Map(
     concepts.map((concept) => [
       concept.id,
-      deriveStatusForConcept(concept, scheduler.stateByCardId),
+      deriveStatusForConcept(concept, scheduler.stateByCardId, guidedCheckStates),
     ]),
   );
 }
@@ -57,13 +84,50 @@ export function isPrerequisiteNonBlockingForScheduler(
   return statuses.get(conceptId) !== "unseen";
 }
 
+/**
+ * Guided progression uses a weaker, event-derived threshold than the
+ * learner-facing `solid` label. A positive retrieval attempt is enough to
+ * introduce a concept; it is not evidence that the concept is mastered.
+ */
+export function isConceptIntroducedEnough(
+  conceptId: string,
+  reviews: readonly ReviewEvent[],
+): boolean {
+  const concept = knowledgeConceptById.get(conceptId);
+  if (concept === undefined) return false;
+  const reviewIds =
+    concept.linkedCardIds.length > 0
+      ? new Set(concept.linkedCardIds)
+      : new Set(getGuidedCheckSkillsForConcept(conceptId).map((skill) => skill.id));
+  return reviews.some((review) => {
+    const evidence = deriveReviewEvidence(review);
+    return (
+      reviewIds.has(review.cardId) &&
+      evidence !== null &&
+      evidence.outcome !== "failure"
+    );
+  });
+}
+
+export function hasPositiveReviewEvidence(
+  cardId: string,
+  reviews: readonly ReviewEvent[],
+): boolean {
+  return reviews.some((review) => {
+    const evidence = deriveReviewEvidence(review);
+    return (
+      review.cardId === cardId && evidence !== null && evidence.outcome !== "failure"
+    );
+  });
+}
+
 /** Learner-facing curriculum semantics: no-card foundations still need teaching. */
 export function conceptNeedsFoundationLearning(
   conceptId: string,
   statuses: ConceptStatusMap,
 ): boolean {
   const concept = knowledgeConceptById.get(conceptId);
-  if (concept === undefined || concept.linkedCardIds.length === 0) return true;
+  if (concept === undefined) return true;
   return statuses.get(conceptId) !== "solid";
 }
 
@@ -94,9 +158,33 @@ export const isConceptReady = isPrerequisiteNonBlockingForScheduler;
 function deriveStatusForConcept(
   concept: KnowledgeConcept,
   statesByCardId: Readonly<Record<string, ExamSrsCardState>>,
+  guidedCheckStates: GuidedCheckStateMap,
 ): KnowledgeConceptStatus {
   if (concept.linkedCardIds.length === 0) {
-    return "unseen";
+    const skills = getGuidedCheckSkillsForConcept(concept.id);
+    const states = skills
+      .map((skill) => guidedCheckStates[skill.id])
+      .filter((state): state is ExamSrsCardState => state !== undefined);
+    if (states.length === 0 || states.every((state) => state.reviewCount === 0)) {
+      return "unseen";
+    }
+    if (
+      states.some(
+        (state) =>
+          state.learningState === "relearning" ||
+          state.learningState === "weak" ||
+          state.isDue,
+      )
+    ) {
+      return "needs-work";
+    }
+    if (
+      states.length === skills.length &&
+      states.every((state) => state.learningState === "learned")
+    ) {
+      return "solid";
+    }
+    return "learning";
   }
 
   const states = concept.linkedCardIds

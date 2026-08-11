@@ -231,6 +231,40 @@ function priorityFor(
   return priority;
 }
 
+/**
+ * Public read-only view of the same numeric priority used by normal Study.
+ * Guided Cram uses this only to compare an already-attempted guided check with
+ * the canonical selector; it does not maintain a second scheduler.
+ */
+export function getExamSrsPriority(input: {
+  readonly card: Flashcard;
+  readonly state: ExamSrsCardState;
+  readonly cards: readonly Flashcard[];
+  readonly scheduler: ExamSrsSnapshot;
+  readonly nowMs: number;
+  readonly overrideChapterZeroGate?: boolean;
+}): number {
+  return priorityFor(
+    input.card,
+    input.state,
+    input,
+    calculateCoverage(input.cards, input.scheduler.states),
+  );
+}
+
+/** The base/overdue part of Exam-SRS priority for non-canonical check skills. */
+export function getExamSrsStatePriority(
+  state: ExamSrsCardState,
+  nowMs: number,
+): number {
+  let priority = BASE_PRIORITY[state.learningState];
+  if (state.learningState !== "unseen" && state.isDue && state.dueAt !== null) {
+    const overdueHours = Math.max(0, (nowMs - Date.parse(state.dueAt)) / HOUR_MS);
+    priority += Math.min(400, overdueHours * 20);
+  }
+  return priority;
+}
+
 function calculateCoverage(
   cards: readonly Flashcard[],
   states: readonly ExamSrsCardState[],

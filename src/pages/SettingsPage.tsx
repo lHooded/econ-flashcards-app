@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useProgress } from "../app/progressContext";
 import { useSync } from "../app/syncContext";
-import { cardIds } from "../data/deck";
 import { SyncPanel } from "../components/sync/SyncPanel";
 import { examQuestions } from "../exam/questionBank";
 import { parseProgressBackupText } from "../domain/backup";
@@ -12,6 +11,7 @@ import {
   localDateTimeInputToIso,
   toLocalDateTimeInputValue,
 } from "../utils/date";
+import { reviewableProgressIds } from "../knowledge/guided/registry";
 
 export function SettingsPage({
   initialPairingCode,
@@ -105,7 +105,7 @@ export function SettingsPage({
     try {
       const backup = parseProgressBackupText(
         await file.text(),
-        cardIds,
+        reviewableProgressIds,
         new Set(examQuestions.map((question) => question.id)),
       );
       if (

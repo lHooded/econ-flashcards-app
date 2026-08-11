@@ -10,6 +10,7 @@ import { knowledgeConceptById, knowledgeConcepts } from "../knowledge/data";
 import { getKnowledgeTags, searchKnowledge } from "../knowledge/search";
 import { getLearningPath, prerequisiteTopologicalOrder } from "../knowledge/graph";
 import {
+  deriveGuidedCheckStates,
   deriveConceptStatuses,
   deriveFoundationCurriculum,
 } from "../knowledge/mastery";
@@ -41,8 +42,16 @@ export function KnowledgePage({
     () =>
       scheduler === null
         ? new Map<string, KnowledgeConceptStatus>()
-        : deriveConceptStatuses(scheduler),
-    [scheduler],
+        : deriveConceptStatuses(
+            scheduler,
+            knowledgeConcepts,
+            deriveGuidedCheckStates(
+              snapshot?.reviewEvents ?? [],
+              snapshot?.settings ?? { examAt: null, studyBufferHours: 24 },
+              nowMs,
+            ),
+          ),
+    [nowMs, scheduler, snapshot],
   );
   const searchResults = useMemo(
     () =>
@@ -105,6 +114,9 @@ export function KnowledgePage({
           }
         >
           Learn from foundations
+        </a>
+        <a className="secondary-button heading-action" href="#/guided">
+          Guided Cram
         </a>
       </section>
       <section className="knowledge-search panel">

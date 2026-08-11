@@ -41,6 +41,9 @@ jobs:
       - name: Validate course knowledge graph
         run: npm run validate:knowledge
 
+      - name: Validate Guided Cram learning checks
+        run: npm run validate:guided-learning
+
       - name: Validate production sync configuration fixtures
         env:
           SYNC_APP_URL: https://macro.example.com/

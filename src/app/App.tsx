@@ -9,6 +9,7 @@ import { MockAttemptPage } from "../pages/MockAttemptPage";
 import { PracticePage } from "../pages/PracticePage";
 import { StudyPage } from "../pages/StudyPage";
 import { KnowledgePage } from "../pages/KnowledgePage";
+import { GuidedCramPage } from "../pages/GuidedCramPage";
 import type { ParsedHashLocation } from "./hashRoute";
 import { capturePairingRoute } from "./pairingRoute";
 import { KnowledgeProvider } from "../knowledge/KnowledgeProvider";
@@ -81,6 +82,8 @@ function Application() {
         <PracticePage initialMode={practiceMode} initialConceptId={conceptId} />
       ) : route === "/knowledge" ? (
         <KnowledgePage initialConceptId={conceptId} />
+      ) : route === "/guided" ? (
+        <GuidedCramPage initialConceptId={conceptId} />
       ) : (
         <HomePage />
       )}

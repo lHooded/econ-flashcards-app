@@ -134,7 +134,8 @@ There is no concept database, mastery field, due date, or second scheduler.
 `deriveConceptStatuses` reads the existing Exam-SRS snapshot derived from
 `ReviewEvents` and card mappings:
 
-- `Unseen`: no usable review evidence for any linked card;
+- `Unseen`: no usable review evidence for any linked canonical card, or for a
+  no-card concept's registered Guided Knowledge Check;
 - `Needs work`: any linked card is relearning, weak, or currently due;
 - `Solid`: all linked cards are learned;
 - `Learning`: evidence exists but the conservative solid/needs-work conditions
@@ -147,8 +148,10 @@ make ordinary Study deadlock. That signal is only a tie-break among otherwise
 eligible unseen cards. The learner-facing foundation curriculum instead uses
 `conceptNeedsFoundationLearning`: a no-card concept still needs its explanation,
 and a linked concept is sufficiently established only when its derived status
-is `Solid`. No-card concepts remain `Unseen`/background in status displays
-because there is no review evidence; they are not silently counted as learned.
+is `Solid`. No-card concepts derive their status from a registered
+`knowledge-check:<concept-id>` skill: a positive but not-yet-solid check is
+`Learning`, a weak/relearning/due check is `Needs work`, and a learned check is
+`Solid`. Reading remains non-evidence.
 Multiple linked cards aggregate conservatively: one weak or due card keeps the
 concept at `Needs work`; a mix of reviewed and unreviewed linked cards stays
 `Learning` rather than being promoted to `Solid`.
@@ -168,6 +171,31 @@ move through the current URL-addressable concept; reading an article does not
 create mastery. Concepts with linked cards expose the existing review material,
 but only `Solid` is treated as established for curriculum recommendations.
 Answering a linked card continues to create ordinary review evidence.
+
+## Guided Cram
+
+`#/guided` is the recommended active-learning path for a short exam window.
+Its implementation is documented in `docs/GUIDED_CRAM.md`. In brief, the
+knowledge DAG chooses what new prerequisite is sensible, while the existing
+Exam-SRS selector chooses which canonical review or exam-facing branch deserves
+attention. The two signals are recomputed after every saved retrieval.
+
+Guided Cram has no fixed lesson plan, XP, completion flag, or second interval
+table. Attempted no-card concepts use a small static check registry with stable
+IDs in the `knowledge-check:<concept-id>` namespace and deterministic static or
+generated variants. Generated parameters are reconstructed from the skill,
+review count, and session seed; they are never persisted. A lesson only shows a
+concise article and does not create evidence. Objective MCQ checks use
+`mode: "mcq"`, `correct`, and `rating: null`; objective numeric checks use
+`mode: "calculation"`. Both therefore use the same failure, weak, strong,
+deadline-cap, and buffer-cap machinery as canonical cards.
+
+Before a check or canonical card is answered, its tested concept IDs are passed
+to the existing disclosure layer. Tested terms show a blocked notice; incidental
+terms can show only a short preview, with no mechanism, equation, example,
+contrast, prerequisite, or graph route into a blocked concept. After saving the
+answer, the normal full explainer is available. Live timed mocks remain a
+knowledge-lookup-free surface.
 
 ## UI and disclosure
 
@@ -217,7 +245,12 @@ the static frontend bundle. Search and lookup perform no runtime network calls.
 Knowledge data is not included in encrypted sync payloads and is not uploaded
 to Cloudflare. No database migration is used: DB version remains 3, manual
 backup format remains `ProgressBackupV2`/version 2, and sync protocol remains
-version 1.
+version 1. The browser’s strict reviewable-ID registry is the union of the 349
+canonical card IDs and the registered Guided Knowledge Check IDs. This lets
+ordinary ReviewEvent backup/sync machinery carry check evidence without
+loosening validation or changing the protocol. Canonical Study, Practice Lab,
+mock selection, and canonical progress counts continue to operate on their
+original content sets.
 
 The graph is an authored teaching model, not an automatically inferred causal
 model. Text extraction was used to inventory headings and check references; it

@@ -47,7 +47,7 @@ export class KnowledgeValidationError extends Error {
   }
 }
 
-const SOURCE_PAGE_LIMITS: Readonly<Record<string, number>> = {
+export const SOURCE_PAGE_LIMITS: Readonly<Record<string, number>> = {
   textbook: 296,
   "lecture-w1-l1": 89,
   "lecture-w1-l2": 64,

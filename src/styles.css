@@ -1544,6 +1544,160 @@ h3 {
   font-size: 0.85rem;
 }
 
+/* Guided Cram */
+.guided-heading {
+  align-items: flex-start;
+}
+
+.guided-progress {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.guided-progress-item {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.guided-progress-item strong {
+  color: var(--navy);
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.guided-progress-item span {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.guided-reason-banner {
+  width: fit-content;
+  margin: 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid #b7d2e5;
+  border-radius: 999px;
+  color: var(--blue);
+  background: var(--blue-soft);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.guided-lesson,
+.guided-check {
+  display: grid;
+  gap: 1rem;
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: clamp(1.1rem, 4vw, 2rem);
+}
+
+.guided-step-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.guided-lesson-pill {
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  color: var(--ink-muted);
+  background: #f0f4f8;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.guided-lesson h2,
+.guided-check h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+}
+
+.guided-breadcrumb {
+  margin: -0.45rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+}
+
+.guided-lesson section,
+.guided-check section {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.guided-lesson section h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1rem;
+}
+
+.guided-lesson section p,
+.guided-check p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.guided-mechanism-list {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.25rem 0 0;
+  padding-left: 1.35rem;
+  line-height: 1.5;
+}
+
+.guided-trap {
+  padding: 0.8rem 0.9rem;
+  border-left: 0.25rem solid var(--yellow);
+  color: var(--ink);
+  background: #fffaf0;
+}
+
+.guided-trap p {
+  margin: 0.35rem 0 0;
+}
+
+.guided-lesson-actions,
+.guided-idle .button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.guided-check-prompt {
+  margin: 0;
+  color: var(--navy);
+  font-size: clamp(1.1rem, 3.5vw, 1.45rem);
+  line-height: 1.4;
+}
+
+.guided-choice-list {
+  margin: 0;
+}
+
+.guided-evidence-note {
+  max-width: 48rem;
+  margin: 0 auto;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.guided-idle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .knowledge-blocked-message {
   padding: 0.85rem;
   border-left: 4px solid var(--yellow);
@@ -2316,6 +2470,20 @@ h3 {
 }
 
 @media (max-width: 37.99rem) {
+  .guided-progress {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guided-progress-item:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .guided-lesson-actions > a,
+  .guided-lesson-actions > button,
+  .guided-idle .button-row > a {
+    flex: 1 1 12rem;
+  }
+
   .generated-calculation-actions > button {
     flex: 1 1 10rem;
   }

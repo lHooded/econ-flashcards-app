@@ -181,3 +181,23 @@ conversion questions from being answered by their own explanations.
 
 No PDF files were copied or added to Git. The source paths actually consulted
 are listed in `docs/KNOWLEDGE_GRAPH.md` and in `knowledge/sources.json`.
+
+## Guided Cram audit
+
+The Guided Cram pass added a separate static registry for concepts without a
+canonical linked card. The set is derived from the graph rather than assuming a
+permanent count: the current audit finds **28 no-card concepts**, **28 guided
+check skills**, **52 static variants**, and **2 generated check templates**
+validated over **1,000 generated instances** (500 seeds per template).
+Every skill inherits the target concept’s existing source references; no new
+runtime or external source is used. The validator reports zero canonical-ID
+collisions, zero missing check coverage, and zero missing source support.
+
+This registry is not a second mastery system. The same ReviewEvent and Exam-SRS
+derivation are used for check evidence, while ordinary Study still contains
+only the 349 canonical cards. Guided Cram uses positive retrieval evidence as
+“introduced enough” but keeps `Solid` as the stronger foundation-curriculum
+criterion. Tested-concept disclosure remains blocked until the check answer is
+saved; incidental preview terms remain restricted. Backup and sync validate the
+union of canonical IDs and registered `knowledge-check:*` IDs without changing
+DB version 3, backup version 2, or sync protocol v1.

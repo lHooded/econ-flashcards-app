@@ -104,6 +104,10 @@ export function HomePage() {
           <strong>Study now</strong>
           <span>Exam-SRS recommendation</span>
         </a>
+        <a href="#/guided">
+          <strong>Guided Cram</strong>
+          <span>Prerequisites + retrieval + deadline-aware review</span>
+        </a>
         <a href="#/mock">
           <strong>Full mock exam</strong>
           <span>Realistic 60-question simulation</span>
