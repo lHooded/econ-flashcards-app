@@ -120,6 +120,62 @@ class DeferredCreateRemote implements SyncApi {
   }
 }
 
+class DeferredJoinRemote implements SyncApi {
+  public readonly pullGate = deferred<void>();
+  public pullCount = 0;
+  public pushCount = 0;
+  public credentials: SyncGroupCredentials | undefined;
+  public envelope: EncryptedSyncEnvelope | undefined;
+  public version = 0;
+
+  public async create(
+    credentials: SyncGroupCredentials,
+    envelope: EncryptedSyncEnvelope,
+  ) {
+    this.credentials = credentials;
+    this.envelope = envelope;
+    this.version = 1;
+    return { version: this.version };
+  }
+
+  public async pull(credentials: SyncGroupCredentials) {
+    this.assert(credentials);
+    this.pullCount += 1;
+    if (this.pullCount === 1) await this.pullGate.promise;
+    return { version: this.version, envelope: this.envelope! };
+  }
+
+  public async push(
+    credentials: SyncGroupCredentials,
+    expectedVersion: number,
+    envelope: EncryptedSyncEnvelope,
+  ) {
+    this.assert(credentials);
+    if (expectedVersion !== this.version)
+      throw new SyncApiError("conflict", "stale", 409);
+    this.pushCount += 1;
+    this.version += 1;
+    this.envelope = envelope;
+    return { version: this.version };
+  }
+
+  public async delete(credentials: SyncGroupCredentials): Promise<void> {
+    this.assert(credentials);
+    this.credentials = undefined;
+    this.envelope = undefined;
+    this.version = 0;
+  }
+
+  private assert(credentials: SyncGroupCredentials): void {
+    if (
+      credentials.authToken !== this.credentials?.authToken ||
+      this.envelope === undefined
+    ) {
+      throw new SyncApiError("auth", "bad auth", 401);
+    }
+  }
+}
+
 class DownRemote implements SyncApi {
   public async create(
     _credentials: SyncGroupCredentials,
@@ -281,6 +337,164 @@ describe("sync scheduling", () => {
       coordinator.dispose();
       await repository.close();
       await deleteDB(databaseName);
+    }
+  });
+
+  it("reconciles settings and a calculation review written during deferred join", async () => {
+    const laptopName = `sync-join-source-${Date.now()}`;
+    const phoneName = `sync-join-race-${Date.now()}`;
+    const laptopRepository = new ProgressRepository(cardIds, laptopName);
+    const phoneRepository = new ProgressRepository(cardIds, phoneName);
+    const remote = new DeferredJoinRemote();
+    const laptop = new SyncCoordinator({
+      repository: laptopRepository,
+      api: remote,
+      validCardIds: cardIds,
+      debounceMs: 0,
+      now: () => "2030-01-01T00:00:00.000Z",
+    });
+    const phone = new SyncCoordinator({
+      repository: phoneRepository,
+      api: remote,
+      validCardIds: cardIds,
+      debounceMs: 0,
+      now: () => "2026-08-11T10:00:00.000Z",
+    });
+    try {
+      await laptopRepository.resetAll();
+      await phoneRepository.resetAll();
+      const initialLocalSettings = {
+        examAt: "2030-01-15T10:00:00.000Z",
+        studyBufferHours: 24,
+      } as const;
+      await phoneRepository.saveSettings(initialLocalSettings);
+      const remoteSettings = {
+        examAt: "2030-02-01T10:00:00.000Z",
+        studyBufferHours: 12,
+      } as const;
+      await laptopRepository.saveSettings(remoteSettings);
+      await laptop.createGroup();
+      const initialRemote = (await decryptSyncPayload(
+        remote.envelope!,
+        remote.credentials!,
+      )) as SyncPayloadV1;
+      const pairingCode = await laptop.getPairingCode();
+      const loadSpy = vi.spyOn(phoneRepository, "loadSyncState");
+      const joining = phone.joinGroup(pairingCode);
+      await vi.waitFor(() => expect(remote.pullCount).toBe(1));
+      const joinSnapshotLoadCount = loadSpy.mock.calls.length;
+
+      const localSettings = {
+        examAt: "2030-03-01T10:00:00.000Z",
+        studyBufferHours: 4,
+      } as const;
+      const review = createReviewEvent({
+        id: "join-calculation-review",
+        cardId: "ch01-003",
+        reviewedAt: "2026-08-11T00:02:00.000Z",
+        mode: "calculation",
+        correct: true,
+        rating: null,
+        responseTimeMs: 812,
+        selectedChoice: null,
+      });
+      await phoneRepository.saveSettings(localSettings);
+      await phoneRepository.recordReview(review);
+      phone.request("join-concurrent-write");
+
+      // The scheduled request must actually run before the remote join pull is
+      // released. It loads the still-disconnected state and returns without a
+      // remote pull; the join transaction below performs the real reconciliation.
+      await vi.waitFor(() => {
+        expect(loadSpy.mock.calls.length).toBeGreaterThan(joinSnapshotLoadCount);
+        expect(remote.pullCount).toBe(1);
+      });
+      expect((await phoneRepository.loadSyncState()).syncConfig.group).toBeNull();
+      remote.pullGate.resolve();
+      await joining;
+
+      const local = await phoneRepository.loadSyncState();
+      expect(local.settings).toEqual(localSettings);
+      expect(local.reviews).toContainEqual(review);
+      expect(local.syncConfig.settingsStamp?.value).toEqual(localSettings);
+      expect(
+        Date.parse(local.syncConfig.settingsStamp?.updatedAt ?? ""),
+      ).toBeGreaterThan(Date.parse(initialRemote.settings.updatedAt));
+      expect(local.syncConfig.lastSyncedAt).not.toBeNull();
+      expect(phone.getStatus()).toMatchObject({ phase: "synced", connected: true });
+
+      const finalRemote = (await decryptSyncPayload(
+        remote.envelope!,
+        remote.credentials!,
+      )) as SyncPayloadV1;
+      expect(finalRemote.settings.value).toEqual(localSettings);
+      expect(finalRemote.reviews).toContainEqual(review);
+      expect(remote.pushCount).toBe(1);
+
+      const pushes = remote.pushCount;
+      await phone.syncNow();
+      expect(remote.pushCount).toBe(pushes);
+    } finally {
+      laptop.dispose();
+      phone.dispose();
+      laptopRepository.close();
+      phoneRepository.close();
+      await deleteDB(laptopName);
+      await deleteDB(phoneName);
+    }
+  });
+
+  it("keeps remote settings when no local write occurs during join", async () => {
+    const laptopName = `sync-join-settings-source-${Date.now()}`;
+    const phoneName = `sync-join-settings-no-write-${Date.now()}`;
+    const laptopRepository = new ProgressRepository(cardIds, laptopName);
+    const phoneRepository = new ProgressRepository(cardIds, phoneName);
+    const remote = new DeferredJoinRemote();
+    const laptop = new SyncCoordinator({
+      repository: laptopRepository,
+      api: remote,
+      validCardIds: cardIds,
+      debounceMs: 0,
+      now: () => "2030-01-01T00:00:00.000Z",
+    });
+    const phone = new SyncCoordinator({
+      repository: phoneRepository,
+      api: remote,
+      validCardIds: cardIds,
+      debounceMs: 0,
+      now: () => "2026-08-11T10:00:00.000Z",
+    });
+    try {
+      await laptopRepository.resetAll();
+      await phoneRepository.resetAll();
+      const initialLocalSettings = {
+        examAt: "2030-01-15T10:00:00.000Z",
+        studyBufferHours: 24,
+      } as const;
+      await phoneRepository.saveSettings(initialLocalSettings);
+      const remoteSettings = {
+        examAt: "2030-02-01T10:00:00.000Z",
+        studyBufferHours: 12,
+      } as const;
+      await laptopRepository.saveSettings(remoteSettings);
+      await laptop.createGroup();
+      const pairingCode = await laptop.getPairingCode();
+      const joining = phone.joinGroup(pairingCode);
+      await vi.waitFor(() => expect(remote.pullCount).toBe(1));
+      remote.pullGate.resolve();
+      await joining;
+
+      expect((await phoneRepository.load()).settings).not.toEqual(initialLocalSettings);
+      expect((await phoneRepository.load()).settings).toEqual(remoteSettings);
+      expect(remote.pushCount).toBe(0);
+      expect(phone.getStatus()).toMatchObject({ phase: "synced", connected: true });
+    } finally {
+      laptop.dispose();
+      phone.dispose();
+      laptopRepository.close();
+      phoneRepository.close();
+      await deleteDB(laptopName);
+      await deleteDB(phoneName);
     }
   });
 

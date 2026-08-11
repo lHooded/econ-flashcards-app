@@ -155,6 +155,11 @@ manual JSON exports are the separate recovery path.
   question IDs do not need to remain in the current display-question bank.
 - Successful local IndexedDB writes schedule a debounced sync. Study, Practice,
   Settings, and mock finalisation do not await the network.
+- Joining uses an atomic transaction boundary that re-reads current local settings,
+  reviews, and terminal mock history. Settings changed after the join snapshot receive
+  a stamp strictly newer than the observed remote stamp; if the resulting payload is
+  not already on the remote version, the normal bounded pull/merge/CAS pipeline runs
+  before the UI reports `synced`.
 - Creation uses `POST /v1/sync/:syncId`; updates use `PUT` with an expected version.
   Pull, decrypt, validate, merge, encrypt with a fresh IV, and conditional PUT use
   optimistic versions. A stale PUT receives `409`; the coordinator pulls and merges

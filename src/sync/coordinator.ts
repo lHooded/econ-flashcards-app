@@ -40,6 +40,18 @@ export interface SyncStateRepository {
     initialPayload: SyncPayloadV1,
     completedAt: string,
   ): Promise<{ readonly config: SyncConfig; readonly reconciled: boolean }>;
+  joinSyncConfig(
+    credentials: SyncGroupCredentials,
+    remoteVersion: number,
+    remotePayload: SyncPayloadV1,
+    snapshotSettings: SyncLocalState["settings"],
+    completedAt: string,
+    isCurrent: () => boolean,
+  ): Promise<{
+    readonly config: SyncConfig;
+    readonly payload: SyncPayloadV1;
+    readonly reconciled: boolean;
+  }>;
   applyMergedSyncPayload(
     incoming: SyncPayloadV1,
     nextConfig: SyncConfig,
@@ -76,6 +88,7 @@ export class SyncCoordinator {
   private activeAbortController: AbortController | null = null;
   private trailing = false;
   private generation = 0;
+  private joining = false;
   private started = false;
   private status: SyncStatus;
 
@@ -221,54 +234,74 @@ export class SyncCoordinator {
   public async joinGroup(pairingCode: string): Promise<void> {
     this.requireApi();
     await this.waitForCurrentPass();
+    if (this.joining) throw new Error("A sync join is already in progress.");
     const credentials = parsePairingCredential(pairingCode.trim());
     const generation = this.generation;
+    this.joining = true;
 
-    for (let attempt = 0; attempt < MAX_CAS_RETRIES; attempt += 1) {
-      const state = await this.repository.loadSyncState();
-      if (state.syncConfig.group !== null)
-        throw new Error("This device is already connected.");
-      const remote = await this.pullPayload(credentials);
-      const local = buildSyncPayload(state, remote.payload.settings);
-      const merged = mergeSyncPayloads(local, remote.payload, {
-        joining: true,
-        activeAttempt: activeAttemptOf(state),
-      });
-      let version = remote.version;
-      if (!syncPayloadsEqual(merged, remote.payload)) {
-        try {
-          const pushed = await this.api!.push(
-            credentials,
-            remote.version,
-            await encryptSyncPayload(merged, credentials),
-          );
-          version = pushed.version;
-        } catch (error: unknown) {
-          if (error instanceof SyncApiError && error.kind === "conflict") continue;
-          throw error;
+    try {
+      for (let attempt = 0; attempt < MAX_CAS_RETRIES; attempt += 1) {
+        const state = await this.repository.loadSyncState();
+        if (state.syncConfig.group !== null)
+          throw new Error("This device is already connected.");
+        const remote = await this.pullPayload(credentials);
+        const local = buildSyncPayload(state, remote.payload.settings);
+        const merged = mergeSyncPayloads(local, remote.payload, {
+          joining: true,
+          activeAttempt: activeAttemptOf(state),
+        });
+        let version = remote.version;
+        let remotePayload = remote.payload;
+        if (!syncPayloadsEqual(merged, remote.payload)) {
+          try {
+            const pushed = await this.api!.push(
+              credentials,
+              remote.version,
+              await encryptSyncPayload(merged, credentials),
+            );
+            version = pushed.version;
+            remotePayload = merged;
+          } catch (error: unknown) {
+            if (error instanceof SyncApiError && error.kind === "conflict") continue;
+            throw error;
+          }
         }
+        if (generation !== this.generation)
+          throw new Error("Sync connection changed while joining.");
+        const joined = await this.repository.joinSyncConfig(
+          credentials,
+          version,
+          remotePayload,
+          state.settings,
+          this.now(),
+          () => generation === this.generation && this.joining,
+        );
+        if (generation !== this.generation)
+          throw new Error("Sync connection changed while joining.");
+
+        // A scheduled local request may have run while the device was still
+        // disconnected. It is safe to discard that no-op now: the transaction
+        // above included the current durable state, and the normal pipeline
+        // below reconciles any payload that differs from the remote version.
+        this.joining = false;
+        await this.waitForCurrentPass();
+        if (!joined.reconciled) {
+          await this.syncNow();
+          return;
+        }
+        await this.onApplied?.();
+        this.setStatus({
+          connected: true,
+          phase: "synced",
+          lastSyncedAt: joined.config.lastSyncedAt,
+          message: null,
+        });
+        return;
       }
-      if (generation !== this.generation)
-        throw new Error("Sync connection changed while joining.");
-      const connected: SyncConfig = {
-        ...state.syncConfig,
-        group: { ...credentials, remoteVersion: version },
-        lastSyncedAt: this.now(),
-        settingsStamp: merged.settings,
-      };
-      await this.repository.applyMergedSyncPayload(merged, connected, {
-        joining: true,
-      });
-      await this.onApplied?.();
-      this.setStatus({
-        connected: true,
-        phase: "synced",
-        lastSyncedAt: connected.lastSyncedAt,
-        message: null,
-      });
-      return;
+      throw new Error("Remote state kept changing; try joining again.");
+    } finally {
+      this.joining = false;
     }
-    throw new Error("Remote state kept changing; try joining again.");
   }
 
   public async getPairingCode(): Promise<string> {
@@ -366,6 +399,7 @@ export class SyncCoordinator {
     if (generation !== this.generation) return;
     const initial = await this.repository.loadSyncState();
     if (generation !== this.generation) return;
+    if (this.joining) return;
     if (initial.syncConfig.group === null) {
       this.setStatus({
         connected: false,

@@ -199,6 +199,124 @@ export class ProgressRepository {
     return { config: validated, reconciled };
   }
 
+  /**
+   * Atomically completes a join from the current durable state. The caller's
+   * settings snapshot identifies writes made during the network portion of the
+   * join; those writes receive a stamp strictly newer than the observed remote
+   * stamp and are reconciled by the normal pipeline after this transaction.
+   */
+  public async joinSyncConfig(
+    credentials: SyncGroupCredentials,
+    remoteVersion: number,
+    remotePayload: SyncPayloadV1,
+    snapshotSettings: AppSettings,
+    completedAt: string,
+    isCurrent: () => boolean,
+  ): Promise<{
+    readonly config: SyncConfig;
+    readonly payload: SyncPayloadV1;
+    readonly reconciled: boolean;
+  }> {
+    for (const review of remotePayload.reviews) {
+      if (!this.validCardIds.has(review.cardId)) {
+        throw new Error(`Cannot apply unknown card ID "${review.cardId}".`);
+      }
+    }
+
+    const database = await this.database;
+    const transaction = database.transaction(
+      ["settings", "cardStates", "reviewEvents", "mockAttempts", "syncConfig"],
+      "readwrite",
+    );
+    const syncStore = transaction.objectStore("syncConfig");
+    const currentConfig = (await syncStore.get(SYNC_CONFIG_KEY)) as
+      SyncConfig | undefined;
+    if (currentConfig === undefined) {
+      throw new Error("Sync configuration is missing from the local database.");
+    }
+    if (currentConfig.group !== null) {
+      throw new Error("This device is already connected.");
+    }
+
+    const settingsRecord = (await transaction
+      .objectStore("settings")
+      .get(SETTINGS_KEY)) as SettingsRecord | undefined;
+    const currentReviews = (await transaction
+      .objectStore("reviewEvents")
+      .getAll()) as ReviewEvent[];
+    const currentAttempts = (await transaction
+      .objectStore("mockAttempts")
+      .getAll()) as MockAttempt[];
+    const currentSettings = settingsRecord?.value ?? DEFAULT_APP_SETTINGS;
+    const settingsChanged = !settingsEqual(currentSettings, snapshotSettings);
+    const localSettingsStamp: SettingsStamp = settingsChanged
+      ? {
+          value: { ...currentSettings },
+          updatedAt: nextTimestampAfter(remotePayload.settings.updatedAt, completedAt),
+          deviceId: currentConfig.deviceId,
+        }
+      : remotePayload.settings;
+    const currentSource: SyncPayloadSource = {
+      // An unchanged disconnected setting deliberately adopts the remote
+      // value. A changed value is represented by the causally-newer local
+      // stamp above and must remain the local source value.
+      settings: settingsChanged ? currentSettings : remotePayload.settings.value,
+      reviews: currentReviews,
+      mockAttempts: currentAttempts,
+    };
+    const currentPayload = buildSyncPayload(currentSource, localSettingsStamp);
+    const activeAttempts = currentAttempts.filter(
+      (attempt) => attempt.status === "active",
+    );
+    if (activeAttempts.length > 1) {
+      throw new Error("Local database contains more than one active mock attempt.");
+    }
+    const merged = mergeSyncPayloads(currentPayload, remotePayload, {
+      activeAttempt: activeAttempts[0],
+    });
+    const reconciled = syncPayloadsEqual(merged, remotePayload);
+
+    // This check is deliberately immediately before the writes. A disconnect
+    // invalidates the generation synchronously; no await follows this check
+    // before the transaction is populated, and a later disconnect transaction
+    // will serialize after this one and clear the group again.
+    if (!isCurrent()) {
+      throw new Error("Sync connection changed while joining.");
+    }
+
+    const cardStates = deriveSyncedCardStates(this.validCardIds, merged.reviews);
+    const persistedConfig: SyncConfig = {
+      ...currentConfig,
+      group: { ...credentials, remoteVersion },
+      lastSyncedAt: reconciled ? completedAt : null,
+      settingsStamp: merged.settings,
+    };
+    const validated = validateSyncConfig(persistedConfig);
+    const terminalIds = new Set(merged.mockAttempts.map((attempt) => attempt.id));
+
+    transaction.objectStore("settings").clear();
+    transaction.objectStore("cardStates").clear();
+    transaction.objectStore("reviewEvents").clear();
+    transaction.objectStore("mockAttempts").clear();
+    transaction.objectStore("settings").put({
+      key: SETTINGS_KEY,
+      value: merged.settings.value,
+    });
+    for (const state of cardStates) transaction.objectStore("cardStates").put(state);
+    for (const review of merged.reviews)
+      transaction.objectStore("reviewEvents").put(review);
+    const activeAttempt = activeAttempts[0];
+    if (activeAttempt !== undefined && !terminalIds.has(activeAttempt.id)) {
+      transaction.objectStore("mockAttempts").put(activeAttempt);
+    }
+    for (const attempt of merged.mockAttempts) {
+      transaction.objectStore("mockAttempts").put(attempt);
+    }
+    syncStore.put(validated);
+    await transaction.done;
+    return { config: validated, payload: merged, reconciled };
+  }
+
   public async recordReview(input: NewReviewEvent): Promise<RecordedReview> {
     if (!this.validCardIds.has(input.cardId)) {
       throw new Error(`Cannot record review for unknown card ID "${input.cardId}".`);
@@ -416,4 +534,12 @@ function nextTimestamp(previous: string): string {
   const parsed = Date.parse(previous);
   const base = Number.isFinite(parsed) ? parsed : Date.now();
   return new Date(Math.max(base + 1, Date.now())).toISOString();
+}
+
+function nextTimestampAfter(previous: string, now: string): string {
+  const previousTime = Date.parse(previous);
+  const nowTime = Date.parse(now);
+  const current = Number.isFinite(nowTime) ? nowTime : Date.now();
+  const strictlyAfter = Number.isFinite(previousTime) ? previousTime + 1 : current;
+  return new Date(Math.max(current, strictlyAfter)).toISOString();
 }
