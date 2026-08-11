@@ -35,6 +35,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate optional production sync configuration
+        env:
+          SYNC_APP_URL: ${{ vars.SYNC_APP_URL }}
+          SYNC_API_URL: ${{ vars.SYNC_API_URL }}
+        run: |
+          if [ -n "$SYNC_APP_URL" ] || [ -n "$SYNC_API_URL" ]; then
+            npm run validate:sync-deploy-config
+          else
+            echo "Sync variables are absent; this Pages build remains local-only."
+          fi
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -42,6 +53,9 @@ jobs:
         run: npm run test
 
       - name: Build production site
+        env:
+          VITE_SYNC_API_URL: ${{ vars.SYNC_API_URL }}
+          VITE_SYNC_APP_URL: ${{ vars.SYNC_APP_URL }}
         run: npm run build
 
       - name: Upload Pages artifact

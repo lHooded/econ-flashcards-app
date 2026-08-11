@@ -4,6 +4,7 @@ import type {
   ExamQuestionStyle,
   ExamDifficulty,
 } from "../model";
+import { createReviewEvent, type ReviewEvent } from "../../domain/progress";
 
 export type MockAttemptStatus = "active" | "submitted" | "abandoned";
 export type MockClockPhase =
@@ -120,6 +121,37 @@ export function questionStateById(
   attempt: MockAttempt,
 ): ReadonlyMap<string, MockQuestionAttemptState> {
   return new Map(attempt.questionStates.map((state) => [state.questionId, state]));
+}
+
+/**
+ * The immutable mock manifest and persisted answer states are the source of
+ * truth for the objective review events committed at finalisation. Sync uses
+ * this same construction so a terminal attempt cannot be paired with forged
+ * review evidence.
+ */
+export function buildMockReviewEvents(attempt: MockAttempt): ReviewEvent[] {
+  const submitted = validateMockAttempt(attempt);
+  if (submitted.status !== "submitted" || submitted.submittedAt === null) {
+    throw new Error("Only submitted mock attempts can produce review events.");
+  }
+  const submittedAt = submitted.submittedAt;
+  const stateById = questionStateById(submitted);
+  return submitted.manifest.map((manifest) => {
+    const state = stateById.get(manifest.questionId);
+    if (state === undefined)
+      throw new Error(`Missing state for ${manifest.questionId}.`);
+    const selectedChoice = state.selectedChoice;
+    return createReviewEvent({
+      id: `mock:${submitted.id}:${manifest.questionId}`,
+      cardId: manifest.reviewCardId,
+      reviewedAt: state.lastAnsweredAt ?? submittedAt,
+      mode: "mcq",
+      rating: null,
+      correct: selectedChoice !== null && selectedChoice === manifest.correctChoice,
+      responseTimeMs: state.timeSpentMs,
+      selectedChoice,
+    });
+  });
 }
 
 export function validateMockAttempt(

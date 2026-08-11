@@ -1,11 +1,8 @@
-import {
-  createReviewEvent,
-  deriveCardStateFromReviews,
-  type ReviewEvent,
-} from "../domain/progress";
+import { deriveCardStateFromReviews, type ReviewEvent } from "../domain/progress";
 import { scoreMockAttempt } from "../exam/mock/scoring";
 import {
   validateMockAttempt,
+  buildMockReviewEvents,
   type MockAttempt,
   type MockAttemptResult,
   type MockQuestionAttemptState,
@@ -19,13 +16,16 @@ export interface FinalizedMock {
 }
 
 export class MockExamRepository {
-  private readonly database = openProgressDatabase();
+  private readonly database: ReturnType<typeof openProgressDatabase>;
 
   public constructor(
     private readonly validCardIds: ReadonlySet<string>,
     private readonly validQuestionIds: ReadonlySet<string>,
     private readonly transactionFailure?: (processedEvents: number) => void,
-  ) {}
+    databaseName?: string,
+  ) {
+    this.database = openProgressDatabase(databaseName);
+  }
 
   public async listAttempts(): Promise<MockAttempt[]> {
     const database = await this.database;
@@ -141,25 +141,13 @@ export class MockExamRepository {
           ? attempt.writingEndsAt
           : submittedAt;
 
-      const stateById = new Map(
-        attempt.questionStates.map((state) => [state.questionId, state]),
-      );
-      const events = attempt.manifest.map((manifest) => {
-        const state = stateById.get(manifest.questionId);
-        if (state === undefined)
-          throw new Error(`Missing state for ${manifest.questionId}.`);
-        const selectedChoice = state.selectedChoice;
-        return createReviewEvent({
-          id: `mock:${attempt.id}:${manifest.questionId}`,
-          cardId: manifest.reviewCardId,
-          reviewedAt: state.lastAnsweredAt ?? effectiveSubmittedAt,
-          mode: "mcq",
-          rating: null,
-          correct: selectedChoice !== null && selectedChoice === manifest.correctChoice,
-          responseTimeMs: state.timeSpentMs,
-          selectedChoice,
-        });
+      const candidate = validateMockAttempt({
+        ...attempt,
+        status: "submitted",
+        submittedAt: effectiveSubmittedAt,
+        reviewEventsCommittedAt: committedAt,
       });
+      const events = buildMockReviewEvents(candidate);
       const cardStateStore = transaction.objectStore("cardStates");
       const reviewStore = transaction.objectStore("reviewEvents");
       const existingReviews = (await reviewStore.getAll()) as ReviewEvent[];
@@ -185,17 +173,11 @@ export class MockExamRepository {
         await reviewStore.add(event);
         this.transactionFailure?.(index + 1);
       }
-      const submitted = validateMockAttempt({
-        ...attempt,
-        status: "submitted",
-        submittedAt: effectiveSubmittedAt,
-        reviewEventsCommittedAt: committedAt,
-      });
-      await transaction.objectStore("mockAttempts").put(submitted);
+      await transaction.objectStore("mockAttempts").put(candidate);
       await transaction.done;
       return {
-        attempt: submitted,
-        result: scoreMockAttempt(submitted),
+        attempt: candidate,
+        result: scoreMockAttempt(candidate),
         reviewEvents: events,
       };
     } catch (error: unknown) {

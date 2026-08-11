@@ -39,6 +39,7 @@ export default defineConfig(({ mode }) => {
         },
         workbox: {
           globPatterns: ["**/*.{js,css,html,svg,json,woff2}"],
+          navigateFallbackDenylist: [/^\/v1\/sync\//],
         },
       }),
     ],

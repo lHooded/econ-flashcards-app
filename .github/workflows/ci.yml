@@ -26,14 +26,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify clean dependency installation
+        run: npm ci --dry-run --ignore-scripts
+
       - name: Validate canonical deck
         run: npm run validate:deck
 
       - name: Validate exam question bank
         run: npm run validate:exam-questions
 
+      - name: Validate generated calculations
+        run: npm run validate:calculations
+
+      - name: Validate production sync configuration fixtures
+        env:
+          SYNC_APP_URL: https://macro.example.com/
+          SYNC_API_URL: https://econ-flashcards-sync.example.workers.dev/
+        run: npm run validate:sync-deploy-config
+
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Typecheck sync Worker
+        run: npm run sync:typecheck
 
       - name: Lint
         run: npm run lint
@@ -43,6 +58,15 @@ jobs:
 
       - name: Run tests
         run: npm run test
+
+      - name: Run sync Worker tests
+        run: npm run sync:test
+
+      - name: Run sync Worker Durable Object runtime tests
+        run: npm run sync:integration-test
+
+      - name: Validate Wrangler deployment bundle
+        run: npx wrangler deploy --dry-run --config sync-worker/wrangler.jsonc --var SYNC_ALLOWED_ORIGIN:https://macro.example.com/
 
       - name: Build production bundle
         run: npm run build

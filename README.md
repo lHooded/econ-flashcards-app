@@ -93,6 +93,7 @@ local timezone for the `datetime-local` exam setting.
 ```bash
 npm run validate:deck
 npm run validate:exam-questions
+npm run validate:calculations
 npm run typecheck
 npm run lint
 npm run format:check
@@ -100,8 +101,8 @@ npm run test
 npm run build
 ```
 
-`npm run build` validates the canonical deck before producing a static production
-bundle. Preview it with:
+`npm run build` validates the canonical deck, exam question bank, and generated
+calculation registry before producing a static production bundle. Preview it with:
 
 ```bash
 npm run preview
@@ -129,29 +130,45 @@ required. The generated service worker is scoped inside the project directory. A
 successful visit, the app shell, bundled deck, and IndexedDB progress continue to work
 offline. Push notifications are not part of this app.
 
-## Content, progress, and backups
+## Content, progress, backups, and optional sync
 
 `flashcards/MACRO1_master_flashcards.json` is the canonical, immutable course-content
 source. The application validates its metadata and every card at module startup and
 before a production build; the real deck is bundled rather than copied into source
 code by hand.
 
-Mutable user data lives in IndexedDB database `econ-flashcards`, version 2:
+Mutable user data lives in IndexedDB database `econ-flashcards`, version 3:
 
 - `cardStates`: existing review counters and transactionally maintained card summaries;
 - `reviewEvents`: append-only chronological review history;
 - `settings`: the exam target and deliberate buffer.
 - `mockAttempts`: immutable question manifests plus resumable answers, flags, and
   result state.
+- `syncConfig`: local-only device ID, optional sync credentials, remote version, and
+  settings conflict stamp. It is never included in manual backups.
 
 Exam-SRS does not add persisted due dates, strength, ease, stability, readiness, or
 phase. Export/import remains the current device-sync mechanism: export a validated JSON
 backup from Settings / Data, then import it on another device. Backup format version 1
 is retained, and importing review history plus settings recreates the derived scheduler
 state without scheduler fields. New exports use backup format version 2 and include
-mock attempts; version-1 backups migrate in memory with an empty mock history.
+mock attempts; version-1 backups migrate in memory with an empty mock history. Optional
+cross-device sync uses a separate encrypted SyncPayloadV1 format, never embeds `syncId`,
+`authToken`, or `encryptionKey` in a backup, and merges review history rather than
+deleting it.
 
 ## Architecture
+
+```text
+GitHub Pages
+    static PWA
+
+Cloudflare Worker + SQLite-backed Durable Object
+    optional encrypted device sync
+
+IndexedDB
+    local source for offline operation
+```
 
 The immutable-content layer (`src/data` and `src/domain/content`) parses and freezes the
 deck. The progress domain (`src/domain/progress`) contains mutable review/state/settings
@@ -161,7 +178,7 @@ selects the next card, and produces dashboard summaries without calling `Date.no
 React pages pass an explicit current time and consume snapshots through the progress
 context rather than talking to IndexedDB directly.
 
-Generated distractors, integrations, accounts, cloud sync, notifications, daily
+Generated distractors, integrations, accounts, notifications, daily
 quotas, numeric-answer parsing, FSRS, SM-2, semantic essay grading, and projected
 scores are intentionally out of scope. Practice formats use only local authored
 content; no Playconomics content is copied or accessed.
@@ -170,6 +187,17 @@ The reusable stimulus domain under `src/stimulus` and `src/components/stimulus` 
 bundled content infrastructure. It remains outside ordinary Study mode, while mock
 and Practice Lab questions render optional graph/table stimuli without knowing the
 underlying representation.
+
+Optional sync adds a Cloudflare Worker plus SQLite-backed Durable Object. The PWA
+remains local-first and usable without sync configuration; the existing shared
+`https://lhooded.github.io/econ-flashcards-app/` project site is intentionally
+sync-disabled because its origin is shared by other project paths. A sync-enabled
+build must run on an explicitly configured HTTPS dedicated frontend origin and use an
+HTTPS sync API; HTTP is only accepted for loopback development. There, the client
+encrypts progress with AES-256-GCM before HTTP transport. Active mock attempts remain
+local to their starting device until terminal finalisation. See
+[docs/SYNC.md](docs/SYNC.md) for owner setup, protocol, pairing, merge, privacy, and
+local-development details.
 
 No malformed economics records were found in the supplied 349-card JSON. The 31
 authored MCQs have valid zero-based correct-choice indexes, and the 318 non-MCQ cards

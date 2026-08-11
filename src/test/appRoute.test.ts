@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { parseHashLocation } from "../app/hashRoute";
+import { capturePairingRoute } from "../app/pairingRoute";
 import { buildStudyHash, parseStudyScopeQuery } from "../study/studyScope";
+import {
+  createSyncGroupCredentials,
+  serializePairingCredential,
+} from "../sync/pairing";
 
 describe("hash routing", () => {
   it("preserves the base routes and parses shareable study focus state", () => {
@@ -48,5 +53,14 @@ describe("hash routing", () => {
       practiceMode: "stimulus",
     });
     expect(parseHashLocation("#/practice?mode=not-real").practiceMode).toBeNull();
+  });
+
+  it("captures a pairing secret from the fragment and removes it from the visible URL", () => {
+    const code = serializePairingCredential(createSyncGroupCredentials());
+    window.history.replaceState({}, "", `/#/settings?pair=${encodeURIComponent(code)}`);
+    const captured = capturePairingRoute();
+    expect(captured).toMatchObject({ route: "/settings", pairingCode: code });
+    expect(window.location.hash).toBe("#/settings");
+    expect(window.location.href).not.toContain(code);
   });
 });

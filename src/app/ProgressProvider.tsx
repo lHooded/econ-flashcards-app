@@ -6,6 +6,7 @@ import {
   type PropsWithChildren,
 } from "react";
 import { ProgressContext, type ProgressContextValue } from "./progressContext";
+import { SyncProvider } from "./SyncProvider";
 import { cardIds } from "../data/deck";
 import { serializeProgressBackup, type ProgressBackupV2 } from "../domain/backup";
 import {
@@ -18,6 +19,9 @@ import { ProgressRepository } from "../db/progressRepository";
 import { MockExamRepository } from "../db/mockExamRepository";
 import { examQuestions } from "../exam/questionBank";
 import type { MockAttempt, MockQuestionAttemptState } from "../exam/mock/model";
+import { configuredSyncApi } from "../sync/client";
+import { configuredSyncRuntime } from "../sync/config";
+import { SyncCoordinator } from "../sync/coordinator";
 
 function toSnapshot(
   data: Awaited<ReturnType<ProgressRepository["load"]>>,
@@ -49,17 +53,43 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       ),
     [],
   );
+  const syncRuntime = useMemo(() => configuredSyncRuntime(), []);
+  const syncApi = useMemo(() => configuredSyncApi(syncRuntime), [syncRuntime]);
   const [snapshot, setSnapshot] = useState<ProgressSnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadSnapshot = useCallback(async (): Promise<ProgressSnapshot> => {
+    const [data, attempts] = await Promise.all([
+      repository.load(),
+      mockRepository.listAttempts(),
+    ]);
+    return toSnapshot(data, attempts);
+  }, [mockRepository, repository]);
+
+  const syncCoordinator = useMemo(
+    () =>
+      new SyncCoordinator({
+        repository,
+        api: syncApi,
+        validCardIds: cardIds,
+        syncAppUrl: syncRuntime.appUrl ?? undefined,
+        unavailableMessage: syncRuntime.reason ?? undefined,
+        onApplied: async () => {
+          setSnapshot(await loadSnapshot());
+        },
+      }),
+    [loadSnapshot, repository, syncApi, syncRuntime],
+  );
+
   useEffect(() => {
     let cancelled = false;
-    Promise.all([repository.load(), mockRepository.listAttempts()])
-      .then(([data, attempts]) => {
+    loadSnapshot()
+      .then((nextSnapshot) => {
         if (!cancelled) {
-          setSnapshot(toSnapshot(data, attempts));
+          setSnapshot(nextSnapshot);
           setIsLoading(false);
+          syncCoordinator.request("startup", true);
         }
       })
       .catch((loadError: unknown) => {
@@ -72,7 +102,15 @@ export function ProgressProvider({ children }: PropsWithChildren) {
     return () => {
       cancelled = true;
     };
-  }, [mockRepository, repository]);
+  }, [loadSnapshot, syncCoordinator]);
+
+  useEffect(() => {
+    const stop = syncCoordinator.start();
+    return () => {
+      stop();
+      syncCoordinator.dispose();
+    };
+  }, [syncCoordinator]);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -83,6 +121,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
         setSnapshot((current) =>
           current === null ? current : { ...current, settings },
         );
+        syncCoordinator.request("settings");
         setError(null);
       } catch (saveError: unknown) {
         const message = errorMessage(saveError);
@@ -90,7 +129,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
         throw new Error(message);
       }
     },
-    [repository],
+    [repository, syncCoordinator],
   );
 
   const recordReview = useCallback(
@@ -114,6 +153,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
             ]),
           };
         });
+        syncCoordinator.request("review");
         setError(null);
         return result;
       } catch (reviewError: unknown) {
@@ -122,7 +162,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
         throw new Error(message);
       }
     },
-    [repository],
+    [repository, syncCoordinator],
   );
 
   const exportProgress = useCallback(() => {
@@ -133,12 +173,8 @@ export function ProgressProvider({ children }: PropsWithChildren) {
   }, [snapshot]);
 
   const refreshProgress = useCallback(async () => {
-    const [data, attempts] = await Promise.all([
-      repository.load(),
-      mockRepository.listAttempts(),
-    ]);
-    setSnapshot(toSnapshot(data, attempts));
-  }, [mockRepository, repository]);
+    setSnapshot(await loadSnapshot());
+  }, [loadSnapshot]);
 
   const createMockAttempt = useCallback(
     async (attempt: MockAttempt) => {
@@ -185,9 +221,10 @@ export function ProgressProvider({ children }: PropsWithChildren) {
     async (id: string, abandonedAt: string) => {
       const abandoned = await mockRepository.abandonAttempt(id, abandonedAt);
       await refreshProgress();
+      syncCoordinator.request("mock-abandoned");
       return abandoned;
     },
-    [mockRepository, refreshProgress],
+    [mockRepository, refreshProgress, syncCoordinator],
   );
 
   const finalizeMockAttempt = useCallback(
@@ -199,6 +236,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
           committedAt,
         );
         await refreshProgress();
+        syncCoordinator.request("mock-finalized");
         setError(null);
         return finalized;
       } catch (finalizeError: unknown) {
@@ -207,7 +245,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
         throw new Error(message);
       }
     },
-    [mockRepository, refreshProgress],
+    [mockRepository, refreshProgress, syncCoordinator],
   );
 
   const replaceProgress = useCallback(
@@ -215,6 +253,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       try {
         await repository.replaceAll(backup);
         await refreshProgress();
+        syncCoordinator.request("progress-import");
         setError(null);
       } catch (replaceError: unknown) {
         const message = errorMessage(replaceError);
@@ -222,11 +261,12 @@ export function ProgressProvider({ children }: PropsWithChildren) {
         throw new Error(message);
       }
     },
-    [refreshProgress, repository],
+    [refreshProgress, repository, syncCoordinator],
   );
 
   const resetProgress = useCallback(async () => {
     try {
+      await syncCoordinator.disconnect();
       await repository.resetAll();
       await refreshProgress();
       setError(null);
@@ -235,7 +275,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       setError(message);
       throw new Error(message);
     }
-  }, [refreshProgress, repository]);
+  }, [refreshProgress, repository, syncCoordinator]);
 
   const value = useMemo<ProgressContextValue>(
     () => ({
@@ -272,5 +312,9 @@ export function ProgressProvider({ children }: PropsWithChildren) {
     ],
   );
 
-  return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;
+  return (
+    <ProgressContext.Provider value={value}>
+      <SyncProvider coordinator={syncCoordinator}>{children}</SyncProvider>
+    </ProgressContext.Provider>
+  );
 }

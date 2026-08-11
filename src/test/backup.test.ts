@@ -1,3 +1,4 @@
+import { deleteDB } from "idb";
 import { describe, expect, it } from "vitest";
 import { cardIds, cards } from "../data/deck";
 import {
@@ -7,6 +8,7 @@ import {
 } from "../domain/backup";
 import { ProgressRepository } from "../db/progressRepository";
 import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
+import { createDeviceId, createSyncGroupCredentials } from "../sync/pairing";
 
 describe("progress backups", () => {
   it("round-trips export, reset, and import with exact mutable state", async () => {
@@ -221,5 +223,61 @@ describe("progress backups", () => {
       reviewCount: 2,
     });
     expect(derived.stateByCardId["ch01-002"].learningState).toBe("unseen");
+  });
+
+  it("keeps sync credentials out of the portable backup", () => {
+    const text = serializeProgressBackup(
+      {
+        settings: { examAt: null, studyBufferHours: 24 },
+        cardStates: {},
+        reviewEvents: [],
+        mockAttempts: [],
+      },
+      "2026-08-10T02:00:00.000Z",
+    );
+
+    expect(text).not.toMatch(/authToken|encryptionKey|syncId|pairing/i);
+  });
+
+  it("stamps imported settings as a local edit when connected", async () => {
+    const databaseName = `backup-sync-${Date.now()}-${Math.random()}`;
+    const repository = new ProgressRepository(cardIds, databaseName);
+    const credentials = createSyncGroupCredentials();
+    const deviceId = createDeviceId();
+    const nextSettings = { examAt: "2026-08-20T10:00:00.000Z", studyBufferHours: 6 };
+
+    try {
+      await repository.resetAll();
+      await repository.saveSyncConfig({
+        key: "app",
+        deviceId,
+        group: { ...credentials, remoteVersion: 1 },
+        lastSyncedAt: "2026-08-10T00:00:00.000Z",
+        settingsStamp: {
+          value: { examAt: null, studyBufferHours: 24 },
+          updatedAt: "2026-08-10T00:00:00.000Z",
+          deviceId,
+        },
+      });
+      await repository.replaceAll(
+        createProgressBackup({
+          settings: nextSettings,
+          cardStates: {},
+          reviewEvents: [],
+          mockAttempts: [],
+        }),
+      );
+
+      const state = await repository.loadSyncState();
+      expect(state.settings).toEqual(nextSettings);
+      expect(state.syncConfig.group).toEqual({ ...credentials, remoteVersion: 1 });
+      expect(state.syncConfig.settingsStamp?.value).toEqual(nextSettings);
+      expect(
+        Date.parse(state.syncConfig.settingsStamp?.updatedAt ?? ""),
+      ).toBeGreaterThan(Date.parse("2026-08-10T00:00:00.000Z"));
+    } finally {
+      await repository.close();
+      await deleteDB(databaseName);
+    }
   });
 });

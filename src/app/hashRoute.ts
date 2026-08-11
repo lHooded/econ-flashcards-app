@@ -12,6 +12,7 @@ export interface ParsedHashLocation {
   readonly studyScope: StudyScope;
   readonly attemptId: string | null;
   readonly practiceMode: "mcq" | "stimulus" | "written" | "calculations" | null;
+  readonly pairingCode?: string | null;
 }
 
 export function parseHashLocation(hash: string): ParsedHashLocation {
@@ -30,11 +31,13 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
   }
 
   if (path === "/settings") {
+    const params = safeParams(query);
     return {
       route: "/settings",
       studyScope: DEFAULT_STUDY_SCOPE,
       attemptId: null,
       practiceMode: null,
+      pairingCode: params.get("pair"),
     };
   }
 
