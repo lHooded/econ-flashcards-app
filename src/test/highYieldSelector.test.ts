@@ -100,6 +100,31 @@ describe("High-Yield Cram selection policy", () => {
     expect(highYield.whyNow).toContain("Directly tested in the 2020 final");
   });
 
+  it("lets existing progress outweigh static FX priority", () => {
+    const fixture = cards.filter((card) => ["ch09-016", "ch01-028"].includes(card.id));
+    const strongFx = canonicalReview(
+      "strong-fx",
+      "ch09-016",
+      START - 60 * 60 * 1000,
+      true,
+    );
+    const selected = selectHighYieldNextStep({
+      cards: fixture,
+      reviews: [strongFx],
+      settings: NO_EXAM,
+      nowMs: START,
+    });
+    expect(targetCardId(selected)).toBe("ch01-028");
+    expect(
+      rankHighYieldUnseenCards({
+        cards: fixture,
+        reviews: [strongFx],
+        settings: NO_EXAM,
+        nowMs: START,
+      }).every((candidate) => candidate.card.id !== "ch09-016"),
+    ).toBe(true);
+  });
+
   it("values a low-level prerequisite because it unlocks a high-yield descendant", () => {
     const ranked = rankHighYieldUnseenCards({
       cards: cards.filter((card) => ["ch09-016", "ch01-009"].includes(card.id)),
