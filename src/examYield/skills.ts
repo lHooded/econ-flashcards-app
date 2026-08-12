@@ -1,38 +1,55 @@
-import type { ExamSkillEvidence, ExamSkillSourceEvidence } from "./model";
+import type {
+  ExamEvidenceRelation,
+  ExamSkillEvidence,
+  ExamSkillSourceEvidence,
+} from "./model";
 
 const evidence = (
   sourceId: string,
+  relation: ExamEvidenceRelation,
   strength: number,
   note: string,
-): ExamSkillSourceEvidence => ({ sourceId, strength, note });
+): ExamSkillSourceEvidence => ({ sourceId, relation, strength, note });
 
 const current = evidence(
   "current-exam-details",
+  "format",
   1,
   "Current exam scope and comprehensive 60-MCQ format.",
 );
 const course = evidence(
   "current-course-outline-2025",
+  "scope",
   1,
   "Current course material remains the source of model truth.",
 );
-const final2020 = evidence(
+const finalDirect = evidence(
   "actual-final-2020",
+  "direct",
   1,
-  "Directly tested in the public 2020 final preview.",
+  "The visible 2020 final directly tests this skill or mechanism.",
 );
-const practice = evidence(
+const finalFamily = evidence(
+  "actual-final-2020",
+  "family",
+  0.5,
+  "The visible 2020 final tests a closely related mechanism, not this exact retrieval skill.",
+);
+const practiceDirect = evidence(
   "final-practice-2018-19",
+  "direct",
   1,
-  "Repeated or closely practised in course-specific final MCQ material.",
+  "The public 2018/19 course-specific MCQ practice directly includes this skill.",
 );
 const sample = evidence(
   "sample-final-2020",
+  "family",
   0.9,
   "Integrated final-style reasoning signal.",
 );
 const recent = evidence(
   "recent-course-assessments",
+  "scope",
   0.8,
   "Supported by current lecture/tutorial/data-exercise material.",
 );
@@ -41,7 +58,7 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
   {
     id: "critical-ad-as-self-correction",
     label: "AD-AS demand shocks and self-correction",
-    conceptIds: [
+    targetConceptIds: [
       "aggregate-demand",
       "demand-shock",
       "self-correction",
@@ -54,12 +71,12 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [8],
     tier: "critical",
     crossChapterMechanism: true,
-    sourceEvidence: [current, course, final2020, practice, sample],
+    sourceEvidence: [current, course, finalDirect, practiceDirect, sample],
   },
   {
     id: "critical-supply-shock-policy-tradeoff",
     label: "Adverse supply shocks and policy trade-offs",
-    conceptIds: [
+    targetConceptIds: [
       "adverse-supply-shock",
       "supply-shock",
       "demand-stabilisation",
@@ -72,12 +89,12 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [8],
     tier: "critical",
     crossChapterMechanism: true,
-    sourceEvidence: [current, course, final2020, practice, recent],
+    sourceEvidence: [current, course, finalDirect, practiceDirect, recent],
   },
   {
     id: "critical-fx-quotes-and-market",
     label: "FX quote conventions and demand/supply",
-    conceptIds: [
+    targetConceptIds: [
       "nominal-exchange-rate",
       "aud-quotation",
       "exchange-rate",
@@ -109,27 +126,27 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [9],
     tier: "critical",
     crossChapterMechanism: true,
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "critical-real-versus-nominal-exchange-rate",
     label: "Nominal versus real exchange rates",
-    conceptIds: [
+    targetConceptIds: [
       "real-exchange-rate",
       "real-appreciation",
       "nominal-exchange-rate",
-      "price-level",
     ],
+    supportingConceptIds: ["price-level"],
     cardIds: ["ch09-022", "ch09-023"],
     questionIds: ["auth-ch09-007"],
     chapterHints: [9],
     tier: "critical",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalFamily, practiceDirect],
   },
   {
     id: "critical-loop-ppp-relative-inflation",
     label: "LOOP, PPP and relative inflation",
-    conceptIds: [
+    targetConceptIds: [
       "law-one-price",
       "purchasing-power-parity",
       "relative-ppp",
@@ -140,12 +157,12 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [9],
     tier: "critical",
     crossChapterMechanism: true,
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "critical-bop-current-account",
     label: "BOP, current account and saving identity",
-    conceptIds: [
+    targetConceptIds: [
       "balance-of-payments",
       "current-account",
       "trade-balance",
@@ -167,29 +184,29 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [9],
     tier: "critical",
     crossChapterMechanism: true,
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalFamily, practiceDirect],
   },
   {
     id: "critical-fixed-peg-intervention",
     label: "Fixed exchange rates and peg intervention",
-    conceptIds: [
+    targetConceptIds: [
       "fixed-exchange-rate",
       "overvalued-peg",
       "undervalued-peg",
       "defending-peg",
-      "foreign-exchange-market",
     ],
+    supportingConceptIds: ["foreign-exchange-market"],
     cardIds: ["ch09-035", "ch09-036", "ch09-037", "ch09-039", "mix-025"],
     questionIds: ["mix-025", "auth-stim-ch09-002"],
     chapterHints: [9],
     tier: "critical",
     crossChapterMechanism: true,
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "critical-speculative-attack-defence",
     label: "Speculative attack and peg defence",
-    conceptIds: [
+    targetConceptIds: [
       "speculative-attack",
       "fixed-exchange-rate",
       "defending-peg",
@@ -200,12 +217,12 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [9],
     tier: "critical",
     crossChapterMechanism: true,
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "critical-cobb-douglas-production",
     label: "Cobb-Douglas and production functions",
-    conceptIds: [
+    targetConceptIds: [
       "production-function",
       "cobb-douglas",
       "constant-returns-to-scale",
@@ -221,78 +238,73 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     ],
     chapterHints: [10],
     tier: "critical",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalFamily, practiceDirect],
   },
   {
     id: "critical-growth-accounting-tfp",
     label: "Growth accounting and TFP",
-    conceptIds: [
+    targetConceptIds: [
       "growth-accounting",
       "total-factor-productivity",
-      "productivity",
       "labour-productivity",
     ],
+    supportingConceptIds: ["productivity"],
     cardIds: ["ch10-018", "ch10-025", "ch10-026", "ch10-027"],
     questionIds: ["mix-026", "auth-ch10-004", "auth-stim-ch10-003"],
     chapterHints: [10],
     tier: "critical",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalFamily, practiceDirect],
   },
   {
     id: "critical-capital-versus-technology",
     label: "Capital deepening versus sustained technology growth",
-    conceptIds: [
+    targetConceptIds: [
       "capital-deepening",
       "capital-accumulation-limits",
       "technology-ideas",
       "total-factor-productivity",
-      "productivity",
     ],
+    supportingConceptIds: ["productivity"],
     cardIds: ["ch10-015", "ch10-016", "ch10-019", "mix-028"],
     questionIds: ["mix-028", "auth-ch10-004", "auth-stim-ch10-002"],
     chapterHints: [10],
     tier: "critical",
     crossChapterMechanism: true,
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "critical-trade-weighted-index",
     label: "Trade-weighted index and competitiveness",
-    conceptIds: [
+    targetConceptIds: [
       "trade-weighted-index",
       "real-exchange-rate",
       "real-appreciation",
       "purchasing-power-parity",
-      "net-exports",
     ],
+    supportingConceptIds: ["net-exports"],
     cardIds: ["ch09-041", "ch09-022", "ch09-023", "ch09-026"],
     questionIds: ["auth-ch09-011"],
     chapterHints: [9],
     tier: "critical",
     crossChapterMechanism: true,
-    sourceEvidence: [current, course, practice, recent],
+    sourceEvidence: [current, course, practiceDirect, recent],
   },
   {
     id: "very-high-bank-deposit-creation",
     label: "Bank balance sheets and deposit creation",
-    conceptIds: [
-      "bank-balance-sheet",
-      "bank-lending",
-      "money-creation",
-      "deposit",
-      "reserves",
-    ],
+    targetConceptIds: ["bank-balance-sheet", "bank-lending", "money-creation"],
+    supportingConceptIds: ["deposit", "reserves"],
     cardIds: ["ch06-015", "ch06-017", "mix-014"],
     questionIds: ["mix-014", "auth-ch06-006", "auth-ch06-007"],
     chapterHints: [6],
     crossChapterMechanism: true,
     tier: "very-high",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "very-high-bank-risk-chain",
     label: "Bank leverage, solvency, runs and safety-net regulation",
-    conceptIds: [
+    targetConceptIds: [
       "bank-leverage",
       "solvency",
       "liquidity",
@@ -305,13 +317,13 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [6],
     crossChapterMechanism: true,
     tier: "very-high",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "very-high-money-destruction",
     label: "Money destruction through repayment and write-off distinctions",
-    conceptIds: [
-      "money-destruction",
+    targetConceptIds: ["money-destruction"],
+    supportingConceptIds: [
       "money-creation",
       "bank-lending",
       "bank-balance-sheet",
@@ -323,18 +335,13 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [6],
     crossChapterMechanism: true,
     tier: "very-high",
-    sourceEvidence: [current, course, practice, recent],
+    sourceEvidence: [current, course, practiceDirect, recent],
   },
   {
     id: "very-high-prf-taylor",
     label: "PRF, Taylor rule and Taylor principle",
-    conceptIds: [
-      "policy-reaction-function",
-      "taylor-rule",
-      "taylor-principle",
-      "output-gap",
-      "inflation-target",
-    ],
+    targetConceptIds: ["policy-reaction-function", "taylor-rule", "taylor-principle"],
+    supportingConceptIds: ["output-gap", "inflation-target"],
     cardIds: ["ch07-022", "ch07-023", "ch07-024", "ch07-026", "ch07-027"],
     questionIds: [
       "auth-ch07-009",
@@ -346,67 +353,61 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [7],
     crossChapterMechanism: true,
     tier: "very-high",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalFamily, practiceDirect],
   },
   {
     id: "very-high-zlb-deflation-fisher",
     label: "PRF, deflation, ZLB and the Fisher relation",
-    conceptIds: [
+    targetConceptIds: [
       "zero-lower-bound",
       "nominal-interest-rate",
       "real-interest-rate",
-      "inflation",
       "deflation",
       "inflation-expectations",
       "policy-reaction-function",
     ],
+    supportingConceptIds: ["inflation"],
     cardIds: ["ch03-006", "ch03-007", "ch03-008", "ch07-025", "ch07-026"],
     questionIds: ["auth-ch01-010", "auth-ch03-002", "auth-ch03-003", "auth-ch07-012"],
     chapterHints: [3, 7],
     crossChapterMechanism: true,
     tier: "very-high",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "very-high-monetary-transmission",
     label: "Monetary transmission through rates and AD",
-    conceptIds: [
-      "cash-rate",
+    targetConceptIds: [
       "monetary-transmission",
       "real-rate-channel",
       "yield-curve",
       "bond-yield",
       "expectations-hypothesis",
-      "aggregate-demand",
     ],
+    supportingConceptIds: ["cash-rate", "aggregate-demand"],
     cardIds: ["ch07-005", "ch07-016", "ch07-018", "ch07-019"],
     questionIds: ["auth-ch07-002", "auth-ch07-007", "auth-ch07-008", "auth-ch09-010"],
     chapterHints: [7, 8, 9],
     crossChapterMechanism: true,
     tier: "very-high",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalFamily, practiceDirect],
   },
   {
     id: "very-high-cash-rate-security-market",
     label: "Cash rate to short-term security price and yield",
-    conceptIds: [
-      "cash-rate-security-transmission",
-      "cash-rate",
-      "bond-price",
-      "bond-yield",
-      "expectations-hypothesis",
-    ],
+    targetConceptIds: ["cash-rate-security-transmission", "expectations-hypothesis"],
+    supportingConceptIds: ["cash-rate", "bond-price", "bond-yield"],
     cardIds: ["ch07-029", "ch06-004", "ch07-018", "ch07-019"],
     questionIds: ["auth-ch07-011", "auth-stim-ch06-001"],
     chapterHints: [7],
     crossChapterMechanism: true,
     tier: "very-high",
-    sourceEvidence: [current, course, practice, recent],
+    sourceEvidence: [current, course, practiceDirect, recent],
   },
   {
     id: "very-high-small-open-fiscal",
     label: "Small-open saving, investment and fiscal interaction",
-    conceptIds: [
+    targetConceptIds: [
       "small-open-economy",
       "open-economy-saving-identity",
       "national-saving",
@@ -419,12 +420,12 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [3, 9],
     crossChapterMechanism: true,
     tier: "very-high",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "very-high-rba-corridor-omo",
     label: "RBA cash-rate corridor and OMO mechanics",
-    conceptIds: [
+    targetConceptIds: [
       "cash-rate-corridor",
       "reserve-demand",
       "settlement-balances",
@@ -444,28 +445,23 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [7],
     crossChapterMechanism: true,
     tier: "very-high",
-    sourceEvidence: [current, course, practice, recent],
+    sourceEvidence: [current, course, practiceDirect, recent],
   },
   {
     id: "very-high-growth-convergence",
     label: "Growth catch-up and convergence",
-    conceptIds: [
-      "convergence",
-      "catch-up-growth",
-      "economic-growth",
-      "technology-ideas",
-      "capital-deepening",
-    ],
+    targetConceptIds: ["convergence", "catch-up-growth"],
+    supportingConceptIds: ["economic-growth", "technology-ideas", "capital-deepening"],
     cardIds: ["ch10-007", "ch10-029"],
     questionIds: ["auth-ch10-010"],
     chapterHints: [10],
     tier: "very-high",
-    sourceEvidence: [current, course, practice, recent],
+    sourceEvidence: [current, course, practiceDirect, recent],
   },
   {
     id: "core-gdp-value-added",
     label: "GDP, value added and nominal-real measurement",
-    conceptIds: [
+    targetConceptIds: [
       "gross-domestic-product",
       "intermediate-good",
       "value-added",
@@ -478,12 +474,18 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     questionIds: ["auth-ch01-001", "auth-ch01-002", "auth-ch01-005", "auth-ch01-007"],
     chapterHints: [1],
     tier: "core",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "core-cpi-inflation-deflation",
     label: "CPI, inflation and deflation calculations",
-    conceptIds: ["cpi", "inflation", "price-level", "percentage-change", "deflation"],
+    targetConceptIds: [
+      "cpi",
+      "inflation",
+      "price-level",
+      "percentage-change",
+      "deflation",
+    ],
     cardIds: ["ch01-018", "ch01-019", "ch01-027", "ch01-033"],
     questionIds: [
       "auth-ch01-006",
@@ -493,12 +495,12 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     ],
     chapterHints: [1],
     tier: "core",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "core-labour-wage-floor",
     label: "Labour statistics and wage-floor model",
-    conceptIds: [
+    targetConceptIds: [
       "unemployment-rate",
       "labour-force",
       "participation-rate",
@@ -517,12 +519,12 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     chapterHints: [2],
     crossChapterMechanism: true,
     tier: "core",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalDirect, practiceDirect],
   },
   {
     id: "core-pae-multiplier-inventories",
     label: "PAE, inventories and the multiplier",
-    conceptIds: [
+    targetConceptIds: [
       "pae-equilibrium",
       "planned-aggregate-expenditure",
       "inventory",
@@ -545,7 +547,7 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
   {
     id: "core-fiscal-multipliers-debt",
     label: "Fiscal multipliers, stabilisers and debt",
-    conceptIds: [
+    targetConceptIds: [
       "fiscal-policy",
       "government-spending-multiplier",
       "automatic-stabilisers",
@@ -567,17 +569,23 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
   {
     id: "core-bond-price-yield",
     label: "Bond price and yield",
-    conceptIds: ["bond", "bond-price", "bond-yield", "interest-rate", "present-value"],
+    targetConceptIds: [
+      "bond",
+      "bond-price",
+      "bond-yield",
+      "interest-rate",
+      "present-value",
+    ],
     cardIds: ["ch06-003", "ch06-004", "mix-012"],
     questionIds: ["mix-012", "auth-ch06-002", "auth-stim-ch06-001"],
     chapterHints: [6],
     tier: "core",
-    sourceEvidence: [current, course, practice, recent],
+    sourceEvidence: [current, course, practiceDirect, recent],
   },
   {
     id: "core-fisher-real-rate",
     label: "Fisher real-rate reasoning",
-    conceptIds: [
+    targetConceptIds: [
       "nominal-interest-rate",
       "real-interest-rate",
       "fisher-relationship",
@@ -587,7 +595,7 @@ export const examSkillEvidence: readonly ExamSkillEvidence[] = Object.freeze([
     questionIds: ["auth-ch03-002", "auth-ch03-003", "auth-stim-ch03-003"],
     chapterHints: [3, 7],
     tier: "core",
-    sourceEvidence: [current, course, final2020, practice],
+    sourceEvidence: [current, course, finalFamily, practiceDirect],
   },
 ]);
 

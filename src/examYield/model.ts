@@ -13,6 +13,10 @@ export const EXAM_YIELD_TIERS = ["critical", "very-high", "core", "support"] as 
 
 export type ExamYieldTier = (typeof EXAM_YIELD_TIERS)[number];
 
+export const EXAM_EVIDENCE_RELATIONS = ["direct", "family", "scope", "format"] as const;
+
+export type ExamEvidenceRelation = (typeof EXAM_EVIDENCE_RELATIONS)[number];
+
 export interface ExamEvidenceSource {
   readonly id: string;
   readonly year: number;
@@ -25,6 +29,8 @@ export interface ExamEvidenceSource {
 
 export interface ExamSkillSourceEvidence {
   readonly sourceId: string;
+  /** How the source relates to this exact skill, not a probability. */
+  readonly relation: ExamEvidenceRelation;
   /** A transparent strength of this skill signal within the source, not a probability. */
   readonly strength: number;
   readonly note: string;
@@ -33,7 +39,10 @@ export interface ExamSkillSourceEvidence {
 export interface ExamSkillEvidence {
   readonly id: string;
   readonly label: string;
-  readonly conceptIds: readonly string[];
+  /** Concepts that constitute the examinable skill and originate direct yield. */
+  readonly targetConceptIds: readonly string[];
+  /** Background concepts useful for explanation, but not entitled to direct yield. */
+  readonly supportingConceptIds?: readonly string[];
   readonly cardIds: readonly string[];
   readonly questionIds: readonly string[];
   readonly chapterHints: readonly number[];

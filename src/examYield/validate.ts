@@ -4,6 +4,7 @@ import { cardConceptMap } from "../knowledge/contentMap";
 import { knowledgeConcepts } from "../knowledge/data";
 import {
   EXAM_EVIDENCE_KINDS,
+  EXAM_EVIDENCE_RELATIONS,
   EXAM_YIELD_TIERS,
   type ExamEvidenceSource,
   type ExamSkillEvidence,
@@ -76,13 +77,23 @@ export function validateExamYieldBlueprint(
         issues.push(`skill "${skill.id}" has invalid chapter hint ${String(chapter)}`);
       }
     }
-    if (skill.conceptIds.length === 0) {
-      issues.push(`skill "${skill.id}" must map at least one concept`);
+    const supportingConceptIds = skill.supportingConceptIds ?? [];
+    if (skill.targetConceptIds.length === 0) {
+      issues.push(`skill "${skill.id}" must map at least one target concept`);
     }
-    validateUniqueIds(skill.id, "concept", skill.conceptIds, issues);
+    validateUniqueIds(skill.id, "target concept", skill.targetConceptIds, issues);
+    validateUniqueIds(skill.id, "supporting concept", supportingConceptIds, issues);
+    const targetConceptIdSet = new Set(skill.targetConceptIds);
+    for (const conceptId of supportingConceptIds) {
+      if (targetConceptIdSet.has(conceptId)) {
+        issues.push(
+          `skill "${skill.id}" lists concept "${conceptId}" as both target and supporting`,
+        );
+      }
+    }
     validateUniqueIds(skill.id, "card", skill.cardIds, issues);
     validateUniqueIds(skill.id, "question", skill.questionIds, issues);
-    for (const conceptId of skill.conceptIds) {
+    for (const conceptId of [...skill.targetConceptIds, ...supportingConceptIds]) {
       mappedConceptIds.add(conceptId);
       if (!conceptIds.has(conceptId)) {
         issues.push(`skill "${skill.id}" references unknown concept "${conceptId}"`);
@@ -128,6 +139,11 @@ export function validateExamYieldBlueprint(
       if (!evidence.note.trim()) {
         issues.push(`skill "${skill.id}" has an empty source note`);
       }
+      if (!EXAM_EVIDENCE_RELATIONS.includes(evidence.relation)) {
+        issues.push(
+          `skill "${skill.id}" has invalid evidence relation "${String(evidence.relation)}"`,
+        );
+      }
     }
   }
 
@@ -152,7 +168,7 @@ export function validateExamYieldBlueprint(
   const criticalWithRetrieval = input.skills.filter(
     (skill) =>
       skill.tier === "critical" &&
-      skill.conceptIds.length > 0 &&
+      skill.targetConceptIds.length > 0 &&
       skill.cardIds.length > 0,
   ).length;
 

@@ -7615,7 +7615,7 @@
       "front": "In the simplified bank-balance-sheet model, what happens to deposit money when a borrower repays the principal of a bank loan from a deposit account at that bank?",
       "answer": "The bank loan asset and the matching deposit liability both fall by the principal repaid, so the corresponding deposit money is destroyed.",
       "explanation": "New bank lending can create a loan asset and a deposit liability together. Repayment reverses that entry: the borrower’s deposit is used to reduce the loan principal, lowering both the bank’s loan asset and its deposit liability. A loan default or write-off can also reduce the bank asset and equity, but the exact deposit effect depends on how the loss is settled; do not treat every bank loss as identical to a voluntary repayment.",
-      "common_trap": "An interbank payment normally transfers deposits and reserves between banks; it does not by itself destroy total deposit money. The reverse-money mechanism is the repayment/write-off transaction, not every movement of funds.",
+      "common_trap": "An interbank payment normally transfers deposits and reserves between banks; it does not by itself destroy total deposit money. Principal repayment is the clean reverse of loan-created deposit money. A loan write-off primarily reduces the loan asset and bank equity; it does not automatically destroy an equal deposit balance.",
       "difficulty": 2,
       "tags": [
         "chapter-6",

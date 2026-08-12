@@ -57,12 +57,40 @@ describe("immutable exam-yield blueprint", () => {
           {
             ...examSkillEvidence[0],
             id: "invalid",
-            conceptIds: ["missing-concept"],
+            targetConceptIds: ["missing-concept"],
             probability: 0.5,
           } as never,
         ],
       }),
     ).toThrow(/unknown concept|forbidden probability/);
+
+    expect(() =>
+      validateExamYieldBlueprint({
+        sources: examEvidenceSources,
+        skills: [
+          {
+            ...examSkillEvidence[0],
+            id: "invalid-relation",
+            sourceEvidence: [
+              { ...examSkillEvidence[0].sourceEvidence[0], relation: "unsupported" },
+            ],
+          } as never,
+        ],
+      }),
+    ).toThrow(/invalid evidence relation/);
+
+    expect(() =>
+      validateExamYieldBlueprint({
+        sources: examEvidenceSources,
+        skills: [
+          {
+            ...examSkillEvidence[0],
+            id: "invalid-supporting-concept",
+            supportingConceptIds: ["missing-supporting-concept"],
+          } as never,
+        ],
+      }),
+    ).toThrow(/unknown concept/);
 
     expect(() =>
       validateExamYieldBlueprint({
@@ -90,6 +118,50 @@ describe("immutable exam-yield blueprint", () => {
     expect(getExamYieldReasons("ch09-041")[0]?.label).toBe(
       "Repeated in final MCQ practice",
     );
+  });
+
+  it("matches the committed 29-skill attribution audit", () => {
+    const relationFor = (skill: (typeof examSkillEvidence)[number], sourceId: string) =>
+      skill.sourceEvidence.find((evidence) => evidence.sourceId === sourceId)
+        ?.relation ?? "none";
+    expect(
+      examSkillEvidence.filter(
+        (skill) => relationFor(skill, "actual-final-2020") === "direct",
+      ),
+    ).toHaveLength(14);
+    expect(
+      examSkillEvidence.filter(
+        (skill) => relationFor(skill, "actual-final-2020") === "family",
+      ),
+    ).toHaveLength(7);
+    expect(
+      examSkillEvidence.filter(
+        (skill) => relationFor(skill, "actual-final-2020") === "none",
+      ),
+    ).toHaveLength(8);
+    expect(
+      examSkillEvidence.filter(
+        (skill) => relationFor(skill, "final-practice-2018-19") === "direct",
+      ),
+    ).toHaveLength(27);
+    expect(
+      examSkillEvidence.every((skill) =>
+        skill.sourceEvidence.every((evidence) => evidence.note.trim().length > 0),
+      ),
+    ).toBe(true);
+    expect(
+      examSkillEvidence
+        .find((skill) => skill.id === "critical-cobb-douglas-production")
+        ?.sourceEvidence.find((evidence) => evidence.sourceId === "actual-final-2020")
+        ?.relation,
+    ).toBe("family");
+    expect(
+      examSkillEvidence
+        .find((skill) => skill.id === "critical-cobb-douglas-production")
+        ?.sourceEvidence.find(
+          (evidence) => evidence.sourceId === "final-practice-2018-19",
+        )?.relation,
+    ).toBe("direct");
   });
 });
 

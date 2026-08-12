@@ -452,13 +452,17 @@ function deriveHighYieldProgress(
 ) {
   const stateById = scheduler.stateByCardId;
   const introduced = (skill: (typeof examSkillEvidence)[number]) =>
-    skill.conceptIds.some((conceptId) => isConceptIntroducedEnough(conceptId, reviews));
+    skill.targetConceptIds.some((conceptId) =>
+      isConceptIntroducedEnough(conceptId, reviews),
+    );
   const solid = (skill: (typeof examSkillEvidence)[number]) =>
-    skill.conceptIds.length > 0 &&
-    skill.conceptIds.every((conceptId) => statuses.get(conceptId) === "solid");
+    skill.targetConceptIds.length > 0 &&
+    skill.targetConceptIds.every((conceptId) => statuses.get(conceptId) === "solid");
   const due = (skill: (typeof examSkillEvidence)[number]) =>
     skill.cardIds.some((cardId) => stateById[cardId]?.isDue === true) ||
-    skill.conceptIds.some((conceptId) => statuses.get(conceptId) === "needs-work");
+    skill.targetConceptIds.some(
+      (conceptId) => statuses.get(conceptId) === "needs-work",
+    );
   return {
     criticalIntroduced: examSkillEvidence.filter(
       (skill) => skill.tier === "critical" && introduced(skill),

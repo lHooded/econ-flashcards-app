@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { MockResults } from "../components/mock/MockResults";
@@ -58,7 +58,11 @@ describe("historical mock results", () => {
     );
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("1 / 60");
-    expect(screen.getAllByText(/\d+ \/ \d+/).length).toBeGreaterThan(0);
+    expect(
+      within(screen.getByRole("region", { name: "Mock result summary" })).getByText(
+        "1 / 60",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText(currentQuestion.stem)).toBeInTheDocument();
     expect(screen.getAllByText(/Chapter 8 ·/).length).toBeGreaterThan(0);
     view.rerender(<MockResults attempt={historical} questionsById={new Map()} />);

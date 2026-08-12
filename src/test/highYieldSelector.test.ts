@@ -3,12 +3,20 @@ import { cards } from "../data/deck";
 import { createReviewEvent, type ReviewEvent } from "../domain/progress";
 import { examQuestions } from "../exam/questionBank";
 import { examSkillEvidence } from "../examYield/skills";
+import { deriveExamPhase } from "../study/examSrs/deriveState";
 import {
   rankHighYieldUnseenCards,
   selectHighYieldNextStep,
 } from "../knowledge/guided/highYieldSelector";
+import {
+  directYieldForSkill,
+  getExamYieldForCard,
+  getExamYieldReasons,
+} from "../examYield/score";
 import { selectGuidedNextStep } from "../knowledge/guided/selector";
 import { selectNextCard } from "../study/examSrs/selector";
+import { deriveCardState, deriveReviewEvidence } from "../study/examSrs/deriveState";
+import { EXAM_SRS_INTERVALS } from "../study/examSrs/intervals";
 import { buildMockExam } from "../exam/mock/selector";
 
 const START = Date.parse("2026-08-12T00:00:00.000Z");
@@ -20,15 +28,39 @@ function canonicalReview(
   reviewedAt: number,
   correct: boolean,
 ): ReviewEvent {
+  return canonicalOutcomeReview(
+    id,
+    cardId,
+    reviewedAt,
+    correct ? "strong_success" : "failure",
+  );
+}
+
+function canonicalOutcomeReview(
+  id: string,
+  cardId: string,
+  reviewedAt: number,
+  outcome: "failure" | "weak_success" | "strong_success",
+): ReviewEvent {
   const card = cards.find((candidate) => candidate.id === cardId)!;
   const isMcq = card.choices !== undefined;
+  if (isMcq && outcome === "weak_success") {
+    throw new Error("Weak recall evidence cannot be emitted for an MCQ card.");
+  }
+  const correct = outcome !== "failure";
   return createReviewEvent({
     id,
     cardId,
     reviewedAt: new Date(reviewedAt).toISOString(),
     mode: isMcq ? "mcq" : "recall",
     correct,
-    rating: isMcq ? null : correct ? "got_it" : "forgot",
+    rating: isMcq
+      ? null
+      : outcome === "failure"
+        ? "forgot"
+        : outcome === "weak_success"
+          ? "struggled"
+          : "got_it",
     responseTimeMs: null,
     selectedChoice: null,
   });
@@ -80,8 +112,54 @@ describe("High-Yield Cram selection policy", () => {
     }
   });
 
-  it("breaks suitable unseen ties with evidence and keeps ordinary Guided neutral", () => {
-    const fixture = cards.filter((card) => ["ch01-013", "ch01-028"].includes(card.id));
+  it("retains weak recall timing and lets urgency beat yield only when due", () => {
+    const fixture = cards.filter((card) => ["ch01-013", "ch09-022"].includes(card.id));
+    const weakEvent = canonicalOutcomeReview(
+      "weak-recall",
+      "ch01-013",
+      START - 10 * 60 * 1000,
+      "weak_success",
+    );
+    expect(weakEvent.mode).toBe("recall");
+    expect(weakEvent.rating).toBe("struggled");
+    expect(deriveReviewEvidence(weakEvent)).toMatchObject({
+      outcome: "weak_success",
+      strengthDelta: 0.5,
+    });
+    const weakState = deriveCardState("ch01-013", [weakEvent], NO_EXAM, START);
+    expect(weakState.learningState).toBe("weak");
+    expect(weakState.dueAt).toBe(
+      new Date(START - 10 * 60 * 1000 + EXAM_SRS_INTERVALS.weakSuccessMs).toISOString(),
+    );
+    expect(weakState.isDue).toBe(false);
+
+    const dueEvent = canonicalOutcomeReview(
+      "weak-recall-due",
+      "ch01-013",
+      START - 60 * 60 * 1000,
+      "weak_success",
+    );
+    const dueInput = {
+      cards: fixture,
+      reviews: [dueEvent],
+      settings: NO_EXAM,
+      nowMs: START,
+    } as const;
+    const ordinaryDue = selectGuidedNextStep(dueInput);
+    const highYieldDue = selectHighYieldNextStep(dueInput);
+    expect(targetCardId(ordinaryDue)).toBe("ch01-013");
+    expect(targetCardId(highYieldDue)).toBe("ch01-013");
+    expect(highYieldDue.kind).toBe("canonical-card");
+    if (highYieldDue.kind === "canonical-card") {
+      expect(highYieldDue.reason).toBe("weak-review");
+    }
+
+    const notDueInput = { ...dueInput, reviews: [weakEvent] } as const;
+    expect(targetCardId(selectHighYieldNextStep(notDueInput))).toBe("ch09-022");
+  });
+
+  it("breaks suitable unseen ties with an explicit high-yield card", () => {
+    const fixture = cards.filter((card) => ["ch09-004", "ch09-022"].includes(card.id));
     const input = {
       cards: fixture,
       reviews: [],
@@ -94,10 +172,31 @@ describe("High-Yield Cram selection policy", () => {
       candidateCardIds: undefined,
     });
     const highYield = selectHighYieldNextStep(input);
-    expect(targetCardId(ordinary)).toBe("ch01-013");
+    expect(targetCardId(ordinary)).toBe("ch09-004");
     expect(ordinaryAgain).toEqual(ordinary);
-    expect(targetCardId(highYield)).toBe("ch01-028");
-    expect(highYield.whyNow).toContain("Directly tested in the 2020 final");
+    expect(targetCardId(highYield)).toBe("ch09-022");
+    expect(highYield.whyNow).toContain("Repeated in final MCQ practice");
+  });
+
+  it("does not leak ZLB/Fisher yield through a broad inflation card", () => {
+    const zlb = examSkillEvidence.find(
+      (skill) => skill.id === "very-high-zlb-deflation-fisher",
+    )!;
+    const zlbDirectYield = directYieldForSkill(zlb);
+    const unexpectedInflation = getExamYieldForCard("ch01-028");
+    expect(zlb.cardIds).not.toContain("ch01-028");
+    expect(unexpectedInflation.directSkillIds).not.toContain(zlb.id);
+    expect(unexpectedInflation.score).toBeLessThan(zlbDirectYield);
+    expect(getExamYieldReasons("ch01-028")).not.toContainEqual({
+      label: "Directly tested in the 2020 final",
+      priority: 100,
+    });
+    if (unexpectedInflation.score > 0) {
+      expect(getExamYieldReasons("ch01-028")).toContainEqual({
+        label: "High-yield prerequisite",
+        priority: 75,
+      });
+    }
   });
 
   it("lets existing progress outweigh static FX priority", () => {
@@ -126,6 +225,15 @@ describe("High-Yield Cram selection policy", () => {
   });
 
   it("values a low-level prerequisite because it unlocks a high-yield descendant", () => {
+    const prerequisite = getExamYieldForCard("ch01-009");
+    const target = getExamYieldForCard("ch09-016");
+    expect(prerequisite.directSkillIds).toEqual([]);
+    expect(prerequisite.score).toBeGreaterThan(0);
+    expect(prerequisite.score).toBeLessThan(target.score);
+    expect(getExamYieldReasons("ch01-009")).toContainEqual({
+      label: "High-yield prerequisite",
+      priority: 75,
+    });
     const ranked = rankHighYieldUnseenCards({
       cards: cards.filter((card) => ["ch09-016", "ch01-009"].includes(card.id)),
       reviews: [],
@@ -229,8 +337,15 @@ describe("High-Yield Cram deterministic simulations", () => {
     let recent: string[] = [];
     const canonicalIds: string[] = [];
     const chapters = new Set<number>();
+    const phases = new Set<string>();
+    const weakCardIds = new Set<string>();
+    const failedCardIds = new Set<string>();
+    const weakReturns = new Set<string>();
+    const failureReturns = new Set<string>();
+    const priorCanonicalOutcomes = new Map<string, "weak" | "failure">();
     let idleAt: number | null = null;
     for (let index = 0; index < actions; index += 1) {
+      phases.add(deriveExamPhase(settings, nowMs));
       const step = selector({
         cards,
         reviews,
@@ -256,10 +371,28 @@ describe("High-Yield Cram deterministic simulations", () => {
       } else if (step.kind === "canonical-card") {
         canonicalIds.push(step.card.id);
         chapters.add(step.card.chapter);
-        const correct = index % 13 !== 0;
+        const canonicalAttempt = canonicalIds.length - 1;
+        const outcome =
+          canonicalAttempt % 7 === 0
+            ? "failure"
+            : canonicalAttempt % 7 === 1 && step.card.choices === undefined
+              ? "weak_success"
+              : "strong_success";
+        const previousOutcome = priorCanonicalOutcomes.get(step.card.id);
+        if (previousOutcome === "failure") failureReturns.add(step.card.id);
+        if (previousOutcome === "weak") weakReturns.add(step.card.id);
+        if (outcome === "failure") {
+          failedCardIds.add(step.card.id);
+          priorCanonicalOutcomes.set(step.card.id, "failure");
+        } else if (outcome === "weak_success") {
+          weakCardIds.add(step.card.id);
+          priorCanonicalOutcomes.set(step.card.id, "weak");
+        } else {
+          priorCanonicalOutcomes.delete(step.card.id);
+        }
         reviews = [
           ...reviews,
-          canonicalReview(`sim-card-${index}`, step.card.id, nowMs, correct),
+          canonicalOutcomeReview(`sim-card-${index}`, step.card.id, nowMs, outcome),
         ];
         recent = [step.card.id, ...recent].slice(0, 3);
       }
@@ -272,12 +405,23 @@ describe("High-Yield Cram deterministic simulations", () => {
     const veryHigh = examSkillEvidence.filter(
       (skill) => skill.tier === "very-high" && skill.cardIds.some((id) => seen.has(id)),
     ).length;
-    return { chapters, critical, veryHigh, canonicalIds, idleAt };
+    return {
+      chapters,
+      critical,
+      veryHigh,
+      canonicalIds,
+      idleAt,
+      phases,
+      weakCardIds,
+      failedCardIds,
+      weakReturns,
+      failureReturns,
+    };
   }
 
   it("reaches high-yield families earlier while preserving breadth and no-deadlock", () => {
-    const highYield = simulate(selectHighYieldNextStep, 150, NO_EXAM);
-    const ordinary = simulate(selectGuidedNextStep, 150, NO_EXAM);
+    const highYield = simulate(selectHighYieldNextStep, 240, NO_EXAM);
+    const ordinary = simulate(selectGuidedNextStep, 240, NO_EXAM);
     expect(highYield.idleAt).toBeNull();
     expect([...highYield.chapters].sort((a, b) => a - b)).toEqual(
       Array.from({ length: 11 }, (_, chapter) => chapter),
@@ -292,13 +436,22 @@ describe("High-Yield Cram deterministic simulations", () => {
     ["48h cram", new Date(START + 72 * 60 * 60 * 1000).toISOString(), 24],
     ["12h cram", new Date(START + 36 * 60 * 60 * 1000).toISOString(), 24],
     ["4h cram", new Date(START + 28 * 60 * 60 * 1000).toISOString(), 24],
-    ["buffer", new Date(START + 2 * 60 * 60 * 1000).toISOString(), 1],
-  ] as const)("remains live in the %s finite horizon", (_label, examAt, buffer) => {
-    const result = simulate(selectHighYieldNextStep, 32, {
+    ["buffer", new Date(START + 8 * 60 * 60 * 1000).toISOString(), 9],
+  ] as const)("remains live in the %s finite horizon", (label, examAt, buffer) => {
+    const result = simulate(selectHighYieldNextStep, 240, {
       examAt,
       studyBufferHours: buffer,
     });
+    const expectedPhase = label === "buffer" ? "buffer" : "cram";
+    expect(deriveExamPhase({ examAt, studyBufferHours: buffer }, START)).toBe(
+      expectedPhase,
+    );
+    expect(result.phases).toContain(expectedPhase);
     expect(result.idleAt).toBeNull();
     expect(result.canonicalIds.length).toBeGreaterThan(0);
+    expect(result.weakCardIds.size).toBeGreaterThan(0);
+    expect(result.failedCardIds.size).toBeGreaterThan(0);
+    expect(result.weakReturns.size).toBeGreaterThan(0);
+    expect(result.failureReturns.size).toBeGreaterThan(0);
   });
 });

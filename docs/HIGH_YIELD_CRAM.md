@@ -43,6 +43,12 @@ The source URLs used by the registry are:
 
 No past-exam PDFs or large verbatim question collections are bundled.
 
+Each skill-source relation is explicit: `direct` means the exact skill or
+mechanism is visible in that source; `family` means a related mechanism is
+visible; `scope` and `format` are current-course or exam-format context. The
+UI uses the relation when choosing a reason, so a family-level 2020 signal is
+never presented as direct testing of a particular card.
+
 ## Tiers and chapter priors
 
 The final remains comprehensive. Critical families are AD-AS self-correction
@@ -84,12 +90,14 @@ The tier bases are `Critical=100`, `Very high=78`, `Core=56`, and
 `Support=34`. The chapter-prior contribution is capped at 8 points and the
 cross-chapter mechanism contribution at 6 points.
 
-For a prerequisite concept `c`, direct yield is the largest direct yield of a
-skill mapped to `c`. Effective yield is propagated backwards through the DAG:
+Only a skill's `targetConceptIds` can originate direct concept yield. Its
+optional `supportingConceptIds` are explanatory/indexing links and do not
+receive the full direct skill score. Effective concept yield is propagated
+backwards through the DAG:
 
 ```text
 effectiveYield(c) = max(
-  directYield(c),
+  max(directYield(s) for s whose targetConceptIds include c),
   min(72, directYield(descendant) × 0.60 ^ distance(descendant, c))
 )
 ```
@@ -98,9 +106,19 @@ Propagation is transient and recomputed from the immutable graph. The 0.60
 decay and 72-point propagated cap let foundations unlock valuable branches
 without turning every distant root into a critical skill.
 
-For an unseen card, the selector uses the maximum of its direct skill yield
-and the effective yields of its mapped concepts. A small deterministic
-readiness/cost term is then applied:
+`skill.cardIds` is the authoritative set of direct retrieval assets. For an
+unseen card, the yield signal is:
+
+```text
+cardYield(card) = max(
+  directYield(s) for explicitly mapped skills s whose cardIds include card,
+  propagatedYield(c) for concepts c mapped to card
+)
+```
+
+An unlisted card therefore cannot inherit a skill's full direct score merely
+because it shares a broad concept such as inflation, price level, deposit, or
+bond price. A small deterministic readiness/cost term is then applied:
 
 ```text
 candidateScore = cardYield
@@ -131,10 +149,11 @@ The order is deliberately:
 4. Due Guided Knowledge Checks and canonical reviews continue to return through
    the existing Exam-SRS urgency comparison.
 
-Consequently, a genuine low-yield relearning or due review beats an unseen
-Critical Chapter 9 card. An already-strong FX branch also does not win merely
-because its historical tier is high; current unseen gaps and review state are
-part of the decision.
+If ordinary Exam-SRS selects an attempted due/relearning item ahead of unseen
+material, High-Yield Cram returns that item unchanged. Exam-yield scoring is
+only consulted when choosing among unseen/new branches. An already-strong FX
+branch also does not win merely because its historical tier is high; current
+unseen gaps and review state are part of the decision.
 
 Ordinary `#/guided` omits the high-yield candidate restriction and uses the
 same selector inputs and ordering as before. `#/study`, mocks, Practice Lab,
@@ -149,7 +168,10 @@ were genuinely undertrained:
 - `ch09-041` / `trade-weighted-index` / `auth-ch09-011`: current Week 8 and
   textbook support for TWI interpretation alongside PPP/inflation;
 - `ch06-032` / `money-destruction` / `auth-ch06-011`: repayment and
-  create-versus-destroy balance-sheet operations;
+  create-versus-destroy balance-sheet operations. Principal repayment is the
+  clean reverse of loan-created deposit money; a write-off primarily reduces
+  the loan asset and bank equity and does not automatically destroy an equal
+  deposit balance. `auth-ch06-011` tests same-bank principal repayment;
 - `ch07-029` / `cash-rate-security-transmission` / `auth-ch07-011`: cash rate
   to short-security required return, demand, price and yield.
 
