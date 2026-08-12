@@ -11,6 +11,7 @@ export interface ProgressContextValue {
   readonly error: string | null;
   readonly clearError: () => void;
   readonly saveSettings: (settings: AppSettings) => Promise<void>;
+  readonly markLessonSeen: (conceptId: string) => Promise<void>;
   readonly recordReview: (input: NewReviewEvent) => Promise<RecordedReview>;
   readonly createMockAttempt?: (attempt: MockAttempt) => Promise<MockAttempt>;
   readonly updateMockAttemptProgress?: (

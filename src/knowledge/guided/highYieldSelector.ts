@@ -135,7 +135,7 @@ export function rankHighYieldUnseenCards(
   });
   const recent = new Set((input.recentlyShownIds ?? []).slice(0, MAX_RECENT));
   const coverage = calculateCoverage(input.cards, scheduler.states);
-  const lessonCompleted = input.lessonCompletedConceptIds ?? new Set<string>();
+  const lessonSeen = input.lessonSeenConceptIds ?? new Set<string>();
   return Object.freeze(
     ranked
       .filter((candidate) => candidate.state.learningState === "unseen")
@@ -144,7 +144,7 @@ export function rankHighYieldUnseenCards(
         const path = learningPathByCardId.get(candidate.card.id) ?? [];
         const unmet = path.filter(
           (conceptId) =>
-            !lessonCompleted.has(conceptId) &&
+            !lessonSeen.has(conceptId) &&
             !isConceptIntroducedEnough(conceptId, input.reviews),
         );
         const noCardCheckCount = unmet.filter(

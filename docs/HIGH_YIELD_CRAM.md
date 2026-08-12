@@ -159,6 +159,15 @@ Ordinary `#/guided` omits the high-yield candidate restriction and uses the
 same selector inputs and ordering as before. `#/study`, mocks, Practice Lab,
 and the ReviewEvent/CardState evidence model are not weighted by this registry.
 
+Guided and High-Yield Cram share one persisted lesson acknowledgement set. A lesson
+is recorded as seen only when the learner explicitly presses `Check understanding`;
+displaying or opening it does not persist exposure. This prevents unnecessary
+replay after route changes or reloads, while leaving an incomplete lesson eligible
+to appear again. Lesson acknowledgement is not mastery, learned status, solid
+status, or Exam-SRS strength; only a canonical-card or Guided Knowledge Check
+retrieval creates evidence. The acknowledgement write completes before High-Yield
+advances, and a failed write leaves the lesson visible for retry.
+
 ## Content additions after the 161-question audit
 
 The exact local audit found 349 canonical cards, 161 exam questions and 297
@@ -189,9 +198,12 @@ High-Yield Cram is offline after installation: its registry, scoring, graph
 propagation, selector, questions and explanations are bundled. A High-Yield
 answer is an ordinary canonical or Guided Knowledge Check ReviewEvent. There
 is no `examYieldMastery`, probability, expected-mark field, second scheduler,
-or second mastery database. DB version remains 3, `ProgressBackupV2` remains
-version 2, sync protocol remains v1, and the sync worker source/configuration
-does not change.
+or second mastery database. The dedicated `guidedLessonSeen` IndexedDB store is
+local acknowledgement only: it creates no ReviewEvent or CardState change. The
+database is version 4, while `ProgressBackupV2` remains version 2 with an optional
+`lessonSeenConceptIds` field for portable backups. Sync protocol v1 remains
+unchanged, so lesson acknowledgement is not synced across devices; the sync Worker
+source and configuration do not change.
 
 The build-time `npm run validate:exam-yield` check validates source/skill IDs,
 all concept/card/question mappings, chapters, source weights and URLs,

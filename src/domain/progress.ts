@@ -33,6 +33,8 @@ export interface ProgressSnapshot {
   readonly reviewEvents: readonly ReviewEvent[];
   /** Optional for compatibility with pre-mock snapshot fixtures. */
   readonly mockAttempts?: readonly import("../exam/mock/model").MockAttempt[];
+  /** Optional for compatibility with snapshots created before Guided lesson persistence. */
+  readonly lessonSeenConceptIds?: readonly string[];
 }
 
 export type NewReviewEvent = Omit<ReviewEvent, "id" | "reviewedAt"> & {

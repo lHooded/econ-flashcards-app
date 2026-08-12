@@ -9,8 +9,8 @@ combines two existing, deliberately separate signals:
 - Exam-SRS answers “what previously attempted material is urgent to retrieve
   again?”
 
-The next step is recomputed after every saved review. There is no precomputed
-lesson plan and no second scheduler.
+The next step is recomputed after every saved review or acknowledged lesson. There is
+no precomputed lesson plan and no second scheduler.
 
 ## Finite-horizon scheduling
 
@@ -44,7 +44,7 @@ only when their concept is needed as a prerequisite.
 
 For an unseen canonical anchor, Guided Cram collects the mapped concept IDs and
 their prerequisite ancestors in deterministic topological order. It presents
-one concise lesson at a time. After the lesson:
+one concise lesson at a time. After the learner explicitly continues past the lesson:
 
 1. a no-card concept gets its registered Guided Knowledge Check;
 2. a canonical-backed prerequisite gets a suitable linked canonical card;
@@ -61,8 +61,12 @@ selector avoids forcing the same failed check immediately when another action
 exists. A final canonical fallback prevents a graph state from making Study
 unreachable.
 
-Reading an article, clicking “I understand”, and advancing a lesson never
-creates evidence.
+Reading or displaying an article never creates evidence. A lesson is persisted as
+seen only when the learner explicitly continues past it with `Check understanding`.
+That acknowledgement prevents unnecessary replay after navigation or reload, but it
+is not mastery, learned status, solid status, or Exam-SRS strength. Only retrieval
+creates Exam-SRS evidence. Leaving before the action intentionally leaves the lesson
+eligible to be shown again.
 
 ### Failed frontiers and recursive preparation
 
@@ -200,6 +204,13 @@ fails, the exact event and exact rendered variant remain visible for Retry save;
 the next step is not selected until the write succeeds. This also means a
 generated numeric variant cannot change while a save is being retried.
 
+The lesson `Check understanding` action follows the same save-before-advance rule:
+the dedicated IndexedDB acknowledgement write completes before the next Guided step
+is selected. While it is saving, duplicate activation is disabled and the lesson
+remains visible. A failed write leaves the lesson unacknowledged and offers Retry
+save. The write is idempotent and creates zero ReviewEvents, CardState changes,
+correct/incorrect evidence, or mastery evidence.
+
 ## Coverage and existing modes
 
 The canonical Exam-SRS selector remains the coverage anchor, including high-yield
@@ -238,6 +249,9 @@ between a failure and its retry.
 
 All articles, check variants, generators, grading, graph traversal, and
 selection code are bundled in the PWA. No runtime LLM, dictionary, textbook,
-or network service is used. ReviewEvents and derived CardStates continue to be
-the only mutable truth. DB version 3, `ProgressBackupV2`/version 2, sync
-protocol v1, and the Worker are unchanged.
+or network service is used. ReviewEvents and derived CardStates remain the only
+learning evidence; the separate `guidedLessonSeen` store records only explicit
+lesson acknowledgement. The database is version 4. `ProgressBackupV2` remains
+version 2 and includes an optional backwards-compatible `lessonSeenConceptIds`
+array. Sync protocol v1 and the Worker source/configuration are unchanged:
+acknowledgement is currently local-device-only and is not synced across devices.

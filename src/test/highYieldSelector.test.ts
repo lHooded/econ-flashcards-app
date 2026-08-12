@@ -267,7 +267,7 @@ describe("High-Yield Cram selection policy", () => {
       reviews: [failure],
       settings: NO_EXAM,
       nowMs: START,
-      lessonCompletedConceptIds: new Set(["buyer"]),
+      lessonSeenConceptIds: new Set(["buyer"]),
       recentlyShownIds: ["knowledge-check:buyer"],
     });
     expect(targetCardId(blocked)).toBe("ch01-009");
@@ -278,7 +278,7 @@ describe("High-Yield Cram selection policy", () => {
       reviews: [failure],
       settings: NO_EXAM,
       nowMs: START + 10 * 60 * 1000,
-      lessonCompletedConceptIds: new Set(["buyer"]),
+      lessonSeenConceptIds: new Set(["buyer"]),
     });
     expect(due.kind).toBe("knowledge-check");
     if (due.kind === "knowledge-check") {
@@ -351,7 +351,7 @@ describe("High-Yield Cram deterministic simulations", () => {
         reviews,
         settings,
         nowMs,
-        lessonCompletedConceptIds: lessons,
+        lessonSeenConceptIds: lessons,
         recentlyShownIds: recent,
         sessionSeed: index,
       });

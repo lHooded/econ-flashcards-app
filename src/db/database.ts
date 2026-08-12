@@ -5,12 +5,16 @@ import { randomBase64Url } from "../sync/encoding";
 import { SYNC_CONFIG_KEY, type SyncConfig } from "../sync/model";
 
 export const DATABASE_NAME = "econ-flashcards";
-export const DATABASE_VERSION = 3;
+export const DATABASE_VERSION = 4;
 export const SETTINGS_KEY = "app";
 
 export interface SettingsRecord {
   readonly key: typeof SETTINGS_KEY;
   readonly value: AppSettings;
+}
+
+export interface GuidedLessonSeenRecord {
+  readonly conceptId: string;
 }
 
 export interface EconDatabase extends DBSchema {
@@ -33,6 +37,10 @@ export interface EconDatabase extends DBSchema {
   syncConfig: {
     key: string;
     value: SyncConfig;
+  };
+  guidedLessonSeen: {
+    key: string;
+    value: GuidedLessonSeenRecord;
   };
 }
 
@@ -62,6 +70,9 @@ export function openProgressDatabase(
           lastSyncedAt: null,
           settingsStamp: null,
         });
+      }
+      if (!database.objectStoreNames.contains("guidedLessonSeen")) {
+        database.createObjectStore("guidedLessonSeen", { keyPath: "conceptId" });
       }
     },
   });

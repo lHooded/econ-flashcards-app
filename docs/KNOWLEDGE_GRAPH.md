@@ -184,8 +184,10 @@ Guided Cram has no fixed lesson plan, XP, completion flag, or second interval
 table. Attempted no-card concepts use a small static check registry with stable
 IDs in the `knowledge-check:<concept-id>` namespace and deterministic static or
 generated variants. Generated parameters are reconstructed from the skill,
-review count, and session seed; they are never persisted. A lesson only shows a
-concise article and does not create evidence. Objective MCQ checks use
+review count, and session seed; they are never persisted. A lesson shows a concise
+article. Displaying it does not create evidence; its separate acknowledgement is
+persisted only when the learner explicitly continues past it, and that
+acknowledgement does not create evidence. Objective MCQ checks use
 `mode: "mcq"`, `correct`, and `rating: null`; objective numeric checks use
 `mode: "calculation"`. Both therefore use the same failure, weak, strong,
 deadline-cap, and buffer-cap machinery as canonical cards.
@@ -243,9 +245,10 @@ Practice, or mock state.
 All graph content, indexes, articles, source labels, and traversal code ship in
 the static frontend bundle. Search and lookup perform no runtime network calls.
 Knowledge data is not included in encrypted sync payloads and is not uploaded
-to Cloudflare. No database migration is used: DB version remains 3, manual
-backup format remains `ProgressBackupV2`/version 2, and sync protocol remains
-version 1. The browser’s strict reviewable-ID registry is the union of the 352
+to Cloudflare. Guided lesson acknowledgement uses the v4 `guidedLessonSeen`
+store and remains local-device-only; it is included in manual backup version 2
+but not sync protocol v1. The manual backup format remains `ProgressBackupV2`/
+version 2, and sync protocol remains version 1. The browser’s strict reviewable-ID registry is the union of the 352
 canonical card IDs and the registered Guided Knowledge Check IDs. This lets
 ordinary ReviewEvent backup/sync machinery carry check evidence without
 loosening validation or changing the protocol. Canonical Study, Practice Lab,

@@ -22,7 +22,7 @@ continues to work as a local-only PWA. Its path is not an origin boundary, so it
 never allowed to persist sync credentials. HTTP is accepted only for explicit
 loopback development (`localhost`, `127.0.0.1`, or `::1`).
 
-The storage migration is DB version 3. Manual portable backups remain
+The storage migration is DB version 4. Manual portable backups remain
 `ProgressBackupV2` (backup version 2), and the encrypted sync payload/envelope and
 Worker API use sync protocol version 1. These formats are deliberately separate:
 manual backups never contain sync credentials.
@@ -168,6 +168,10 @@ manual JSON exports are the separate recovery path.
   new remote version are committed locally in one IndexedDB transaction.
 - Network/5xx/offline errors keep local data and credentials. Authentication,
   decryption, malformed-payload, and size errors do not apply remote data.
+- Guided lesson acknowledgement is legitimate local-device progress stored in the
+  separate `guidedLessonSeen` IndexedDB store. It is intentionally not a field in
+  `SyncPayloadV1`; ordinary reconciliation leaves the local set intact and does
+  not provide cross-device lesson acknowledgement.
 
 The v1 decoded ciphertext limit is 1 MiB. If a future progress history exceeds it,
 the app reports `Sync data is too large for v1` rather than a cryptographic or
@@ -207,7 +211,7 @@ progress. **Delete cloud copy** is the one explicit destructive remote operation
 
 ## Tests
 
-The frontend tests cover DB-v2→v3 preservation, secure-origin admission, pairing/deep-link
+The frontend tests cover DB-v2→v3 and v3→v4 preservation, secure-origin admission, pairing/deep-link
 behavior, AES-GCM tamper failures, merge algebra and conflicts, API responses, two
 independent IndexedDB databases, offline laptop/phone convergence (including a normal
 `mode: "calculation"` ReviewEvent), terminal mock history, active-mock preservation,
