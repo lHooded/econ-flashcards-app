@@ -113,11 +113,29 @@ describe("immutable exam-yield blueprint", () => {
     expect(directYieldForSkill(skill)).toBeGreaterThan(100);
     expect(getExamYieldForCard("ch09-016").tier).toBe("critical");
     expect(getExamYieldReasons("ch09-016")[0]?.label).toBe(
-      "Directly tested in the 2020 final",
+      "Skill family tested in the 2020 final",
     );
     expect(getExamYieldReasons("ch09-041")[0]?.label).toBe(
-      "Repeated in final MCQ practice",
+      "Skill family repeated in final MCQ practice",
     );
+  });
+
+  it("keeps direct 2020 evidence truthful at card granularity", () => {
+    const skill = examSkillEvidence.find(
+      (candidate) => candidate.id === "core-cpi-inflation-deflation",
+    )!;
+    const score = getExamYieldForCard("ch01-027");
+    expect(skill.cardIds).toContain("ch01-027");
+    expect(score.directSkillIds).toContain(skill.id);
+    expect(score.score).toBeGreaterThanOrEqual(directYieldForSkill(skill));
+    expect(getExamYieldReasons("ch01-027")).toContainEqual({
+      label: "Skill family tested in the 2020 final",
+      priority: 100,
+    });
+    expect(getExamYieldReasons("ch01-027")).not.toContainEqual({
+      label: "Directly tested in the 2020 final",
+      priority: 100,
+    });
   });
 
   it("matches the committed 29-skill attribution audit", () => {

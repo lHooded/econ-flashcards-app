@@ -217,14 +217,17 @@ export function getExamYieldReasons(
         (item) => item.sourceId === "actual-final-2020" && item.relation === "direct",
       )
     ) {
-      reasons.push({ label: "Directly tested in the 2020 final", priority: 100 });
+      reasons.push({ label: "Skill family tested in the 2020 final", priority: 100 });
     } else if (
       evidence.some(
         (item) =>
           item.sourceId === "final-practice-2018-19" && item.relation === "direct",
       )
     ) {
-      reasons.push({ label: "Repeated in final MCQ practice", priority: 90 });
+      reasons.push({
+        label: "Skill family repeated in final MCQ practice",
+        priority: 90,
+      });
     } else if (
       evidence.some(
         (item) => item.sourceId === "actual-final-2020" && item.relation === "family",

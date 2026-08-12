@@ -175,7 +175,7 @@ describe("High-Yield Cram selection policy", () => {
     expect(targetCardId(ordinary)).toBe("ch09-004");
     expect(ordinaryAgain).toEqual(ordinary);
     expect(targetCardId(highYield)).toBe("ch09-022");
-    expect(highYield.whyNow).toContain("Repeated in final MCQ practice");
+    expect(highYield.whyNow).toContain("Skill family repeated in final MCQ practice");
   });
 
   it("does not leak ZLB/Fisher yield through a broad inflation card", () => {
@@ -188,7 +188,7 @@ describe("High-Yield Cram selection policy", () => {
     expect(unexpectedInflation.directSkillIds).not.toContain(zlb.id);
     expect(unexpectedInflation.score).toBeLessThan(zlbDirectYield);
     expect(getExamYieldReasons("ch01-028")).not.toContainEqual({
-      label: "Directly tested in the 2020 final",
+      label: "Skill family tested in the 2020 final",
       priority: 100,
     });
     if (unexpectedInflation.score > 0) {
@@ -250,7 +250,7 @@ describe("High-Yield Cram selection policy", () => {
     expect(selected.kind).toBe("lesson");
     if (selected.kind === "lesson") {
       expect(selected.targetCardId).toBe("ch09-016");
-      expect(selected.whyNow).toContain("Directly tested in the 2020 final");
+      expect(selected.whyNow).toContain("Skill family tested in the 2020 final");
     }
   });
 

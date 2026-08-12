@@ -15,7 +15,8 @@ describe("historical mock results", () => {
       seed: "result-history",
       createdAt: "2026-08-11T00:00:00.000Z",
     });
-    const first = base.manifest[0];
+    const first = base.manifest.find((manifest) => manifest.chapter !== 8);
+    if (first === undefined) throw new Error("Expected a non-Chapter 8 manifest item");
     const historical = {
       ...base,
       manifest: base.manifest.map((manifest) =>
@@ -58,11 +59,15 @@ describe("historical mock results", () => {
     );
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("1 / 60");
-    expect(
-      within(screen.getByRole("region", { name: "Mock result summary" })).getByText(
-        "1 / 60",
-      ),
-    ).toBeInTheDocument();
+    const chaptersRegion = screen.getByRole("heading", {
+      name: "Chapters",
+    }).parentElement;
+    expect(chaptersRegion).not.toBeNull();
+    const chapter8Row = within(chaptersRegion!)
+      .getByText("Chapter 8")
+      .closest<HTMLElement>(".analytics-row");
+    expect(chapter8Row).not.toBeNull();
+    expect(within(chapter8Row!).getByText("1 / 6")).toBeInTheDocument();
     expect(screen.getByText(currentQuestion.stem)).toBeInTheDocument();
     expect(screen.getAllByText(/Chapter 8 ·/).length).toBeGreaterThan(0);
     view.rerender(<MockResults attempt={historical} questionsById={new Map()} />);

@@ -62,7 +62,7 @@ baseline; the final delta is recorded at the end of this file.
 
 The registry distinguishes concepts that constitute an examinable skill from concepts that merely support its explanation. `targetConceptIds` are the only concept IDs allowed to originate a skill's direct yield. `supportingConceptIds` are indexed for audit/disclosure context but do not receive the skill's full direct yield. `cardIds` are the authoritative direct retrieval assets; a shared broad concept does not make an unlisted card a direct card.
 
-Source relationships are explicit: `direct` means the exact skill or mechanism is visible; `family` means a related mechanism is visible; `scope` and `format` provide current-course or format context. The learner-facing direct-final label is emitted only for an explicit `direct` relationship.
+Source relationships are explicit: `direct` means the exact skill or mechanism is visible; `family` means a related mechanism is visible; `scope` and `format` provide current-course or format context. The learner-facing `Skill family tested in the 2020 final` label is emitted only for an explicit `direct` relationship; it does not claim that every listed current card appeared in the historical paper.
 
 Attribution counts: actual-final-2020 direct 14; family 7; none 8. 2018/19 final-practice direct 27; family 0; none 2. Unsupported 2020 claims: 0.
 
