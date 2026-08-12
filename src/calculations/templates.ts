@@ -754,7 +754,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           `Give the ${target === "intercept" ? "AD intercept" : "coefficient on π"} to 1 decimal place in ${targetDisplayUnit}.`,
         ),
         workedSolution: [
-          "Formula: substitute r = r₀ + γπ into Y = A − Br.",
+          "Formula: substitute \\(r=r_0+\\gamma\\pi\\) into \\(Y=A-Br\\).",
           `Y = ${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}(${formatNumber(policyIntercept, 2)} + ${formatNumber(policyInflationCoefficient, 2)}π).`,
           `AD equation: Y = (${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}×${formatNumber(policyIntercept, 2)}) − (${formatNumber(equilibriumRateCoefficient)}×${formatNumber(policyInflationCoefficient, 2)})π = ${formatNumber(adIntercept, 1)} ${signedTerm(adInflationCoefficient, 1)}π.`,
           finalLine(targetLabel, targetValue, ` ${targetDisplayUnit}`, 1),

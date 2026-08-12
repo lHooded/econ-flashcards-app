@@ -63,7 +63,7 @@ export const canonicalMcqChoiceRationales: Readonly<Record<string, FourRationale
     "The output gap is negative when unemployment is above the natural rate; the positive sign reverses Okun’s-law direction.",
     "This uses the unemployment gap itself as the output gap and omits multiplication by β.",
     "This has the right negative direction but uses β=1 instead of the stated β=2.",
-    "Using output gap = -β(u-u*) gives -2 × 2 = -4%.",
+    String.raw`Using \(\text{output gap}=-\beta(u-u^*)\) gives \(-2\times2=-4\%\).`,
   ],
   "mix-005": [
     "Buying existing shares reallocates ownership of a financial asset and does not create new capital in the national accounts.",
@@ -93,7 +93,7 @@ export const canonicalMcqChoiceRationales: Readonly<Record<string, FourRationale
     "This is not the government-spending multiplier for the stated proportional-tax model.",
     "This omits the consumption response and tax leakage that determine the denominator.",
     "The correct denominator is 1-.8(1-.25)=.4, so k_G=1/.4=2.5.",
-    "5 is the no-tax two-sector multiplier 1/(1-.8); proportional taxes reduce the multiplier here.",
+    String.raw`5 is the no-tax two-sector multiplier \(1/(1-.8)\); proportional taxes reduce the multiplier here.`,
   ],
   "mix-010": [
     "A rise in G has a positive initial demand effect, and the equal tax rise reduces consumption only through MPC, so GDP need not be unchanged.",
@@ -193,14 +193,14 @@ export const canonicalMcqChoiceRationales: Readonly<Record<string, FourRationale
   ],
   "mix-026": [
     "The input contribution is not zero because capital and labour growth are positive.",
-    "TFP is the residual: 4 - [.5(4)+.5(2)] = 4 - 3 = 1%.",
+    String.raw`TFP is the residual: \(4-[.5(4)+.5(2)]=4-3=1\%\).`,
     "This subtracts the unweighted input total or otherwise overstates the residual.",
     "Three percentage points is the weighted input contribution, not the TFP residual.",
   ],
   "mix-027": [
     "The capital exponent does not mean output rises by only 30% when both inputs scale together.",
     "The labour exponent alone is not the relevant scaling result because both K and L double.",
-    "Because the exponents sum to one, 2^0.3×2^0.7=2, so output doubles.",
+    String.raw`Because the exponents sum to one, \(2^{0.3}\times2^{0.7}=2\), so output doubles.`,
     "Quadrupling would require a different returns-to-scale result; constant returns gives a twofold output change.",
   ],
   "mix-028": [

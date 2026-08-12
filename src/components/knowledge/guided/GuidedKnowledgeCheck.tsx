@@ -8,6 +8,7 @@ import {
 import type { NumericAnswerSpec } from "../../../calculations/model";
 import { createReviewEvent, type NewReviewEvent } from "../../../domain/progress";
 import { KnowledgeText } from "../KnowledgeText";
+import { MathText } from "../../math/MathText";
 import type {
   GuidedCheckVariant,
   GuidedKnowledgeCheckSkill,
@@ -186,7 +187,9 @@ export function GuidedKnowledgeCheck({
                   disabled={pending || completed}
                   onChange={() => setSelectedChoice(index)}
                 />
-                <span>{choice}</span>
+                <span>
+                  <MathText text={choice} />
+                </span>
               </label>
             );
           })}

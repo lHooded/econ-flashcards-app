@@ -8,10 +8,10 @@
     "stem": "The price-index line shows a value of 102 in 2022 and 105 in 2023. What is approximately the inflation rate from 2022 to 2023?",
     "choices": ["-2.9%", "2.9%", "5.0%", "7.0%"],
     "correctChoice": 1,
-    "explanation": "Inflation is the percentage change in the price index: (105 - 102) / 102 × 100 ≈ 2.94%, which rounds to 2.9%.",
+    "explanation": "Inflation is the percentage change in the price index: \\(\\frac{105-102}{102}\\times100\\approx2.94\\%\\), which rounds to 2.9\\%.",
     "choiceRationales": [
       "This reverses the direction of the price-index change; the index rose rather than fell.",
-      "The graph gives (105 - 102) / 102 × 100 ≈ 2.94%, so 2.9% is the appropriate rounded rate.",
+      "The graph gives \\(\\frac{105-102}{102}\\times100\\approx2.94\\%\\), so 2.9\\% is the appropriate rounded rate.",
       "Five is the index-point change, not the percentage change using the earlier index as the denominator.",
       "This overstates the change and does not follow from the two displayed index values."
     ],
@@ -148,10 +148,10 @@
     "topic": "GDP deflator",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "Using GDP deflator = nominal GDP / real GDP × 100, what is the 2024 GDP deflator in the table?",
+    "stem": "Using GDP deflator = \\(\\frac{\\text{nominal GDP}}{\\text{real GDP}}\\times100\\), what is the 2024 GDP deflator in the table?",
     "choices": ["108.0", "112.0", "118.0", "114.4"],
     "correctChoice": 3,
-    "explanation": "The 2024 deflator is 286 / 250 × 100 = 114.4.",
+    "explanation": "The 2024 deflator is \\(286/250\\times100=114.4\\).",
     "choiceRationales": [
       "This does not use the 2024 nominal and real GDP values in the table.",
       "This is too low because it understates the nominal-to-real ratio.",
@@ -205,7 +205,7 @@
     "stimulus": {
       "type": "econ_graph",
       "title": "Labour market with a wage floor",
-      "description": "An upward-sloping labour-supply curve S and a downward-sloping labour-demand curve D intersect at E. A dashed horizontal line labelled w_f lies above E, with its intersections with the two curves marked L_D and L_S.",
+      "description": "An upward-sloping labour-supply curve S and a downward-sloping labour-demand curve D intersect at E. A dashed horizontal line labelled w̄ lies above E, with its intersections with the two curves marked Lᴅ and Lˢ.",
       "xAxis": {
         "label": "Quantity of labour",
         "domain": [0, 100],
@@ -250,15 +250,15 @@
       ],
       "points": [
         { "id": "E", "label": "E", "x": 50, "y": 50 },
-        { "id": "LD", "label": "L_D", "x": 40, "y": 60, "guideLines": ["x"] },
-        { "id": "LS", "label": "L_S", "x": 63.33, "y": 60, "guideLines": ["x"] }
+        { "id": "LD", "label": "Lᴅ", "x": 40, "y": 60, "guideLines": ["x"] },
+        { "id": "LS", "label": "Lˢ", "x": 63.33, "y": 60, "guideLines": ["x"] }
       ],
       "referenceLines": [
         {
           "id": "w-floor",
           "orientation": "horizontal",
           "value": 60,
-          "label": "w_f",
+          "label": "w̄",
           "lineStyle": "dashed"
         }
       ]
@@ -357,10 +357,10 @@
     "topic": "Unemployment rate from labour-force data",
     "style": "calculation",
     "difficulty": 1,
-    "stem": "Using unemployment rate = unemployed / labour force × 100, what is the unemployment rate in 2025?",
+    "stem": "Using unemployment rate = \\(\\frac{\\text{unemployed}}{\\text{labour force}}\\times100\\), what is the unemployment rate in 2025?",
     "choices": ["10%", "12%", "8%", "20%"],
     "correctChoice": 2,
-    "explanation": "The 2025 labour force is 920 + 80 = 1,000, so the unemployment rate is 80 / 1,000 × 100 = 8%.",
+    "explanation": "The 2025 labour force is \\(920+80=1{,}000\\), so the unemployment rate is \\(80/1{,}000\\times100=8\\%\\).",
     "choiceRationales": [
       "Ten percent is the 2024 rate, not the rate calculated from the 2025 row.",
       "This uses an incorrect denominator or numerator for the 2025 labour force.",
@@ -615,11 +615,11 @@
       "It cannot be identified because the graph does not show a vertical price axis."
     ],
     "correctChoice": 0,
-    "explanation": "Equilibrium is where PAE intersects the 45-degree line. PAE1 intersects at about Y=60 and PAE2 at about Y=80.",
+    "explanation": "Equilibrium is where PAE intersects the 45-degree line. PAE1 intersects at about \\(Y=60\\) and PAE2 at about \\(Y=80\\).",
     "choiceRationales": [
       "The two intersections with the 45-degree line are approximately (60,60) and (80,80), so equilibrium output rises.",
       "This reverses the direction of the displayed PAE shift.",
-      "The 45-degree line represents Y=PAE; it does not fix autonomous spending at 45.",
+      "The 45-degree line represents \\(Y=PAE\\); it does not fix autonomous spending at 45.",
       "The income-expenditure diagram uses output and planned expenditure axes, so a price axis is not needed for this inference."
     ],
     "reviewCardId": "ch04-016",
@@ -768,13 +768,13 @@
     "topic": "Open-economy multiplier",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "For scenario B, use k = 1 / (1 − c + m) to calculate the change in equilibrium output caused by the displayed autonomous-expenditure increase.",
+    "stem": "For scenario B, use \\(k=\\frac{1}{1-c+m}\\) to calculate the change in equilibrium output caused by the displayed autonomous-expenditure increase.",
     "choices": ["80", "100", "120", "160"],
     "correctChoice": 1,
-    "explanation": "For B, k = 1/(1−0.8+0.2) = 2.5. Multiplying by the autonomous increase of 40 gives ΔY = 100.",
+    "explanation": "For B, \\(k = 1/(1-0.8+0.2) = 2.5\\). Multiplying by the autonomous increase of 40 gives \\(\\Delta Y = 100\\).",
     "choiceRationales": [
       "This does not apply the displayed multiplier parameters correctly.",
-      "The multiplier is 2.5 and 2.5 × 40 = 100.",
+      "The multiplier is 2.5 and \\(2.5\\times40=100\\).",
       "This overstates the result relative to the 2.5 multiplier.",
       "This treats the multiplier as four instead of 2.5."
     ],
@@ -796,7 +796,7 @@
         { "id": "B", "cells": ["B", "0.8", "0.2", "40"] },
         { "id": "C", "cells": ["C", "0.7", "0.1", "25"] }
       ],
-      "note": "The multiplier is k = 1 / (1 − c + m)."
+      "note": "The multiplier is \\(k = 1 / (1 - c + m)\\)."
     }
   },
   {
@@ -815,7 +815,7 @@
     "correctChoice": 3,
     "explanation": "Government purchases are an autonomous component of PAE. Their increase shifts PAE upward and raises equilibrium output by the relevant fiscal multiplier rather than necessarily one-for-one.",
     "choiceRationales": [
-      "The 45-degree line represents the identity Y=PAE and does not shift when fiscal spending changes.",
+      "The 45-degree line represents the identity \\(Y=PAE\\) and does not shift when fiscal spending changes.",
       "The multiplier generally makes the output response differ from the initial government-purchases change.",
       "The displayed PAE shift is upward, and the question does not impose an immediate offsetting tax increase.",
       "This matches the upward PAE shift and the multiplier mechanism in the three-sector model."
@@ -981,7 +981,7 @@
     "stem": "What is the 2025 debt-to-GDP ratio shown by the table?",
     "choices": ["40%", "45%", "50%", "60%"],
     "correctChoice": 0,
-    "explanation": "The 2025 ratio is nominal government debt divided by nominal GDP: 900 / 2,250 × 100 = 40%.",
+    "explanation": "The 2025 ratio is nominal government debt divided by nominal GDP: \\(900/2{,}250\\times100=40\\%\\).",
     "choiceRationales": [
       "Dividing 900 by 2,250 and multiplying by 100 gives 40%.",
       "This uses an incorrect denominator or does not apply the percentage conversion correctly.",
@@ -1154,7 +1154,7 @@
     "stem": "What is Bank B’s reserve-deposit ratio using the balance-sheet data?",
     "choices": ["5%", "8%", "10%", "15%"],
     "correctChoice": 2,
-    "explanation": "Bank B holds 75 million in reserves against 750 million in deposits, so the reserve-deposit ratio is 75/750 × 100 = 10%.",
+    "explanation": "Bank B holds 75 million in reserves against 750 million in deposits, so the reserve-deposit ratio is \\(75/750\\times100=10\\%\\).",
     "choiceRationales": [
       "This is below the ratio implied by 75 divided by 750.",
       "This does not match the displayed reserves and deposits.",
@@ -1487,7 +1487,7 @@
     "topic": "Favourable supply shock",
     "style": "concept",
     "difficulty": 3,
-    "stem": "What economic change is represented by the shift from π0 to π1 in the graph?",
+    "stem": "What economic change is represented by the shift from \\(\\pi_0\\) to \\(\\pi_1\\) in the graph?",
     "choices": [
       "A favourable supply shock: inflation falls and output rises at the new short-run intersection.",
       "A negative demand shock: inflation and output both fall along an unchanged SRAS curve.",
@@ -1495,7 +1495,7 @@
       "An inflation-target increase that shifts the 45-degree line upward."
     ],
     "correctChoice": 0,
-    "explanation": "The graph uses the course's very-short-run convention: the short-run inflation line is horizontal at inherited inflation. The shift from π0 to the lower line π1 leaves the unchanged downward-sloping AD curve intersecting at lower inflation and higher output, which represents a favourable supply shock.",
+    "explanation": "The graph uses the course's very-short-run convention: the short-run inflation line is horizontal at inherited inflation. The shift from \\(\\pi_0\\) to the lower line \\(\\pi_1\\) leaves the unchanged downward-sloping AD curve intersecting at lower inflation and higher output, which represents a favourable supply shock.",
     "choiceRationales": [
       "The lower horizontal short-run inflation line, with unchanged AD, produces the displayed lower inflation and higher output.",
       "A negative demand shock would move AD, not replace the horizontal short-run inflation line, and would lower output at a given inflation line.",
@@ -1509,7 +1509,7 @@
     "stimulus": {
       "type": "econ_graph",
       "title": "Short-run inflation-output diagram",
-      "description": "The graph has output on the horizontal axis and inflation on the vertical axis. A downward-sloping curve labelled AD crosses a horizontal line labelled π0 at E0 and a lower horizontal line labelled π1 at E1. E1 lies to the right of E0.",
+      "description": "The graph has output on the horizontal axis and inflation on the vertical axis. A downward-sloping curve labelled AD crosses a horizontal line labelled π₀ at E0 and a lower horizontal line labelled π₁ at E1. E1 lies to the right of E0.",
       "xAxis": {
         "label": "Output, Y",
         "domain": [0, 100],
@@ -1543,7 +1543,7 @@
         },
         {
           "id": "pi0",
-          "label": "π0",
+          "label": "π₀",
           "points": [
             { "x": 0, "y": 5 },
             { "x": 100, "y": 5 }
@@ -1553,7 +1553,7 @@
         },
         {
           "id": "pi1",
-          "label": "π1",
+          "label": "π₁",
           "points": [
             { "x": 0, "y": 3.5 },
             { "x": 100, "y": 3.5 }
@@ -1595,7 +1595,7 @@
         { "key": "period", "label": "Period", "align": "left" },
         { "key": "output", "label": "Output Y", "align": "right" },
         { "key": "potential", "label": "Potential output Y*", "align": "right" },
-        { "key": "inflation", "label": "Inflation π", "align": "right" }
+        { "key": "inflation", "label": "Inflation \\(\\pi\\)", "align": "right" }
       ],
       "rows": [
         { "id": "A", "cells": ["A", "98", "100", "3.0%"] },
@@ -1610,7 +1610,7 @@
     "topic": "Foreign-exchange market shift",
     "style": "scenario",
     "difficulty": 2,
-    "stem": "The graph shifts AUD demand from D0 to D1 while AUD supply is unchanged. Under the course convention e = USD/AUD, what happens?",
+    "stem": "The graph shifts AUD demand from D0 to D1 while AUD supply is unchanged. Under the course convention \\(e = USD/AUD\\), what happens?",
     "choices": [
       "The AUD depreciates and e falls.",
       "The AUD appreciates and e rises.",
@@ -1618,10 +1618,10 @@
       "AUD supply shifts right, causing e to rise without a demand change."
     ],
     "correctChoice": 1,
-    "explanation": "The rightward AUD-demand shift raises the equilibrium price of an AUD in USD. With e measured in USD/AUD, a higher e is an AUD appreciation.",
+    "explanation": "The rightward AUD-demand shift raises the equilibrium price of an AUD in USD. With \\(e\\) measured in USD/AUD, a higher \\(e\\) is an AUD appreciation.",
     "choiceRationales": [
       "A higher demand for AUD raises rather than lowers the USD price of an AUD.",
-      "The new equilibrium has a higher e, and under USD/AUD that is an appreciation of the AUD.",
+      "The new equilibrium has a higher \\(e\\), and under USD/AUD that is an appreciation of the AUD.",
       "A flexible rate changes in response to the displayed demand shift.",
       "The supply curve is unchanged; the graph explicitly shifts demand from D0 to D1."
     ],
@@ -1733,7 +1733,7 @@
     "stimulus": {
       "type": "econ_graph",
       "title": "AUD market with a fixed exchange rate",
-      "description": "The vertical axis measures e in USD per AUD. A downward-sloping AUD-demand curve D and an upward-sloping AUD-supply curve S intersect at e=0.60. A horizontal dashed fixed-rate line labelled e_bar is above the intersection at e=0.75.",
+      "description": "The vertical axis measures e in USD per AUD. A downward-sloping AUD-demand curve D and an upward-sloping AUD-supply curve S intersect at e=0.60. A horizontal dashed fixed-rate line labelled ē is above the intersection at e=0.75.",
       "xAxis": {
         "label": "Quantity of AUD",
         "domain": [0, 100],
@@ -1783,7 +1783,7 @@
           "id": "fixed-rate",
           "orientation": "horizontal",
           "value": 0.75,
-          "label": "e_bar",
+          "label": "ē",
           "lineStyle": "dashed"
         }
       ]
@@ -1798,11 +1798,11 @@
     "stem": "Using the two quotes in the table, approximately how many euros is one Australian dollar worth?",
     "choices": ["€0.42 per AUD", "€0.65 per AUD", "€0.60 per AUD", "€1.57 per AUD"],
     "correctChoice": 2,
-    "explanation": "One AUD is worth 0.65 USD, and each USD is worth 0.92 EUR. The cross-rate is 0.65 × 0.92 = 0.598 EUR/AUD, approximately €0.60 per AUD.",
+    "explanation": "One AUD is worth 0.65 USD, and each USD is worth 0.92 EUR. The cross-rate is \\(0.65\\times0.92=0.598\\) EUR/AUD, approximately €0.60 per AUD.",
     "choiceRationales": [
       "This does not multiply the two displayed exchange rates and is too low for the cross-rate.",
       "0.65 is USD per AUD, not euros per AUD; the USD-to-euro quote must also be applied.",
-      "Multiplying 0.65 USD/AUD by 0.92 EUR/USD gives approximately 0.60 EUR/AUD.",
+      "Multiplying 0.65 USD/AUD by 0.92 EUR/USD gives approximately \\(0.60\\) EUR/AUD.",
       "This is close to an inversion and does not use the quote directions as displayed."
     ],
     "reviewCardId": "ch09-021",
@@ -1982,14 +1982,14 @@
     "topic": "Growth-accounting calculation",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "For economy B, use ΔY/Y = ΔA/A + αΔK/K + (1−α)ΔL/L to calculate predicted output growth from the table.",
+    "stem": "For economy B, use \\(\\Delta Y/Y=\\Delta A/A+\\alpha\\Delta K/K+(1-\\alpha)\\Delta L/L\\) to calculate predicted output growth from the table.",
     "choices": ["3.2%", "4.5%", "5.0%", "6.5%"],
     "correctChoice": 1,
-    "explanation": "For B, output growth is 2% + 0.3×6% + 0.7×1% = 2% + 1.8% + 0.7% = 4.5%.",
+    "explanation": "For B, output growth is \\(2\\%+0.3\\times6\\%+0.7\\times1\\%=2\\%+1.8\\%+0.7\\%=4.5\\%\\).",
     "choiceRationales": [
       "This underweights the capital contribution or omits part of the displayed calculation.",
       "The TFP, capital and labour contributions sum to 2% + 1.8% + 0.7% = 4.5%.",
-      "This does not apply the α and 1−α weights to the two factor-growth rates correctly.",
+      "This does not apply the \\(\\alpha\\) and 1−\\(\\alpha\\) weights to the two factor-growth rates correctly.",
       "This overstates the weighted contributions and does not follow the growth-accounting identity."
     ],
     "reviewCardId": "ch10-025",
@@ -2003,14 +2003,14 @@
         { "key": "economy", "label": "Economy", "align": "left" },
         { "key": "capital", "label": "Capital growth", "align": "right" },
         { "key": "labour", "label": "Labour growth", "align": "right" },
-        { "key": "alpha", "label": "α", "align": "right" },
+        { "key": "alpha", "label": "\\(\\alpha\\)", "align": "right" },
         { "key": "tfp", "label": "TFP growth", "align": "right" }
       ],
       "rows": [
         { "id": "A", "cells": ["A", "4%", "2%", "0.25", "1%"] },
         { "id": "B", "cells": ["B", "6%", "1%", "0.30", "2%"] }
       ],
-      "note": "All growth rates are percentages. The labour exponent is 1−α."
+      "note": "All growth rates are percentages. The labour exponent is 1−\\(\\alpha\\)."
     }
   }
 ]

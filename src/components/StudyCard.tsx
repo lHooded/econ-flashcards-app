@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Flashcard } from "../domain/content";
 import type { NewReviewEvent, ReviewRating } from "../domain/progress";
 import { KnowledgeText } from "./knowledge/KnowledgeText";
+import { MathText } from "./math/MathText";
 
 interface StudyCardProps {
   readonly card: Flashcard;
@@ -276,7 +277,9 @@ export function StudyCard({
                   disabled={revealed || saving}
                   onChange={() => setSelectedChoice(index)}
                 />
-                <span>{choice}</span>
+                <span>
+                  <MathText text={choice} />
+                </span>
                 {isCorrect && <strong className="choice-result">Correct answer</strong>}
                 {isWrongSelection && (
                   <strong className="choice-result">Your selection</strong>

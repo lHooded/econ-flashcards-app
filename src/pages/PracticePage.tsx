@@ -8,6 +8,7 @@ import type { NewReviewEvent, ReviewRating } from "../domain/progress";
 import { QuestionStimulus } from "../components/stimulus/QuestionStimulus";
 import { GeneratedCalculationLab } from "../components/calculations/GeneratedCalculationLab";
 import { KnowledgeText } from "../components/knowledge/KnowledgeText";
+import { MathText } from "../components/math/MathText";
 import { cardConceptMap } from "../knowledge/contentMap";
 import { knowledgeConceptById } from "../knowledge/data";
 
@@ -654,7 +655,9 @@ export function PracticeMcq({
               disabled={saved || saving || pending}
               onChange={() => onSelect(choiceIndex)}
             />
-            <span>{choice}</span>
+            <span>
+              <MathText text={choice} />
+            </span>
           </label>
         ))}
       </fieldset>
@@ -679,7 +682,9 @@ export function PracticeMcq({
           </p>
           <p>
             <strong>Common trap:</strong>{" "}
-            {question.choiceRationales[selected ?? question.correctChoice]}
+            <MathText
+              text={question.choiceRationales[selected ?? question.correctChoice]}
+            />
           </p>
           <details>
             <summary>Show all choice rationales</summary>

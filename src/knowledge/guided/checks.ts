@@ -1,4 +1,5 @@
 import { knowledgeConceptById, knowledgeConcepts } from "../data";
+import { normalizeLegacyMathText } from "../../math/content";
 import type { KnowledgeConcept } from "../model";
 import {
   guidedCheckIdForConcept,
@@ -65,10 +66,10 @@ function makeMcqVariant(
     id: `${guidedCheckIdForConcept(conceptId)}:${draft.id}`,
     fingerprint: `${guidedCheckIdForConcept(conceptId)}:${draft.id}:${draft.prompt}`,
     requiredConceptIds: Object.freeze([...requiredConceptIds]),
-    prompt: draft.prompt,
-    choices: Object.freeze(choices),
+    prompt: normalizeLegacyMathText(draft.prompt),
+    choices: Object.freeze(choices.map(normalizeLegacyMathText)),
     correctChoice: (draft.correctChoice + shift) % draft.choices.length,
-    explanation: draft.explanation,
+    explanation: normalizeLegacyMathText(draft.explanation),
   });
 }
 
@@ -92,8 +93,24 @@ function generated(
     tags: [...current.tags, "guided-check", "calculation"],
     sourceRefs: current.sourceRefs,
     variants: [],
-    generator,
+    generator: (seed) => normalizeGuidedVariant(generator(seed)),
     generatorId,
+  };
+}
+
+function normalizeGuidedVariant(variant: GuidedCheckVariant): GuidedCheckVariant {
+  if (variant.kind === "mcq") {
+    return {
+      ...variant,
+      prompt: normalizeLegacyMathText(variant.prompt),
+      choices: variant.choices.map(normalizeLegacyMathText),
+      explanation: normalizeLegacyMathText(variant.explanation),
+    };
+  }
+  return {
+    ...variant,
+    prompt: normalizeLegacyMathText(variant.prompt),
+    explanation: normalizeLegacyMathText(variant.explanation),
   };
 }
 

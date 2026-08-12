@@ -6,6 +6,7 @@ import { knowledgeConceptById } from "../../knowledge/data";
 import { getDirectDependants } from "../../knowledge/graph";
 import type { KnowledgeConcept } from "../../knowledge/model";
 import { KnowledgeText } from "./KnowledgeText";
+import { MathExpression } from "../math/MathExpression";
 
 const sourceLabels = new Map(rawSources.map((source) => [source.id, source.label]));
 
@@ -189,14 +190,14 @@ export function ConceptArticle({
               {concept.equations.map((equation) => (
                 <div className="knowledge-equation" key={equation.label}>
                   <strong>{equation.label}</strong>
-                  <code>{equation.expression}</code>
+                  <MathExpression expression={equation.expression} displayMode />
                   <p>
                     <KnowledgeText text={equation.interpretation} />
                   </p>
                   <ul>
                     {equation.variables.map((variable) => (
                       <li key={variable.symbol}>
-                        <code>{variable.symbol}</code> —{" "}
+                        <MathExpression expression={variable.symbol} /> —{" "}
                         <KnowledgeText text={variable.meaning} />
                         {variable.units ? ` (${variable.units})` : ""}
                       </li>

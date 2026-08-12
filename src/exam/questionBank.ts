@@ -13,6 +13,7 @@ import {
   type QuestionBankValidationOptions,
   validateExamQuestionBank,
 } from "./validateQuestionBank";
+import { normalizeLegacyMathText } from "../math/content";
 
 const validationOptions: QuestionBankValidationOptions = {
   canonicalCardIds: cardIds,
@@ -89,7 +90,9 @@ export function adaptCanonicalMcqCard(card: Flashcard): ExamQuestion {
     choices: card.choices as FourChoices,
     correctChoice: card.correctChoice as 0 | 1 | 2 | 3,
     explanation: card.explanation,
-    choiceRationales: rationales,
+    choiceRationales: rationales.map(
+      normalizeLegacyMathText,
+    ) as unknown as typeof rationales,
     reviewCardId: card.id,
     sourceCardIds: [card.id],
     tags: card.tags,

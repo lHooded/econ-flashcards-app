@@ -68,7 +68,11 @@ describe("historical mock results", () => {
       .closest<HTMLElement>(".analytics-row");
     expect(chapter8Row).not.toBeNull();
     expect(within(chapter8Row!).getByText("1 / 6")).toBeInTheDocument();
-    expect(screen.getByText(currentQuestion.stem)).toBeInTheDocument();
+    const reviewPanel = screen
+      .getByRole("heading", { name: "Inspect every question" })
+      .closest("section");
+    expect(reviewPanel).not.toBeNull();
+    expect(reviewPanel?.querySelector("h3 .katex")).toBeInTheDocument();
     expect(screen.getAllByText(/Chapter 8 ·/).length).toBeGreaterThan(0);
     view.rerender(<MockResults attempt={historical} questionsById={new Map()} />);
     expect(

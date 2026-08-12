@@ -1,5 +1,6 @@
 import { useId } from "react";
 import type { DataTableStimulus } from "../../stimulus/model";
+import { MathText } from "../math/MathText";
 
 export function DataTable({ stimulus }: { stimulus: DataTableStimulus }) {
   const rawId = useId();
@@ -8,12 +9,14 @@ export function DataTable({ stimulus }: { stimulus: DataTableStimulus }) {
     <figure className="question-stimulus data-table-stimulus">
       <div className="stimulus-table-container">
         <table aria-describedby={stimulus.note === undefined ? undefined : noteId}>
-          <caption>{stimulus.caption}</caption>
+          <caption>
+            <MathText text={stimulus.caption} />
+          </caption>
           <thead>
             <tr>
               {stimulus.columns.map((column) => (
                 <th key={column.key} scope="col" style={{ textAlign: column.align }}>
-                  {column.label}
+                  <MathText text={column.label} />
                 </th>
               ))}
             </tr>
@@ -26,7 +29,7 @@ export function DataTable({ stimulus }: { stimulus: DataTableStimulus }) {
                     key={`${row.id}-${stimulus.columns[index].key}`}
                     style={{ textAlign: stimulus.columns[index].align }}
                   >
-                    {cell}
+                    <MathText text={cell} />
                   </td>
                 ))}
               </tr>
@@ -36,7 +39,7 @@ export function DataTable({ stimulus }: { stimulus: DataTableStimulus }) {
       </div>
       {stimulus.note === undefined ? null : (
         <p id={noteId} className="stimulus-table-note">
-          {stimulus.note}
+          <MathText text={stimulus.note} />
         </p>
       )}
     </figure>

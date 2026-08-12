@@ -32,9 +32,9 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Simple disposable income",
-        expression: "YD = Y − T + transfers",
+        expression: String.raw`Y_D = Y - T + \text{transfers}`,
         variables: [
-          { symbol: "YD", meaning: "disposable income" },
+          { symbol: String.raw`Y_D`, meaning: "disposable income" },
           { symbol: "Y", meaning: "income" },
           { symbol: "T", meaning: "taxes" },
         ],
@@ -111,10 +111,10 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Household saving",
-        expression: "Sₕ = YD − C",
+        expression: String.raw`S_h = Y_D - C`,
         variables: [
-          { symbol: "Sₕ", meaning: "household saving flow" },
-          { symbol: "YD", meaning: "disposable income" },
+          { symbol: String.raw`S_h`, meaning: "household saving flow" },
+          { symbol: String.raw`Y_D`, meaning: "disposable income" },
           { symbol: "C", meaning: "consumption expenditure" },
         ],
         interpretation:
@@ -237,9 +237,9 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Simple public saving",
-        expression: "Sg = T − G",
+        expression: String.raw`S_g = T - G`,
         variables: [
-          { symbol: "Sg", meaning: "public saving" },
+          { symbol: String.raw`S_g`, meaning: "public saving" },
           { symbol: "T", meaning: "government revenue from taxes" },
           { symbol: "G", meaning: "government purchases" },
         ],
@@ -283,7 +283,7 @@ export const courseRecordsB = [
     equations: [
       {
         label: "National saving",
-        expression: "NS = Y − C − G",
+        expression: String.raw`NS = Y - C - G`,
         variables: [
           { symbol: "NS", meaning: "national saving" },
           { symbol: "Y", meaning: "income or output" },
@@ -357,7 +357,7 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Value of marginal product",
-        expression: "VMPK = P × MPK",
+        expression: String.raw`VMPK = P \times MPK`,
         variables: [
           { symbol: "P", meaning: "price of the firm’s output" },
           { symbol: "MPK", meaning: "extra physical output from capital" },
@@ -408,12 +408,12 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Course user-cost approximation",
-        expression: "UC ≈ Pᴋ(r + δ)",
+        expression: String.raw`UC \approx P_K(r + \delta)`,
         variables: [
           { symbol: "UC", meaning: "user cost of capital" },
-          { symbol: "Pᴋ", meaning: "price of a unit of capital" },
+          { symbol: String.raw`P_K`, meaning: "price of a unit of capital" },
           { symbol: "r", meaning: "real interest rate" },
-          { symbol: "δ", meaning: "depreciation rate" },
+          { symbol: String.raw`\delta`, meaning: "depreciation rate" },
         ],
         interpretation:
           "The expression is a model approximation; the relevant units and assumptions are those stated in the course question.",
@@ -500,7 +500,7 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Closed economy identity",
-        expression: "NS = I",
+        expression: String.raw`NS = I`,
         variables: [
           { symbol: "NS", meaning: "national saving" },
           { symbol: "I", meaning: "planned investment" },
@@ -646,10 +646,10 @@ export const courseRecordsB = [
     equations: [
       {
         label: "PAE identity",
-        expression: "PAE = C + Iᴾ + G + NX",
+        expression: String.raw`PAE = C + I^P + G + NX`,
         variables: [
           { symbol: "C", meaning: "planned consumption" },
-          { symbol: "Iᴾ", meaning: "planned investment" },
+          { symbol: String.raw`I^P`, meaning: "planned investment" },
           { symbol: "G", meaning: "government purchases" },
           { symbol: "NX", meaning: "net exports" },
         ],
@@ -815,10 +815,10 @@ export const courseRecordsB = [
     equations: [
       {
         label: "MPC",
-        expression: "MPC = ΔC / ΔYD",
+        expression: String.raw`MPC = \frac{\Delta C}{\Delta Y_D}`,
         variables: [
-          { symbol: "ΔC", meaning: "change in consumption" },
-          { symbol: "ΔYD", meaning: "change in disposable income" },
+          { symbol: String.raw`\Delta C`, meaning: "change in consumption" },
+          { symbol: String.raw`\Delta Y_D`, meaning: "change in disposable income" },
         ],
         interpretation:
           "The numerator and denominator are changes, not their total levels.",
@@ -854,7 +854,7 @@ export const courseRecordsB = [
     equations: [
       {
         label: "APC",
-        expression: "APC = C / YD",
+        expression: String.raw`APC = \frac{C}{Y_D}`,
         variables: [
           { symbol: "C", meaning: "consumption level" },
           { symbol: "YD", meaning: "income level used by the model" },
@@ -878,7 +878,7 @@ export const courseRecordsB = [
     intuition:
       "Households may consume something even with little current income, while extra income usually raises consumption by less than one-for-one.",
     explanation: [
-      "The simple course form is C = C₀ + cYD, where C₀ is autonomous consumption and c is the MPC. Later versions can include real interest rates or wealth.",
+      String.raw`The simple course form is \(C = C_0 + cY_D\), where \(C_0\) is autonomous consumption and c is the MPC. Later versions can include real interest rates or wealth.`,
       "The function is a model assumption used to derive PAE and the multiplier, not a universal law applying identically to every household.",
     ],
     whyItMatters:
@@ -897,13 +897,13 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Simple consumption function",
-        expression: "C = C₀ + cYD",
+        expression: String.raw`C = C_0 + cY_D`,
         variables: [
-          { symbol: "C₀", meaning: "autonomous consumption" },
+          { symbol: String.raw`C_0`, meaning: "autonomous consumption" },
           { symbol: "c", meaning: "MPC, between zero and one in the basic model" },
-          { symbol: "YD", meaning: "disposable income" },
+          { symbol: String.raw`Y_D`, meaning: "disposable income" },
         ],
-        interpretation: "C₀ shifts the line; c controls its slope.",
+        interpretation: String.raw`\(C_0\) shifts the line; c controls its slope.`,
       },
     ],
   }),
@@ -1034,7 +1034,7 @@ export const courseRecordsB = [
     equations: [
       {
         label: "PAE equilibrium condition",
-        expression: "Y = PAE",
+        expression: String.raw`Y = PAE`,
         variables: [
           { symbol: "Y", meaning: "actual output" },
           { symbol: "PAE", meaning: "planned aggregate expenditure" },
@@ -1142,7 +1142,7 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Two-sector multiplier",
-        expression: "k = 1 / (1 − c)",
+        expression: String.raw`k = \frac{1}{1-c}`,
         variables: [
           { symbol: "k", meaning: "multiplier" },
           { symbol: "c", meaning: "MPC" },
@@ -1397,7 +1397,7 @@ export const courseRecordsB = [
     intuition:
       "A proportional tax makes the government’s revenue rise as income rises, so some of each extra income round leaks away automatically.",
     explanation: [
-      "A common course form is T = T₀ + tY: T₀ is autonomous tax and t is the marginal tax rate. The average tax rate is total tax divided by income and need not equal t.",
+      String.raw`A common course form is \(T = T_0 + tY\): \(T_0\) is autonomous tax and t is the marginal tax rate. The average tax rate is total tax divided by income and need not equal t.`,
       "The function affects disposable income, the PAE slope, multipliers, and automatic stabilisation.",
     ],
     whyItMatters:
@@ -1416,9 +1416,9 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Linear tax function",
-        expression: "T = T₀ + tY",
+        expression: String.raw`T = T_0 + tY`,
         variables: [
-          { symbol: "T₀", meaning: "autonomous tax" },
+          { symbol: String.raw`T_0`, meaning: "autonomous tax" },
           { symbol: "t", meaning: "marginal tax rate" },
           { symbol: "Y", meaning: "income" },
         ],
@@ -1439,7 +1439,7 @@ export const courseRecordsB = [
     intuition:
       "It tells you how much of an additional dollar is diverted to government, not the average tax paid on all income.",
     explanation: [
-      "In T = T₀ + tY, t is the slope: ΔT/ΔY. It reduces the disposable-income and consumption response to an income increase.",
+      String.raw`In \(T = T_0 + tY\), t is the slope: \(\Delta T/\Delta Y\). It reduces the disposable-income and consumption response to an income increase.`,
       "A progressive tax system can have a marginal rate above its average rate; use the definition asked for in the question.",
     ],
     whyItMatters:
@@ -1457,10 +1457,10 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Marginal tax rate",
-        expression: "MTR = ΔT / ΔY",
+        expression: String.raw`MTR = \frac{\Delta T}{\Delta Y}`,
         variables: [
-          { symbol: "ΔT", meaning: "change in tax paid" },
-          { symbol: "ΔY", meaning: "change in income" },
+          { symbol: String.raw`\Delta T`, meaning: "change in tax paid" },
+          { symbol: String.raw`\Delta Y`, meaning: "change in income" },
         ],
         interpretation:
           "Use changes, not total tax divided by total income; that latter ratio is average tax rate.",
@@ -1492,7 +1492,7 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Average tax rate",
-        expression: "tax / income",
+        expression: String.raw`\frac{\text{tax}}{\text{income}}`,
         variables: [
           { symbol: "tax", meaning: "total tax paid" },
           { symbol: "income", meaning: "total income" },
@@ -1533,7 +1533,7 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Simple budget balance",
-        expression: "balance = revenue − spending",
+        expression: String.raw`\text{balance} = \text{revenue} - \text{spending}`,
         variables: [
           { symbol: "revenue", meaning: "government receipts" },
           { symbol: "spending", meaning: "government current uses, as specified" },
@@ -1636,7 +1636,7 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Debt-to-GDP ratio",
-        expression: "debt stock / nominal GDP",
+        expression: String.raw`\frac{\text{debt stock}}{\text{nominal GDP}}`,
         variables: [
           { symbol: "debt stock", meaning: "outstanding government obligations" },
           { symbol: "nominal GDP", meaning: "current-dollar annual output" },

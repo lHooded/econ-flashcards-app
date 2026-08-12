@@ -65,7 +65,7 @@ export const courseRecordsC = [
     equations: [
       {
         label: "Simple holding return",
-        expression: "(income + price gain) / price paid",
+        expression: String.raw`\frac{\text{income} + \text{price gain}}{\text{price paid}}`,
         variables: [
           { symbol: "income", meaning: "cash payment received" },
           { symbol: "price gain", meaning: "change in market price" },
@@ -244,9 +244,9 @@ export const courseRecordsC = [
     equations: [
       {
         label: "One-payment bond",
-        expression: "Pᴮ = F / (1 + i)ᵀ",
+        expression: String.raw`P^B = \frac{F}{(1+i)^T}`,
         variables: [
-          { symbol: "Pᴮ", meaning: "bond price today" },
+          { symbol: String.raw`P^B`, meaning: "bond price today" },
           { symbol: "F", meaning: "face-value payment at maturity" },
           { symbol: "i", meaning: "market interest rate per period" },
           { symbol: "T", meaning: "remaining periods to maturity" },
@@ -526,9 +526,9 @@ export const courseRecordsC = [
     equations: [
       {
         label: "Real money demand",
-        expression: "Mᵈ / P",
+        expression: String.raw`\frac{M^d}{P}`,
         variables: [
-          { symbol: "Mᵈ", meaning: "nominal money demand" },
+          { symbol: String.raw`M^d`, meaning: "nominal money demand" },
           { symbol: "P", meaning: "price level" },
         ],
         interpretation:
@@ -562,7 +562,7 @@ export const courseRecordsC = [
     equations: [
       {
         label: "Velocity",
-        expression: "V = PY / M",
+        expression: String.raw`V = \frac{PY}{M}`,
         variables: [
           { symbol: "V", meaning: "velocity" },
           { symbol: "P", meaning: "price level" },
@@ -600,7 +600,7 @@ export const courseRecordsC = [
     equations: [
       {
         label: "Quantity equation",
-        expression: "M V = P Y",
+        expression: String.raw`M V = P Y`,
         variables: [
           { symbol: "M", meaning: "money stock" },
           { symbol: "V", meaning: "velocity" },
@@ -641,12 +641,12 @@ export const courseRecordsC = [
     equations: [
       {
         label: "Growth-rate form",
-        expression: "Δ%M + Δ%V ≈ π + Δ%Y",
+        expression: String.raw`g_M + g_V \approx \pi + g_Y`,
         variables: [
-          { symbol: "Δ%M", meaning: "money-stock growth" },
-          { symbol: "Δ%V", meaning: "velocity growth" },
-          { symbol: "π", meaning: "inflation" },
-          { symbol: "Δ%Y", meaning: "real-output growth" },
+          { symbol: String.raw`g_M`, meaning: "money-stock growth" },
+          { symbol: String.raw`g_V`, meaning: "velocity growth" },
+          { symbol: String.raw`\pi`, meaning: "inflation" },
+          { symbol: String.raw`g_Y`, meaning: "real-output growth" },
         ],
         interpretation:
           "Rearrange only after checking which terms are assumed constant in the question.",
@@ -780,7 +780,7 @@ export const courseRecordsC = [
     equations: [
       {
         label: "Balance-sheet identity",
-        expression: "assets = liabilities + equity",
+        expression: String.raw`\text{assets} = \text{liabilities} + \text{equity}`,
         variables: [
           {
             symbol: "assets",
@@ -852,7 +852,7 @@ export const courseRecordsC = [
     equations: [
       {
         label: "Reserve-deposit ratio",
-        expression: "reserves / deposits",
+        expression: String.raw`\frac{\text{reserves}}{\text{deposits}}`,
         variables: [
           { symbol: "reserves", meaning: "liquid reserve assets" },
           { symbol: "deposits", meaning: "deposit liabilities" },
@@ -1778,12 +1778,12 @@ export const courseRecordsC = [
     equations: [
       {
         label: "Simple two-period expectations relation",
-        expression: "i₀² ≈ (i₀¹ + E₀i₁¹) / 2",
+        expression: String.raw`i_0^2 \approx \frac{i_0^1 + E_0 i_1^1}{2}`,
         variables: [
-          { symbol: "i₀²", meaning: "two-year rate today" },
-          { symbol: "i₀¹", meaning: "one-year rate today" },
+          { symbol: String.raw`i_0^2`, meaning: "two-year rate today" },
+          { symbol: String.raw`i_0^1`, meaning: "one-year rate today" },
           {
-            symbol: "E₀i₁¹",
+            symbol: String.raw`E_0 i_1^1`,
             meaning: "rate expected today for a one-year loan beginning next year",
           },
         ],
@@ -1897,7 +1897,7 @@ export const courseRecordsC = [
     intuition:
       "It is a behavioural rule for the policymaker: higher inflation or an output gap can trigger a different real-rate setting according to the chosen coefficients.",
     explanation: [
-      "The course uses a simplified function such as r = r₀ + γπ and then adds an inflation target or output-gap term. The coefficients describe policy responsiveness under the model.",
+      String.raw`The course uses a simplified function such as \(r = r_0 + \gamma\pi\) and then adds an inflation target or output-gap term. The coefficients describe policy responsiveness under the model.`,
       "A reaction function is not the same as the cash-rate operating procedure. The procedure achieves a chosen rate; the reaction function explains how the chosen rate is selected.",
     ],
     whyItMatters:
@@ -1960,10 +1960,10 @@ export const courseRecordsC = [
     equations: [
       {
         label: "Illustrative Taylor-type rule",
-        expression: "i = i₀ + aπ + b·output gap",
+        expression: String.raw`i = i_0 + a\pi + b \times \text{output gap}`,
         variables: [
           { symbol: "i", meaning: "policy interest rate in the chosen convention" },
-          { symbol: "i₀", meaning: "baseline policy setting" },
+          { symbol: String.raw`i_0`, meaning: "baseline policy setting" },
           { symbol: "a", meaning: "response coefficient on inflation" },
           { symbol: "b", meaning: "response coefficient on the output gap" },
         ],
