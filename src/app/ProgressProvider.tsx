@@ -35,6 +35,7 @@ function toSnapshot(
     ),
     reviewEvents: data.reviews,
     mockAttempts,
+    lessonSeenConceptIds: data.lessonSeenConceptIds,
   };
 }
 
@@ -166,6 +167,29 @@ export function ProgressProvider({ children }: PropsWithChildren) {
     [repository, syncCoordinator],
   );
 
+  const markLessonSeen = useCallback(
+    async (conceptId: string) => {
+      try {
+        await repository.markLessonSeen(conceptId);
+        setSnapshot((current) => {
+          if (current === null) return current;
+          const currentIds = current.lessonSeenConceptIds ?? [];
+          if (currentIds.includes(conceptId)) return current;
+          return {
+            ...current,
+            lessonSeenConceptIds: [...currentIds, conceptId].sort(),
+          };
+        });
+        setError(null);
+      } catch (lessonError: unknown) {
+        const message = errorMessage(lessonError);
+        setError(message);
+        throw new Error(message);
+      }
+    },
+    [repository],
+  );
+
   const exportProgress = useCallback(() => {
     if (snapshot === null) {
       throw new Error("Local study data is still loading.");
@@ -285,6 +309,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       error,
       clearError,
       saveSettings,
+      markLessonSeen,
       recordReview,
       createMockAttempt,
       updateMockAttemptProgress,
@@ -301,6 +326,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       error,
       exportProgress,
       isLoading,
+      markLessonSeen,
       recordReview,
       refreshProgress,
       replaceProgress,

@@ -8,6 +8,7 @@ import {
   type ReviewEvent,
 } from "./progress";
 import { validateMockAttempt, type MockAttempt } from "../exam/mock/model";
+import { knowledgeConceptIds } from "../knowledge/data";
 
 export const BACKUP_FORMAT = "econ-flashcards-progress" as const;
 export const BACKUP_VERSION = 2 as const;
@@ -29,6 +30,8 @@ export interface ProgressBackupV2 {
   readonly cardStates: readonly CardState[];
   readonly reviews: readonly ReviewEvent[];
   readonly mockAttempts: readonly MockAttempt[];
+  /** Optional so version-2 backups created before Guided lesson persistence remain valid. */
+  readonly lessonSeenConceptIds?: readonly string[];
 }
 
 export function createProgressBackup(
@@ -52,6 +55,7 @@ export function createProgressBackup(
       manifest: attempt.manifest.map((entry) => ({ ...entry })),
       questionStates: attempt.questionStates.map((state) => ({ ...state })),
     })),
+    lessonSeenConceptIds: [...(snapshot.lessonSeenConceptIds ?? [])],
   };
 }
 
@@ -66,6 +70,7 @@ export function parseProgressBackup(
   input: unknown,
   validCardIds: ReadonlySet<string>,
   validQuestionIds: ReadonlySet<string> = new Set(),
+  validLessonConceptIds: ReadonlySet<string> = knowledgeConceptIds,
 ): ProgressBackupV2 {
   if (!isRecord(input)) {
     throw new Error("Backup validation failed: the top-level value must be an object.");
@@ -89,6 +94,10 @@ export function parseProgressBackup(
     input.version === 1
       ? []
       : parseMockAttempts(input.mockAttempts, validQuestionIds, reviews);
+  const lessonSeenConceptIds =
+    input.version === 1 || input.lessonSeenConceptIds === undefined
+      ? []
+      : validateLessonSeenConceptIds(input.lessonSeenConceptIds, validLessonConceptIds);
 
   return {
     format: BACKUP_FORMAT,
@@ -98,6 +107,7 @@ export function parseProgressBackup(
     cardStates,
     reviews,
     mockAttempts,
+    lessonSeenConceptIds,
   };
 }
 
@@ -105,6 +115,7 @@ export function parseProgressBackupText(
   text: string,
   validCardIds: ReadonlySet<string>,
   validQuestionIds: ReadonlySet<string> = new Set(),
+  validLessonConceptIds: ReadonlySet<string> = knowledgeConceptIds,
 ): ProgressBackupV2 {
   let input: unknown;
   try {
@@ -113,7 +124,37 @@ export function parseProgressBackupText(
     throw new Error("Backup validation failed: the file is not valid JSON.");
   }
 
-  return parseProgressBackup(input, validCardIds, validQuestionIds);
+  return parseProgressBackup(
+    input,
+    validCardIds,
+    validQuestionIds,
+    validLessonConceptIds,
+  );
+}
+
+export function validateLessonSeenConceptIds(
+  value: unknown,
+  validLessonConceptIds: ReadonlySet<string> = knowledgeConceptIds,
+): string[] {
+  if (!Array.isArray(value)) {
+    throw new Error("Backup validation failed: lessonSeenConceptIds must be an array.");
+  }
+
+  const ids = new Set<string>();
+  return value.map((entry, index) => {
+    const path = `lessonSeenConceptIds[${index}]`;
+    const conceptId = requireNonEmptyString(entry, path);
+    if (!validLessonConceptIds.has(conceptId)) {
+      throw new Error(
+        `Backup validation failed: unknown knowledge concept ID "${conceptId}".`,
+      );
+    }
+    if (ids.has(conceptId)) {
+      throw new Error(`Backup validation failed: duplicate lesson ID ${conceptId}.`);
+    }
+    ids.add(conceptId);
+    return conceptId;
+  });
 }
 
 function parseMockAttempts(

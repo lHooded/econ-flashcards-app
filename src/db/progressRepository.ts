@@ -9,9 +9,15 @@ import {
   type NewReviewEvent,
   type ReviewEvent,
 } from "../domain/progress";
-import type { ProgressBackupV2 } from "../domain/backup";
+import { validateLessonSeenConceptIds, type ProgressBackupV2 } from "../domain/backup";
 import { validateMockAttempt, type MockAttempt } from "../exam/mock/model";
-import { openProgressDatabase, SETTINGS_KEY, type SettingsRecord } from "./database";
+import { knowledgeConceptIds } from "../knowledge/data";
+import {
+  openProgressDatabase,
+  SETTINGS_KEY,
+  type GuidedLessonSeenRecord,
+  type SettingsRecord,
+} from "./database";
 import { createDisconnectedSyncConfig, validateSyncConfig } from "./syncRepository";
 import {
   buildSyncPayload,
@@ -48,10 +54,11 @@ export class ProgressRepository {
     settings: AppSettings;
     cardStates: CardState[];
     reviews: ReviewEvent[];
+    lessonSeenConceptIds: string[];
   }> {
     const database = await this.database;
     const transaction = database.transaction(
-      ["settings", "cardStates", "reviewEvents"],
+      ["settings", "cardStates", "reviewEvents", "guidedLessonSeen"],
       "readonly",
     );
     const settingsRecord = (await transaction
@@ -63,6 +70,9 @@ export class ProgressRepository {
     const rawReviews = (await transaction
       .objectStore("reviewEvents")
       .getAll()) as ReviewEvent[];
+    const lessonSeenRecords = (await transaction
+      .objectStore("guidedLessonSeen")
+      .getAll()) as GuidedLessonSeenRecord[];
     await transaction.done;
 
     // IndexedDB returns reviewEvents in primary-key order, but IDs are random.
@@ -73,7 +83,19 @@ export class ProgressRepository {
       settings: settingsRecord?.value ?? DEFAULT_APP_SETTINGS,
       cardStates,
       reviews,
+      lessonSeenConceptIds: lessonSeenRecords.map((record) => record.conceptId).sort(),
     };
+  }
+
+  public async markLessonSeen(conceptId: string): Promise<void> {
+    if (!knowledgeConceptIds.has(conceptId)) {
+      throw new Error(
+        `Cannot mark unknown knowledge concept ID "${conceptId}" as seen.`,
+      );
+    }
+
+    const database = await this.database;
+    await database.put("guidedLessonSeen", { conceptId });
   }
 
   public async saveSettings(settings: AppSettings): Promise<void> {
@@ -352,10 +374,21 @@ export class ProgressRepository {
     for (const attempt of backup.mockAttempts) {
       validateMockAttempt(attempt);
     }
+    const lessonSeenConceptIds = validateLessonSeenConceptIds(
+      backup.lessonSeenConceptIds ?? [],
+      knowledgeConceptIds,
+    );
 
     const database = await this.database;
     const transaction = database.transaction(
-      ["settings", "cardStates", "reviewEvents", "mockAttempts", "syncConfig"],
+      [
+        "settings",
+        "cardStates",
+        "reviewEvents",
+        "mockAttempts",
+        "syncConfig",
+        "guidedLessonSeen",
+      ],
       "readwrite",
     );
 
@@ -366,6 +399,7 @@ export class ProgressRepository {
     transaction.objectStore("cardStates").clear();
     transaction.objectStore("reviewEvents").clear();
     transaction.objectStore("mockAttempts").clear();
+    transaction.objectStore("guidedLessonSeen").clear();
     transaction.objectStore("settings").put({
       key: SETTINGS_KEY,
       value: backup.settings,
@@ -380,6 +414,8 @@ export class ProgressRepository {
     }
     const mockStore = transaction.objectStore("mockAttempts");
     for (const attempt of backup.mockAttempts) mockStore.put(attempt);
+    const lessonSeenStore = transaction.objectStore("guidedLessonSeen");
+    for (const conceptId of lessonSeenConceptIds) lessonSeenStore.put({ conceptId });
     if (syncRecord?.group !== null && syncRecord !== undefined) {
       syncStore.put({
         ...syncRecord,
@@ -489,7 +525,14 @@ export class ProgressRepository {
   public async resetAll(): Promise<void> {
     const database = await this.database;
     const transaction = database.transaction(
-      ["settings", "cardStates", "reviewEvents", "mockAttempts", "syncConfig"],
+      [
+        "settings",
+        "cardStates",
+        "reviewEvents",
+        "mockAttempts",
+        "syncConfig",
+        "guidedLessonSeen",
+      ],
       "readwrite",
     );
     const syncRecord = (await transaction
@@ -499,6 +542,7 @@ export class ProgressRepository {
     transaction.objectStore("cardStates").clear();
     transaction.objectStore("reviewEvents").clear();
     transaction.objectStore("mockAttempts").clear();
+    transaction.objectStore("guidedLessonSeen").clear();
     if (syncRecord !== undefined) {
       transaction
         .objectStore("syncConfig")

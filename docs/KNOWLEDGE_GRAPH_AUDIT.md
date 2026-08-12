@@ -203,5 +203,6 @@ only the 349 canonical cards. Guided Cram uses positive retrieval evidence as
 “introduced enough” but keeps `Solid` as the stronger foundation-curriculum
 criterion. Tested-concept disclosure remains blocked until the check answer is
 saved; incidental preview terms remain restricted. Backup and sync validate the
-union of canonical IDs and registered `knowledge-check:*` IDs without changing
-DB version 3, backup version 2, or sync protocol v1.
+union of canonical IDs and registered `knowledge-check:*` IDs. Guided lesson
+acknowledgement is a separate v4 local store and optional backup-v2 field; it does
+not change sync protocol v1.

@@ -414,7 +414,7 @@ describe("Guided concept readiness and progression", () => {
       reviews,
       settings: NO_EXAM,
       nowMs: NOW,
-      lessonCompletedConceptIds: new Set(["capital"]),
+      lessonSeenConceptIds: new Set(["capital"]),
     });
     expect(card.kind).toBe("canonical-card");
     if (card.kind === "canonical-card") expect(card.card.id).toBe("ch10-017");
@@ -444,7 +444,7 @@ describe("Guided concept readiness and progression", () => {
       reviews: [failure],
       settings: NO_EXAM,
       nowMs: NOW,
-      lessonCompletedConceptIds: new Set([first.conceptId]),
+      lessonSeenConceptIds: new Set([first.conceptId]),
       recentlyShownIds: [skill.id],
     });
     expect(next.kind).not.toBe("knowledge-check");
@@ -473,7 +473,7 @@ describe("Guided concept readiness and progression", () => {
       reviews: [failedPercentage, introducedBuyer],
       settings: NO_EXAM,
       nowMs: NOW,
-      lessonCompletedConceptIds: new Set(["buyer", "percentage"]),
+      lessonSeenConceptIds: new Set(["buyer", "percentage"]),
     });
     expect(next.kind).toBe("lesson");
     if (next.kind === "lesson") {
@@ -487,7 +487,7 @@ describe("Guided concept readiness and progression", () => {
       reviews: [failedPercentage, introducedBuyer],
       settings: NO_EXAM,
       nowMs: NOW + 11 * 60 * 1000,
-      lessonCompletedConceptIds: new Set(["buyer", "percentage"]),
+      lessonSeenConceptIds: new Set(["buyer", "percentage"]),
     });
     expect(dueAgain.kind).toBe("knowledge-check");
     if (dueAgain.kind === "knowledge-check") {
@@ -500,7 +500,7 @@ describe("Guided concept readiness and progression", () => {
       reviews: [failedPercentage, introducedBuyer],
       settings: NO_EXAM,
       nowMs: NOW,
-      lessonCompletedConceptIds: new Set(["buyer", "percentage"]),
+      lessonSeenConceptIds: new Set(["buyer", "percentage"]),
     });
     expect(finalFallback.kind).toBe("canonical-card");
     if (finalFallback.kind === "canonical-card") {
@@ -533,7 +533,7 @@ describe("Guided concept readiness and progression", () => {
       reviews: historicalPositiveThenFailure,
       settings: NO_EXAM,
       nowMs: NOW,
-      lessonCompletedConceptIds: new Set(["percentage"]),
+      lessonSeenConceptIds: new Set(["percentage"]),
     });
     expect(afterHistoricalPositive.kind).toBe("lesson");
     if (afterHistoricalPositive.kind === "lesson") {
@@ -593,7 +593,7 @@ describe("Guided concept readiness and progression", () => {
         reviews,
         settings: NO_EXAM,
         nowMs,
-        lessonCompletedConceptIds: lessons,
+        lessonSeenConceptIds: lessons,
         sessionSeed: index,
       });
       expect(step.kind).not.toBe("idle");
@@ -645,14 +645,14 @@ describe("Guided concept readiness and progression", () => {
       reviews: [],
       settings: NO_EXAM,
       nowMs: NOW,
-      lessonCompletedConceptIds: completed,
+      lessonSeenConceptIds: completed,
     });
     const repeated = selectGuidedNextStep({
       cards: subset,
       reviews: [],
       settings: NO_EXAM,
       nowMs: NOW,
-      lessonCompletedConceptIds: completed,
+      lessonSeenConceptIds: completed,
     });
     expect(step).toEqual(repeated);
     expect(step.kind).not.toBe("idle");
@@ -671,7 +671,7 @@ describe("Guided concept readiness and progression", () => {
         reviews,
         settings: NO_EXAM,
         nowMs,
-        lessonCompletedConceptIds: lessons,
+        lessonSeenConceptIds: lessons,
         sessionSeed: index,
       });
       expect(step.kind).not.toBe("idle");
@@ -753,9 +753,7 @@ describe("Guided concept readiness and progression", () => {
       reviews: [],
       settings: NO_EXAM,
       nowMs: NOW,
-      lessonCompletedConceptIds: new Set(
-        knowledgeConcepts.map((concept) => concept.id),
-      ),
+      lessonSeenConceptIds: new Set(knowledgeConcepts.map((concept) => concept.id)),
     });
     expect(selected.kind).not.toBe("idle");
   });
@@ -807,7 +805,7 @@ describe("Guided concept readiness and progression", () => {
         reviews,
         settings,
         nowMs,
-        lessonCompletedConceptIds: lessons,
+        lessonSeenConceptIds: lessons,
         sessionSeed: index,
       });
       expect(step.kind).not.toBe("idle");
@@ -907,7 +905,7 @@ describe("Guided concept readiness and progression", () => {
             studyBufferHours: horizon.buffer,
           },
           nowMs,
-          lessonCompletedConceptIds: lessons,
+          lessonSeenConceptIds: lessons,
           sessionSeed: index,
         });
         expect(step.kind, horizon.label).not.toBe("idle");

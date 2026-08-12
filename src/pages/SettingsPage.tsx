@@ -131,7 +131,7 @@ export function SettingsPage({
       !window.confirm(
         syncStatus.connected
           ? "Reset local progress and disconnect this device? The remote cloud copy will remain. This cannot be undone unless you have an export."
-          : "Delete every review, card state, exam setting, and mock history stored on this device? This cannot be undone unless you have an export.",
+          : "Delete every review, card state, exam setting, Guided lesson acknowledgement, and mock history stored on this device? This cannot be undone unless you have an export.",
       )
     ) {
       return;
@@ -139,7 +139,9 @@ export function SettingsPage({
 
     try {
       await resetProgress();
-      setDataMessage("Local progress, settings, and mock history were reset.");
+      setDataMessage(
+        "Local progress, settings, Guided lesson acknowledgements, and mock history were reset.",
+      );
     } catch (error: unknown) {
       setDataError(
         error instanceof Error ? error.message : "Progress could not be reset.",
@@ -217,9 +219,9 @@ export function SettingsPage({
             <h2>Take your study history with you.</h2>
           </div>
           <p>
-            Export includes settings, card states, review history, and mock attempts. It
-            does not copy the canonical deck; card IDs reconnect the backup to this
-            bundled content.
+            Export includes settings, card states, review history, Guided lesson
+            acknowledgements, and mock attempts. It does not copy the canonical deck;
+            card IDs reconnect the backup to this bundled content.
           </p>
           <div className="data-actions">
             <button className="secondary-button" type="button" onClick={downloadBackup}>

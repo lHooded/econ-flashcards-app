@@ -45,15 +45,18 @@ export function GuidedCramPage({
   readonly mode?: "guided" | "high-yield";
 }) {
   const isHighYieldMode = mode === "high-yield";
-  const { snapshot, recordReview } = useProgress();
+  const { snapshot, markLessonSeen, recordReview } = useProgress();
   const nowMs = useNow(30 * 1000);
   const [activeStep, setActiveStep] = useState<GuidedStep | null>(null);
-  const [lessonCompleted, setLessonCompleted] = useState<Set<string>>(() => new Set());
   const [recentIds, setRecentIds] = useState<string[]>([]);
   const [pendingReviews, setPendingReviews] = useState<ReviewEvent[]>([]);
   const [sessionSeed, setSessionSeed] = useState(0);
   const [sessionCount, setSessionCount] = useState(0);
 
+  const lessonSeen = useMemo(
+    () => new Set(snapshot?.lessonSeenConceptIds ?? []),
+    [snapshot?.lessonSeenConceptIds],
+  );
   const persistedReviews = snapshot?.reviewEvents ?? EMPTY_REVIEWS;
   const effectiveReviews = useMemo(() => {
     const persistedIds = new Set(persistedReviews.map((review) => review.id));
@@ -93,14 +96,14 @@ export function GuidedCramPage({
             reviews: effectiveReviews,
             settings,
             nowMs,
-            lessonCompletedConceptIds: lessonCompleted,
+            lessonSeenConceptIds: lessonSeen,
             recentlyShownIds: recentIds,
             sessionSeed,
           }),
     [
       effectiveReviews,
       isHighYieldMode,
-      lessonCompleted,
+      lessonSeen,
       nowMs,
       recentIds,
       sessionSeed,
@@ -115,7 +118,7 @@ export function GuidedCramPage({
             reviews: effectiveReviews,
             settings,
             nowMs,
-            lessonCompletedConceptIds: lessonCompleted,
+            lessonSeenConceptIds: lessonSeen,
             recentlyShownIds: recentIds,
             sessionSeed,
           }).slice(0, 3)
@@ -123,7 +126,7 @@ export function GuidedCramPage({
     [
       effectiveReviews,
       isHighYieldMode,
-      lessonCompleted,
+      lessonSeen,
       nowMs,
       recentIds,
       sessionSeed,
@@ -339,10 +342,10 @@ export function GuidedCramPage({
           <GuidedReasonBanner reason={displayStep.reason} whyNow={displayStep.whyNow} />
           <GuidedLesson
             concept={knowledgeConceptById.get(displayStep.conceptId)!}
-            onContinue={() => {
-              setLessonCompleted((current) =>
-                new Set(current).add(displayStep.conceptId),
-              );
+            onContinue={async () => {
+              if (!lessonSeen.has(displayStep.conceptId)) {
+                await markLessonSeen(displayStep.conceptId);
+              }
               setActiveStep(null);
             }}
           />
@@ -379,8 +382,9 @@ export function GuidedCramPage({
       )}
 
       <p className="guided-evidence-note">
-        Reading and “Continue” only move the transient lesson. Only a saved answer or
-        self-rating creates Exam-SRS evidence.{" "}
+        Reading alone does not persist a lesson acknowledgement. Continuing past a
+        lesson prevents unnecessary replay, but only a saved answer or self-rating
+        creates Exam-SRS evidence.{" "}
         {isHighYieldMode
           ? "High-Yield Cram writes the same ordinary canonical and Guided Knowledge Check ReviewEvents; it adds no separate mastery state."
           : `Ordinary Study remains the canonical ${cards.length}-card deck; Guided Cram’s checks stay in its own lane.`}

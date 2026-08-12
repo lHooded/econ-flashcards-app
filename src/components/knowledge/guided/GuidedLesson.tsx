@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { KnowledgeConcept } from "../../../knowledge/model";
 import { knowledgeConceptById } from "../../../knowledge/data";
 import { KnowledgeText } from "../KnowledgeText";
@@ -7,8 +8,35 @@ export function GuidedLesson({
   onContinue,
 }: {
   readonly concept: KnowledgeConcept;
-  readonly onContinue: () => void;
+  readonly onContinue: () => void | Promise<void>;
 }) {
+  const saveInFlight = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    saveInFlight.current = false;
+    setSaving(false);
+    setSaveError(null);
+  }, [concept.id]);
+
+  const submitContinue = useCallback(async () => {
+    if (saveInFlight.current) return;
+    saveInFlight.current = true;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await onContinue();
+    } catch (error: unknown) {
+      setSaveError(
+        error instanceof Error ? error.message : "Lesson progress could not be saved.",
+      );
+    } finally {
+      saveInFlight.current = false;
+      setSaving(false);
+    }
+  }, [onContinue]);
+
   const prerequisites = concept.prerequisites
     .map((id) => knowledgeConceptById.get(id))
     .filter((value): value is KnowledgeConcept => value !== undefined);
@@ -76,10 +104,24 @@ export function GuidedLesson({
         >
           Open full explanation
         </a>
-        <button className="primary-button" type="button" onClick={onContinue}>
-          Check understanding
+        <button
+          className="primary-button"
+          type="button"
+          disabled={saving}
+          onClick={() => void submitContinue()}
+        >
+          {saving
+            ? "Saving lesson…"
+            : saveError === null
+              ? "Check understanding"
+              : "Retry save"}
         </button>
       </div>
+      {saveError !== null && (
+        <div className="save-warning" role="alert">
+          <strong>Not saved.</strong> {saveError}
+        </div>
+      )}
     </article>
   );
 }

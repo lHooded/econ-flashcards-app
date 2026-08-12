@@ -37,6 +37,7 @@ function baseProgressContext(
     error: null,
     clearError: vi.fn(),
     saveSettings: vi.fn().mockResolvedValue(undefined),
+    markLessonSeen: vi.fn().mockResolvedValue(undefined),
     recordReview,
     exportProgress: vi.fn(() => "{}"),
     replaceProgress: vi.fn().mockResolvedValue(undefined),

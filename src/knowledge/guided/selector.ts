@@ -78,7 +78,7 @@ export interface SelectGuidedNextStepInput {
   readonly reviews: readonly ReviewEvent[];
   readonly settings: AppSettings;
   readonly nowMs: number;
-  readonly lessonCompletedConceptIds?: ReadonlySet<string>;
+  readonly lessonSeenConceptIds?: ReadonlySet<string>;
   readonly recentlyShownIds?: readonly string[];
   readonly sessionSeed?: number;
   /** High-Yield Cram only: constrain the new-anchor policy, never urgent reviews. */
@@ -142,7 +142,7 @@ export function selectGuidedNextStep(input: SelectGuidedNextStepInput): GuidedSt
     );
   }
 
-  const lessonCompleted = input.lessonCompletedConceptIds ?? new Set<string>();
+  const lessonSeen = input.lessonSeenConceptIds ?? new Set<string>();
   const rankedCandidates = rankExamSrsCandidatesFromSnapshot({
     cards: input.cards,
     scheduler: context.scheduler,
@@ -167,7 +167,7 @@ export function selectGuidedNextStep(input: SelectGuidedNextStepInput): GuidedSt
       candidate.state,
       input,
       context,
-      lessonCompleted,
+      lessonSeen,
       new Set<string>(),
     );
     if (resolution.kind === "step") return resolution.step;
@@ -273,7 +273,7 @@ function prepareUnseenCanonicalCard(
   state: ExamSrsCardState,
   input: SelectGuidedNextStepInput,
   context: GuidedSelectionContext,
-  lessonCompleted: ReadonlySet<string>,
+  lessonSeen: ReadonlySet<string>,
   preparingCardIds: ReadonlySet<string>,
 ): GuidedAnchorResolution {
   const targetConceptIds = cardConceptMap[card.id] ?? [];
@@ -300,7 +300,7 @@ function prepareUnseenCanonicalCard(
     const reason: GuidedReason = targetConceptIds.includes(conceptId)
       ? "new-exam-concept"
       : "new-prerequisite";
-    if (!lessonCompleted.has(conceptId)) {
+    if (!lessonSeen.has(conceptId)) {
       return {
         kind: "step",
         step: {
@@ -349,7 +349,7 @@ function prepareUnseenCanonicalCard(
       context,
       card.id,
       nextPreparingCardIds,
-      lessonCompleted,
+      lessonSeen,
     );
     if (linked !== null) return linked;
   }
@@ -363,7 +363,7 @@ function prepareLinkedCanonicalEvidence(
   context: GuidedSelectionContext,
   currentCardId: string,
   preparingCardIds: ReadonlySet<string>,
-  lessonCompleted: ReadonlySet<string>,
+  lessonSeen: ReadonlySet<string>,
 ): GuidedAnchorResolution | null {
   const candidates = rankExamSrsCandidatesFromSnapshot({
     cards: input.cards,
@@ -395,7 +395,7 @@ function prepareLinkedCanonicalEvidence(
       candidate.state,
       input,
       context,
-      lessonCompleted,
+      lessonSeen,
       preparingCardIds,
     );
     if (resolution.kind === "step") return resolution;
