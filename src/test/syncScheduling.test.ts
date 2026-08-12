@@ -401,7 +401,7 @@ describe("sync scheduling", () => {
       ).toMatchObject({ cardId: remoteGuided.cardId, totalReviews: 2 });
       expect(
         joinedSnapshot.cardStates.filter((state) => cardIds.has(state.cardId)),
-      ).toHaveLength(349);
+      ).toHaveLength(cardIds.size);
       expect(phone.getStatus()).toMatchObject({ phase: "synced", connected: true });
     } finally {
       laptop.dispose();

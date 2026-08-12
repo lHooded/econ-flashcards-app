@@ -32,16 +32,16 @@ function strictOptions(overrides: Record<string, unknown> = {}) {
 
 describe("exam question bank", () => {
   it("loads the full deterministic unified bank", () => {
-    expect(examQuestions).toHaveLength(161);
+    expect(examQuestions).toHaveLength(examQuestionStats.total);
     expect(examQuestionStats).toMatchObject({
-      total: 161,
+      total: 168,
       canonical: 31,
-      authored: 130,
+      authored: 137,
       stimulusCount: 30,
       graphCount: 20,
       tableCount: 10,
-      uniqueReviewCardIds: 158,
-      reviewCardsWithMultipleQuestions: 3,
+      uniqueReviewCardIds: 164,
+      reviewCardsWithMultipleQuestions: 4,
       maximumQuestionsPerReviewCard: 2,
     });
     expect(examQuestionStats.byChapterStimulus).toEqual({
@@ -215,7 +215,7 @@ describe("exam question bank", () => {
   it("validates every committed stimulus and keeps text-only questions valid", () => {
     expect(
       examQuestions.filter((question) => question.stimulus === undefined),
-    ).toHaveLength(131);
+    ).toHaveLength(examQuestions.length - examQuestionStats.stimulusCount);
     for (const question of examQuestions) {
       if (question.stimulus !== undefined) {
         expect(validateQuestionStimulus(structuredClone(question.stimulus))).toEqual(

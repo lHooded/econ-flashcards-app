@@ -100,7 +100,7 @@ describe("sync merge algebra", () => {
     );
     expect(
       states.filter((state) => !state.cardId.startsWith("knowledge-check:")).length,
-    ).toBe(349);
+    ).toBe(cardIds.size);
     expect(mergeSyncPayloads(payload([guided]), payload([guided]))).toEqual(
       payload([guided]),
     );

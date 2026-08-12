@@ -91,20 +91,20 @@ The current validation output is:
 
 ```text
 Knowledge graph valid
-Concepts: 297
-Prerequisite edges: 894
-Related edges: 1132
+Concepts: 300
+Prerequisite edges: 906
+Related edges: 1147
 Roots: 10
 Foundation concepts: 43
 Maximum prerequisite depth: 15
-Cards mapped: 349 / 349
-Explicit card mappings: 349 / 349
+Cards mapped: 352 / 352
+Explicit card mappings: 352 / 352
 Production fallback mappings: 0
-Exam questions mapped: 161 / 161
-Concepts with lecture source: 287
-Concepts with textbook source: 290
+Exam questions mapped: 168 / 168
+Concepts with lecture source: 290
+Concepts with textbook source: 293
 Concepts without source support: 0
-Concepts with linked canonical cards: 269
+Concepts with linked canonical cards: 272
 Concepts without linked canonical cards: 28
 Ambiguous inline aliases: 1
 Cycles: 0
@@ -245,7 +245,7 @@ the static frontend bundle. Search and lookup perform no runtime network calls.
 Knowledge data is not included in encrypted sync payloads and is not uploaded
 to Cloudflare. No database migration is used: DB version remains 3, manual
 backup format remains `ProgressBackupV2`/version 2, and sync protocol remains
-version 1. The browser’s strict reviewable-ID registry is the union of the 349
+version 1. The browser’s strict reviewable-ID registry is the union of the 352
 canonical card IDs and the registered Guided Knowledge Check IDs. This lets
 ordinary ReviewEvent backup/sync machinery carry check evidence without
 loosening validation or changing the protocol. Canonical Study, Practice Lab,

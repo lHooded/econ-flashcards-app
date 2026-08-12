@@ -6,8 +6,8 @@ report deliberately does not repeat all question text or graph specifications.
 
 ## Authoring principles
 
-- The exam bank is a separate immutable content domain. The canonical flashcard deck
-  remains unchanged.
+- The exam bank is a separate immutable content domain. Its questions review the
+  current 352-card canonical deck without creating a second mastery system.
 - Every question has exactly four directly comparable choices, one best answer, a
   general explanation, and a specific rationale for every choice.
 - New questions use the supplied course deck, its notation and its model closures.
@@ -40,9 +40,9 @@ content directly from the canonical deck. It preserves the canonical front, choi
 correct index, explanation, topic, difficulty and tags. A small static map supplies
 the style and four choice rationales without modifying the canonical JSON.
 
-The 100 original authored questions remain in
+The original authored questions and the seven new high-yield analogues remain in
 `exam_questions/MACRO1_exam_questions.json`. The 30 additional stimulus questions are
-in `exam_questions/MACRO1_exam_stimulus_questions.json`. All 130 authored questions
+in `exam_questions/MACRO1_exam_stimulus_questions.json`. All 137 authored questions
 have `provenance: "authored_from_flashcards"`; each maps one primary
 `reviewCardId`—the canonical concept most directly tested by a miss—and includes it
 in `sourceCardIds`. Multiple representations of one concept are allowed and are
@@ -50,7 +50,7 @@ controlled at a maximum of two questions per review card. The future mock select
 which is deliberately not implemented here, must select at most one question for a
 given `reviewCardId` in a single attempt.
 
-## Canonical 349-card inventory
+## Canonical 352-card inventory
 
 The inventory below was generated programmatically from
 `flashcards/MACRO1_master_flashcards.json`, not inferred from the question prompt.
@@ -65,15 +65,15 @@ The inventory below was generated programmatically from
 | 3 | 32 | 0 | 2 | 0 |
 | 4 | 29 | 0 | 2 | 0 |
 | 5 | 33 | 0 | 1 | 0 |
-| 6 | 31 | 0 | 3 | 1 |
-| 7 | 28 | 0 | 4 | 3 |
+| 6 | 32 | 0 | 3 | 1 |
+| 7 | 29 | 0 | 4 | 3 |
 | 8 | 32 | 0 | 2 | 1 |
-| 9 | 40 | 0 | 4 | 3 |
+| 9 | 41 | 0 | 4 | 3 |
 | 10 | 30 | 0 | 3 | 0 |
-| **Total** | **349** | **31** | **26** | **10** |
+| **Total** | **352** | **31** | **26** | **10** |
 
 The 31 valid authored MCQs are the 30 existing mixed Chapter 0 cards plus
-`ch01-002`. The other 318 canonical cards have no authored four-choice MCQ.
+`ch01-002`. The other 321 canonical cards have no authored four-choice MCQ.
 
 ### Cards by canonical kind
 
@@ -81,29 +81,29 @@ The 31 valid authored MCQs are the 30 existing mixed Chapter 0 cards plus
 | --- | ---: |
 | recall | 117 |
 | formula | 79 |
-| scenario | 58 |
+| scenario | 59 |
 | mcq | 31 |
 | calculation | 26 |
 | contrast | 16 |
 | relationship | 14 |
 | classification | 3 |
-| sequence | 4 |
+| sequence | 6 |
 | exam-trap | 1 |
-| **Total** | **349** |
+| **Total** | **352** |
 
 ## Final unified bank
 
 | Measure | Result |
 | --- | ---: |
-| Total questions | 161 |
+| Total questions | 168 |
 | Canonical MCQs | 31 |
-| New authored questions | 130 |
+| New authored questions | 137 |
 | Additional stimulus questions | 30 |
 | Mixed questions (Chapter 0) | 30 |
-| Unique `reviewCardId` values | 158 |
-| Review cards with multiple questions | 3 |
+| Unique `reviewCardId` values | 164 |
+| Review cards with multiple questions | 4 |
 | Maximum questions per `reviewCardId` | 2 |
-| Calculation-style questions | 37 |
+| Calculation-style questions | 38 |
 | Graph stimuli | 20 |
 | Table stimuli | 10 |
 
@@ -112,14 +112,14 @@ The 31 valid authored MCQs are the 30 existing mixed Chapter 0 cards plus
 | Chapter | Exam questions | Stimuli | Representative coverage |
 | ---: | ---: | ---: | --- |
 | 1 | 14 total / 13 new | 2 graphs, 1 table | Price-index inflation, business-cycle position, GDP deflator |
-| 2 | 13 | 2 graphs, 1 table | Wage floor, labour-demand shift, unemployment rate |
+| 2 | 14 | 2 graphs, 1 table | Wage floor, labour-demand shift, unemployment rate |
 | 3 | 13 | 2 graphs, 1 table | Saving-investment equilibrium, investment demand, expected real rate |
 | 4 | 13 | 2 graphs, 1 table | PAE/45-degree equilibrium, inventory pressure, open-economy multiplier |
 | 5 | 13 | 2 graphs, 1 table | Fiscal PAE shift, debt-to-GDP dynamics, debt ratio |
-| 6 | 13 | 2 graphs, 1 table | Bond price/yield, money demand, bank reserves |
-| 7 | 13 | 2 graphs, 1 table | ES-balance demand/corridor, PRF shift, government settlement |
+| 6 | 15 | 2 graphs, 1 table | Bond price/yield, money demand, bank reserves, money destruction |
+| 7 | 15 | 2 graphs, 1 table | ES-balance demand/corridor, PRF shift, cash-rate security transmission |
 | 8 | 13 | 2 graphs, 1 table | AD shift, favourable supply shock, output gap |
-| 9 | 13 | 2 graphs, 1 table | AUD FX demand, overvalued peg, cross-rate conversion |
+| 9 | 15 | 2 graphs, 1 table | AUD FX demand, TWI, overvalued peg, cross-rate conversion |
 | 10 | 13 | 2 graphs, 1 table | Production function, capital deepening, growth accounting |
 | 0 | 30 | 0 | Existing canonical cross-model and cross-chapter questions retained unchanged |
 
@@ -174,12 +174,12 @@ genuinely uses them.
 
 | Style | Unified | New authored | Unified share |
 | --- | ---: | ---: | ---: |
-| concept | 41 | 35 | 25.5% |
-| scenario | 43 | 35 | 26.7% |
-| calculation | 37 | 30 | 23.0% |
-| model discrimination | 30 | 24 | 18.6% |
-| sequence | 10 | 6 | 6.2% |
-| **Total** | **161** | **130** | **100%** |
+| concept | 41 | 35 | 24.4% |
+| scenario | 45 | 37 | 26.8% |
+| calculation | 38 | 31 | 22.6% |
+| model discrimination | 31 | 25 | 18.5% |
+| sequence | 13 | 9 | 7.7% |
+| **Total** | **168** | **137** | **100%** |
 
 The chapter-specific pool therefore stays close to the intended concept/scenario/
 calculation/model mix. The sequence remainder is used for mechanism and debt-path
@@ -189,10 +189,10 @@ questions where ordering is the examinable skill.
 
 | Difficulty | Count | Share |
 | ---: | ---: | ---: |
-| 1 | 53 | 32.9% |
-| 2 | 81 | 50.3% |
-| 3 | 27 | 16.8% |
-| **Total** | **161** | **100%** |
+| 1 | 53 | 31.5% |
+| 2 | 83 | 49.4% |
+| 3 | 32 | 19.0% |
+| **Total** | **168** | **100%** |
 
 The unified shares remain inside the configured 25–35%, 45–55% and 15–25% target
 ranges. The 30 stimulus questions contribute 10 / 15 / 5 at difficulties 1 / 2 / 3;
@@ -200,10 +200,10 @@ graph reading is not automatically treated as advanced.
 
 | Correct position | Unified | Additional stimuli |
 | --- | ---: | ---: |
-| A | 41 | 7 |
-| B | 41 | 9 |
-| C | 40 | 7 |
-| D | 39 | 7 |
+| A | 43 | 7 |
+| B | 43 | 9 |
+| C | 42 | 7 |
+| D | 40 | 7 |
 
 The unified maximum-minus-minimum position count is 2. Positions remain static and
 are not randomised at runtime.
@@ -252,19 +252,19 @@ The final validator output is:
 
 ```text
 Exam question bank valid
-Total: 161
+Total: 168
 Canonical MCQ: 31
-New authored: 130
+New authored: 137
 Mixed: 30
 Chapter 1: 14
-Chapter 2: 13
+Chapter 2: 14
 Chapter 3: 13
 Chapter 4: 13
 Chapter 5: 13
-Chapter 6: 13
-Chapter 7: 13
+Chapter 6: 15
+Chapter 7: 15
 Chapter 8: 13
-Chapter 9: 13
+Chapter 9: 15
 Chapter 10: 13
 Stimuli: 30 (graphs 20 / tables 10)
 Chapter 1 stimuli: 3
@@ -277,12 +277,12 @@ Chapter 7 stimuli: 3
 Chapter 8 stimuli: 3
 Chapter 9 stimuli: 3
 Chapter 10 stimuli: 3
-Styles: concept 41 / scenario 43 / calculation 37 / model 30 / sequence 10
-Difficulty: 1 53 / 2 81 / 3 27
-Correct positions: A 41 / B 41 / C 40 / D 39
-Calculation questions: 37
-Unique reviewCardId: 158
-Review cards with multiple questions: 3
+Styles: concept 41 / scenario 45 / calculation 38 / model 31 / sequence 13
+Difficulty: 1 53 / 2 83 / 3 32
+Correct positions: A 43 / B 43 / C 42 / D 40
+Calculation questions: 38
+Unique reviewCardId: 164
+Review cards with multiple questions: 4
 Maximum questions per reviewCardId: 2
 Warnings: none
 ```

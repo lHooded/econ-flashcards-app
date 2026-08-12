@@ -56,7 +56,7 @@ describe("Guided Knowledge Check progress persistence", () => {
         after.settings,
         Date.parse("2026-08-11T00:02:00.000Z"),
       );
-      expect(scheduler.states).toHaveLength(349);
+      expect(scheduler.states).toHaveLength(cards.length);
       expect(scheduler.stateByCardId[event.cardId]).toBeUndefined();
     } finally {
       await repository.close();

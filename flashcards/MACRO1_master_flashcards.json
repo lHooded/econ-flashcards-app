@@ -24,7 +24,7 @@
       "9": "International Macroeconomics and Exchange Rates",
       "10": "Economic Growth"
     },
-    "card_count": 349,
+    "card_count": 352,
     "schema": {
       "id": "stable card id",
       "chapter": "0 for mixed, otherwise 1–10",
@@ -7606,6 +7606,73 @@
         "PRF up → r up → C/I up → AD right"
       ],
       "correct_choice": 2
+    },
+    {
+      "id": "ch06-032",
+      "chapter": 6,
+      "topic": "Money destruction",
+      "kind": "sequence",
+      "front": "In the simplified bank-balance-sheet model, what happens to deposit money when a borrower repays the principal of a bank loan from a deposit account at that bank?",
+      "answer": "The bank loan asset and the matching deposit liability both fall by the principal repaid, so the corresponding deposit money is destroyed.",
+      "explanation": "New bank lending can create a loan asset and a deposit liability together. Repayment reverses that entry: the borrower’s deposit is used to reduce the loan principal, lowering both the bank’s loan asset and its deposit liability. A loan default or write-off can also reduce the bank asset and equity, but the exact deposit effect depends on how the loss is settled; do not treat every bank loss as identical to a voluntary repayment.",
+      "common_trap": "An interbank payment normally transfers deposits and reserves between banks; it does not by itself destroy total deposit money. Principal repayment is the clean reverse of loan-created deposit money. A loan write-off primarily reduces the loan asset and bank equity; it does not automatically destroy an equal deposit balance.",
+      "difficulty": 2,
+      "tags": [
+        "chapter-6",
+        "money",
+        "banking",
+        "reverse-mechanism"
+      ],
+      "sources": [
+        "Week5_Lecture1",
+        "Playconomics Textbook Ch 6",
+        "Current-course balance-sheet model"
+      ]
+    },
+    {
+      "id": "ch07-029",
+      "chapter": 7,
+      "topic": "Cash rate and short-term securities",
+      "kind": "sequence",
+      "front": "In the course model, how can a higher RBA cash-rate target affect an existing short-term government security?",
+      "answer": "It raises the relevant required/expected short-term return; demand for the existing fixed-payment security falls, so its price falls and its yield rises.",
+      "explanation": "The cash rate is an overnight rate, so the expectations and term-structure link matters. Holding the security’s promised payments fixed, a higher market return makes the existing security less attractive at its old price. Buyers therefore require a lower price, which raises the security’s yield. The RBA’s own OMO changes ES balances and is a separate market operation; do not confuse that reserve-market supply shift with the price adjustment of an already-issued bond or Treasury bill.",
+      "common_trap": "A higher required return does not raise the price of an existing fixed-payment security. Price and yield move in opposite directions.",
+      "difficulty": 3,
+      "tags": [
+        "chapter-7",
+        "monetary-policy",
+        "cash-rate",
+        "bond",
+        "mechanism"
+      ],
+      "sources": [
+        "Week5_Lecture2",
+        "Week7_Lecture1",
+        "Playconomics Textbook Ch 7"
+      ]
+    },
+    {
+      "id": "ch09-041",
+      "chapter": 9,
+      "topic": "Trade-weighted index",
+      "kind": "scenario",
+      "front": "What does a sustained rise in the real trade-weighted index usually indicate in the course model?",
+      "answer": "A real appreciation of the domestic currency against its weighted trading-partner basket, making domestic goods relatively more expensive and tending to reduce net exports.",
+      "explanation": "A trade-weighted index combines exchange-rate movements against important trading partners rather than looking at only one bilateral rate. The real version also reflects relative price levels. Under the course convention, a rise indicates that domestic goods have become more expensive relative to foreign goods on average, reducing export competitiveness and encouraging imports, other things equal.",
+      "common_trap": "Do not read a TWI as a simple nominal AUD/USD quote or as a direct measure of export volume. Check whether the index is nominal or real before interpreting inflation effects.",
+      "difficulty": 2,
+      "tags": [
+        "chapter-9",
+        "exchange-rate",
+        "real-exchange-rate",
+        "trade-weighted-index",
+        "PPP"
+      ],
+      "sources": [
+        "Week8_Lecture2",
+        "Playconomics Textbook Ch 9"
+      ]
     }
   ]
 }

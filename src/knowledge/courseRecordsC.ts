@@ -2003,4 +2003,113 @@ export const courseRecordsC = [
       T(204, "Policy rule discussion."),
     ],
   }),
+  c({
+    id: "money-destruction",
+    name: "Bank money destruction",
+    aliases: [
+      "money destruction",
+      "deposit destruction",
+      "loan repayment money effect",
+    ],
+    searchTerms: [
+      "loan repayment destroys deposit money",
+      "bank loan write-off money stock",
+      "reverse of bank money creation",
+    ],
+    chapters: [6],
+    tags: ["chapter-6", "finance", "money", "mechanism", "high-yield"],
+    summary:
+      "Bank money destruction is the reverse balance-sheet process in which loan repayment removes the matching deposit money; default write-offs reduce bank assets and equity and must be analysed separately.",
+    intuition:
+      "If a bank created a loan and a deposit together, paying back the principal cancels both entries rather than moving a fixed pile of money to another bank.",
+    explanation: [
+      "When a borrower repays principal from a deposit at the lending bank, the bank’s loan asset falls and its deposit liability falls by the same amount. The corresponding deposit money is destroyed in the simplified course model.",
+      "An interbank payment normally transfers deposits and settlement balances between banks, so it need not change total deposit money. A default or write-off reduces the value of the bank’s loan asset and usually equity; its deposit effect depends on the settlement and accounting details, so it is not interchangeable with voluntary repayment.",
+    ],
+    whyItMatters:
+      "It prevents the common error of treating bank money creation as one-way and distinguishes repayment, write-off, and interbank settlement.",
+    prerequisites: ["money-creation", "bank-lending", "deposit", "bank-balance-sheet"],
+    relatedConcepts: [
+      "money-stock",
+      "bank-leverage",
+      "solvency",
+      "liquidity",
+      "interbank-payment",
+    ],
+    mechanism: [
+      "bank loan principal is repaid",
+      "borrower deposit falls",
+      "bank loan asset falls",
+      "corresponding deposit money is destroyed",
+    ],
+    sourceRefs: [
+      L("lecture-w5-l1", 56, "Bank lending creates a loan and deposit together."),
+      L("lecture-w5-l1", 58, "Calling in loans is a bank response to withdrawals."),
+      T(173, "Bank lending and deposit creation."),
+    ],
+    misconceptions: [
+      "A payment from one bank customer to another bank is not automatically money destruction; it may only transfer deposits and reserves.",
+      "A loan default/write-off is not the same balance-sheet event as voluntary principal repayment.",
+    ],
+  }),
+  c({
+    id: "cash-rate-security-transmission",
+    name: "Cash rate to short-term security yields",
+    aliases: [
+      "cash rate security transmission",
+      "cash rate to Treasury bill yield",
+      "short-term security return channel",
+    ],
+    searchTerms: [
+      "cash rate required return Treasury bill",
+      "cash rate security demand price yield",
+      "short rate bond price transmission",
+    ],
+    chapters: [7],
+    tags: ["chapter-7", "monetary-policy", "bond", "mechanism", "high-yield"],
+    summary:
+      "A cash-rate change can alter expected short-term returns and therefore the demand, price, and yield of existing fixed-payment short-term securities.",
+    intuition:
+      "When comparable new short-term returns rise, an existing bill must become cheaper before buyers will accept its fixed promised payment.",
+    explanation: [
+      "The cash rate is an overnight rate, so the expectations/term-structure link connects it to other short-term and longer-term market rates. A higher target can raise the required or expected return on a comparable short-term security, holding other conditions constant.",
+      "For an existing fixed-payment Treasury bill or bond, lower demand at the old price pushes its price down. Because the promised payment is fixed, the lower price corresponds to a higher yield. RBA OMO changes ES balances in the cash market; that is related monetary-policy plumbing, not a reason to reverse the bond price/yield relationship.",
+    ],
+    whyItMatters:
+      "It joins the cash-rate, expectations, bond-price, and yield concepts into the multi-step mechanism used by monetary-policy questions.",
+    prerequisites: ["cash-rate", "bond-price", "bond-yield", "expectations-hypothesis"],
+    relatedConcepts: [
+      "cash-rate-target",
+      "yield-curve",
+      "interest-rate",
+      "open-market-operation",
+      "monetary-transmission",
+    ],
+    mechanism: [
+      "cash-rate target changes",
+      "expected/required short-term return changes",
+      "demand for an existing fixed-payment security changes",
+      "security price moves in the opposite direction to its yield",
+    ],
+    sourceRefs: [
+      L("lecture-w7-l1", 8, "Cash rate and longer-term rates through expectations."),
+      L("lecture-w7-l1", 9, "Cash rate and six-month bank-bill rate."),
+      T(200, "Cash rate and government bonds and bills."),
+      T(202, "Expectations hypothesis and longer-term rates."),
+    ],
+    contrasts: [
+      {
+        conceptId: "bond-price",
+        title: "Security price versus security yield",
+        difference:
+          "A higher required return lowers the price of an existing fixed-payment security while raising its yield.",
+      },
+      {
+        conceptId: "open-market-operation",
+        title: "Transmission versus OMO plumbing",
+        difference:
+          "The transmission chain describes returns and security valuation; OMO directly changes ES balances to implement the cash-rate target.",
+      },
+    ],
+  }),
 ] as const;

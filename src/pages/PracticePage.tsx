@@ -98,7 +98,7 @@ function PracticeOverview({
       <div className="practice-mode-grid">
         <PracticeModeCard
           title="Question Bank Drill"
-          description="Filter the 161 authored questions by chapter, style, and stimulus. Immediate feedback is saved to Exam-SRS."
+          description="Filter the 168-question bank by chapter, style, and stimulus. Immediate feedback is saved to Exam-SRS."
           onClick={() => onChoose("mcq")}
         />
         <PracticeModeCard

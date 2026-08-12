@@ -1575,6 +1575,9 @@ h3 {
 }
 
 .guided-reason-banner {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
   width: fit-content;
   margin: 0;
   padding: 0.45rem 0.7rem;
@@ -1584,6 +1587,40 @@ h3 {
   background: var(--blue-soft);
   font-size: 0.8rem;
   font-weight: 800;
+}
+
+.guided-why-now {
+  color: var(--navy);
+  font-weight: 650;
+}
+
+.high-yield-gaps {
+  padding: 1rem;
+}
+
+.high-yield-gap-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.high-yield-gap-list li {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.high-yield-gap-list li:first-child {
+  border-top: 0;
+}
+
+.high-yield-gap-list span {
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
 }
 
 .guided-lesson,

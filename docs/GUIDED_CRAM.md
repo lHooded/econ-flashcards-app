@@ -204,11 +204,11 @@ generated numeric variant cannot change while a save is being retried.
 
 The canonical Exam-SRS selector remains the coverage anchor, including high-yield
 tags, chapter pressure, due/relearning recovery, Study Ahead, and user scopes.
-Normal `#/study` still selects only the 349 canonical cards. Practice Lab still
+Normal `#/study` still selects only the 352 canonical cards. Practice Lab still
 selects authored questions/calculations, and mocks remain unchanged; Guided Cram
 is a separate route rather than a new Study preset.
 
-The progress header reports canonical cards seen out of 349, concepts with
+The progress header reports canonical cards seen out of 352, concepts with
 positive evidence, concepts currently `Solid`, due canonical/check retrievals,
 and the existing Exam-SRS phase/time remaining. It does not report XP,
 probabilities, or a persisted guided level.

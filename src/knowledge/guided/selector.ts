@@ -44,6 +44,7 @@ export interface GuidedLessonStep {
   readonly targetCardId: string | null;
   readonly targetConceptIds: readonly string[];
   readonly reason: GuidedReason;
+  readonly whyNow?: readonly string[];
 }
 
 export interface GuidedKnowledgeCheckStep {
@@ -53,6 +54,7 @@ export interface GuidedKnowledgeCheckStep {
   readonly reason: GuidedReason;
   readonly targetCardId: string | null;
   readonly targetConceptIds: readonly string[];
+  readonly whyNow?: readonly string[];
 }
 
 export interface GuidedCanonicalCardStep {
@@ -61,12 +63,14 @@ export interface GuidedCanonicalCardStep {
   readonly state: ExamSrsCardState;
   readonly reason: GuidedReason;
   readonly targetConceptIds: readonly string[];
+  readonly whyNow?: readonly string[];
 }
 
 export interface GuidedIdleStep {
   readonly kind: "idle";
   readonly nextDueAt: string | null;
   readonly reason: "idle";
+  readonly whyNow?: readonly string[];
 }
 
 export interface SelectGuidedNextStepInput {
@@ -77,6 +81,8 @@ export interface SelectGuidedNextStepInput {
   readonly lessonCompletedConceptIds?: ReadonlySet<string>;
   readonly recentlyShownIds?: readonly string[];
   readonly sessionSeed?: number;
+  /** High-Yield Cram only: constrain the new-anchor policy, never urgent reviews. */
+  readonly candidateCardIds?: ReadonlySet<string>;
 }
 
 export interface GuidedSelectionContext {
@@ -114,6 +120,7 @@ export function selectGuidedNextStep(input: SelectGuidedNextStepInput): GuidedSt
     nowMs: input.nowMs,
     recentlyShownCardIds: input.recentlyShownIds,
     newCardPrerequisiteReadyByCardId: readiness,
+    candidateCardIds: input.candidateCardIds,
   });
   const dueCheck = chooseDueCheck(input, context, canonical);
   if (dueCheck !== null) return dueCheck;
@@ -142,6 +149,7 @@ export function selectGuidedNextStep(input: SelectGuidedNextStepInput): GuidedSt
     nowMs: input.nowMs,
     recentlyShownCardIds: input.recentlyShownIds,
     newCardPrerequisiteReadyByCardId: readiness,
+    candidateCardIds: input.candidateCardIds,
   });
 
   // Search the same deterministic Exam-SRS order. A blocked unseen anchor

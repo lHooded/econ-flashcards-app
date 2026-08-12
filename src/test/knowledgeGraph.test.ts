@@ -24,8 +24,8 @@ describe("course knowledge graph", () => {
       fallbackMappings: cardConceptMappingStats.fallbackMappings,
       sources: rawSources as readonly KnowledgeSource[],
     });
-    expect(stats.cardsMapped).toBe(349);
-    expect(stats.explicitCardMappings).toBe(349);
+    expect(stats.cardsMapped).toBe(cards.length);
+    expect(stats.explicitCardMappings).toBe(cards.length);
     expect(stats.fallbackMappings).toBe(0);
     expect(stats.questionsMapped).toBe(examQuestions.length);
     expect(stats.cycles).toBe(0);

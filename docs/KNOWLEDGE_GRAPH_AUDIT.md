@@ -1,5 +1,9 @@
 # Knowledge graph audit artifact
 
+> Historical baseline: this report records the PR #8 graph before High-Yield
+> Cram content additions. The current 352-card / 300-concept / 168-question
+> audit is maintained in `ECON1102_EXTERNAL_EXAM_COVERAGE.md`.
+
 Generated from the bundled records on 2026-08-11 with
 `npm run validate:knowledge`. This is a review aid, not a second runtime data
 source.
