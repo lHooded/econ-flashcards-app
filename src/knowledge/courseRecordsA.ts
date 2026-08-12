@@ -162,9 +162,9 @@ export const courseRecordsA = [
         label: "Firm value added",
         expression: String.raw`\text{sales} - \text{intermediate-input cost}`,
         variables: [
-          { symbol: "sales", meaning: "value of the firm’s output" },
+          { symbol: String.raw`\text{sales}`, meaning: "value of the firm’s output" },
           {
-            symbol: "intermediate-input cost",
+            symbol: String.raw`\text{intermediate-input cost}`,
             meaning: "value of inputs bought from other firms",
           },
         ],
@@ -513,9 +513,18 @@ export const courseRecordsA = [
         label: "Simplified GDP decomposition",
         expression: String.raw`\text{nominal GDP} = \text{price level} \times \text{real GDP}`,
         variables: [
-          { symbol: "nominal GDP", meaning: "current-price dollar value" },
-          { symbol: "price level", meaning: "GDP price index in the model" },
-          { symbol: "real GDP", meaning: "price-adjusted output measure" },
+          {
+            symbol: String.raw`\text{nominal GDP}`,
+            meaning: "current-price dollar value",
+          },
+          {
+            symbol: String.raw`\text{price level}`,
+            meaning: "GDP price index in the model",
+          },
+          {
+            symbol: String.raw`\text{real GDP}`,
+            meaning: "price-adjusted output measure",
+          },
         ],
         interpretation:
           "A nominal increase can be decomposed approximately into price growth and real-output growth.",
@@ -562,8 +571,14 @@ export const courseRecordsA = [
         label: "GDP deflator",
         expression: String.raw`\frac{\text{nominal GDP}}{\text{real GDP}}`,
         variables: [
-          { symbol: "nominal GDP", meaning: "current-price output value" },
-          { symbol: "real GDP", meaning: "price-adjusted output value" },
+          {
+            symbol: String.raw`\text{nominal GDP}`,
+            meaning: "current-price output value",
+          },
+          {
+            symbol: String.raw`\text{real GDP}`,
+            meaning: "price-adjusted output value",
+          },
         ],
         interpretation:
           "A change in the deflator signals a change in prices represented in domestic output, not necessarily household living costs.",
@@ -813,8 +828,11 @@ export const courseRecordsA = [
         label: "Per-capita output",
         expression: String.raw`\frac{\text{real GDP}}{\text{population}}`,
         variables: [
-          { symbol: "real GDP", meaning: "inflation-adjusted domestic output" },
-          { symbol: "population", meaning: "number of people" },
+          {
+            symbol: String.raw`\text{real GDP}`,
+            meaning: "inflation-adjusted domestic output",
+          },
+          { symbol: String.raw`\text{population}`, meaning: "number of people" },
         ],
         interpretation:
           "It is an average, not a claim that every person receives the same output or income.",
@@ -1132,7 +1150,7 @@ export const courseRecordsA = [
         label: "Labour force",
         expression: String.raw`LF = E + U`,
         variables: [
-          { symbol: "LF", meaning: "labour force" },
+          { symbol: String.raw`\mathrm{LF}`, meaning: "labour force" },
           { symbol: "E", meaning: "employed people" },
           { symbol: "U", meaning: "unemployed people" },
         ],
@@ -1175,7 +1193,7 @@ export const courseRecordsA = [
         expression: String.raw`u = \frac{U}{LF} \times 100`,
         variables: [
           { symbol: "U", meaning: "unemployed people" },
-          { symbol: "LF", meaning: "labour force" },
+          { symbol: String.raw`\mathrm{LF}`, meaning: "labour force" },
         ],
         interpretation:
           "Use the labour force as the denominator; changing the denominator changes the statistic.",
@@ -1217,9 +1235,9 @@ export const courseRecordsA = [
         label: "Participation rate",
         expression: String.raw`\frac{LF}{\text{working-age population}} \times 100`,
         variables: [
-          { symbol: "LF", meaning: "labour force" },
+          { symbol: String.raw`\mathrm{LF}`, meaning: "labour force" },
           {
-            symbol: "working-age population",
+            symbol: String.raw`\text{working-age population}`,
             meaning: "statistical working-age group",
           },
         ],
@@ -1258,7 +1276,7 @@ export const courseRecordsA = [
         variables: [
           { symbol: "E", meaning: "employed people" },
           {
-            symbol: "working-age population",
+            symbol: String.raw`\text{working-age population}`,
             meaning: "statistical working-age group",
           },
         ],
@@ -1534,7 +1552,10 @@ export const courseRecordsA = [
         expression: String.raw`\text{cyclical unemployment} \approx -\beta \times \text{output gap}`,
         variables: [
           { symbol: String.raw`\beta`, meaning: "positive estimated Okun coefficient" },
-          { symbol: "output gap", meaning: "actual output relative to potential" },
+          {
+            symbol: String.raw`\text{output gap}`,
+            meaning: "actual output relative to potential",
+          },
         ],
         interpretation:
           "The negative sign captures the inverse relationship; use the exact equation and units provided in the question.",
@@ -1894,10 +1915,13 @@ export const courseRecordsA = [
         expression: String.raw`\text{net investment} = \text{gross investment} - \text{depreciation}`,
         variables: [
           {
-            symbol: "gross investment",
+            symbol: String.raw`\text{gross investment}`,
             meaning: "new capital purchases during the period",
           },
-          { symbol: "depreciation", meaning: "capital lost during the period" },
+          {
+            symbol: String.raw`\text{depreciation}`,
+            meaning: "capital lost during the period",
+          },
         ],
         interpretation:
           "This is the flow that changes the capital stock in the simple model.",

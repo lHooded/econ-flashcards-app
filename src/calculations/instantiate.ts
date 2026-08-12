@@ -5,7 +5,6 @@ import type {
   GeneratedCalculationInstance,
   NumericAnswerSpec,
 } from "./model";
-import { normalizeLegacyMathText } from "../math/content";
 import { normalizeCalculationSeed, seedFingerprint } from "./random";
 
 export interface GeneratedCalculationContent {
@@ -77,12 +76,12 @@ export function freezeGeneratedCalculation(
     chapter: template.chapter,
     topic: template.topic,
     difficulty: template.difficulty,
-    prompt: normalizeLegacyMathText(content.prompt),
+    prompt: content.prompt,
     ...(content.stimulus === undefined ? {} : { stimulus: content.stimulus }),
     answer: content.answer,
-    workedSolution: content.workedSolution.map(normalizeLegacyMathText),
-    explanation: normalizeLegacyMathText(content.explanation),
-    commonTrap: normalizeLegacyMathText(content.commonTrap),
+    workedSolution: [...content.workedSolution],
+    explanation: content.explanation,
+    commonTrap: content.commonTrap,
     sourceCardIds: [...template.sourceCardIds],
     parameters: { ...content.parameters },
   };

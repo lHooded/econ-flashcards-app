@@ -32,9 +32,9 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Simple disposable income",
-        expression: String.raw`Y_D = Y - T + \text{transfers}`,
+        expression: String.raw`Y^D = Y - T + \text{transfers}`,
         variables: [
-          { symbol: String.raw`Y_D`, meaning: "disposable income" },
+          { symbol: String.raw`Y^D`, meaning: "disposable income" },
           { symbol: "Y", meaning: "income" },
           { symbol: "T", meaning: "taxes" },
         ],
@@ -111,10 +111,10 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Household saving",
-        expression: String.raw`S_h = Y_D - C`,
+        expression: String.raw`S_h = Y^D - C`,
         variables: [
           { symbol: String.raw`S_h`, meaning: "household saving flow" },
-          { symbol: String.raw`Y_D`, meaning: "disposable income" },
+          { symbol: String.raw`Y^D`, meaning: "disposable income" },
           { symbol: "C", meaning: "consumption expenditure" },
         ],
         interpretation:
@@ -199,7 +199,7 @@ export const courseRecordsB = [
     intuition:
       "If a share price rises, the owner can be wealthier without having produced a new share or saved new income during that period.",
     explanation: [
-      "Capital gains and losses change wealth. The course distinguishes the saving flow YD − C from wealth changes that also include asset-price movements and debt changes.",
+      String.raw`Capital gains and losses change wealth. The course distinguishes the saving flow \(Y^D-C\) from wealth changes that also include asset-price movements and debt changes.`,
       "A gain can be realised by selling, but the underlying distinction between a price revaluation and new production remains.",
     ],
     whyItMatters:
@@ -285,7 +285,7 @@ export const courseRecordsB = [
         label: "National saving",
         expression: String.raw`NS = Y - C - G`,
         variables: [
-          { symbol: "NS", meaning: "national saving" },
+          { symbol: String.raw`\mathrm{NS}`, meaning: "national saving" },
           { symbol: "Y", meaning: "income or output" },
           { symbol: "C", meaning: "private consumption" },
           { symbol: "G", meaning: "government purchases" },
@@ -360,7 +360,10 @@ export const courseRecordsB = [
         expression: String.raw`VMPK = P \times MPK`,
         variables: [
           { symbol: "P", meaning: "price of the firm’s output" },
-          { symbol: "MPK", meaning: "extra physical output from capital" },
+          {
+            symbol: String.raw`\mathrm{MPK}`,
+            meaning: "extra physical output from capital",
+          },
         ],
         interpretation:
           "Compare the dollar value of the extra output with the dollar user cost of the capital.",
@@ -410,7 +413,7 @@ export const courseRecordsB = [
         label: "Course user-cost approximation",
         expression: String.raw`UC \approx P_K(r + \delta)`,
         variables: [
-          { symbol: "UC", meaning: "user cost of capital" },
+          { symbol: String.raw`\mathrm{UC}`, meaning: "user cost of capital" },
           { symbol: String.raw`P_K`, meaning: "price of a unit of capital" },
           { symbol: "r", meaning: "real interest rate" },
           { symbol: String.raw`\delta`, meaning: "depreciation rate" },
@@ -502,7 +505,7 @@ export const courseRecordsB = [
         label: "Closed economy identity",
         expression: String.raw`NS = I`,
         variables: [
-          { symbol: "NS", meaning: "national saving" },
+          { symbol: String.raw`\mathrm{NS}`, meaning: "national saving" },
           { symbol: "I", meaning: "planned investment" },
         ],
         interpretation:
@@ -651,7 +654,7 @@ export const courseRecordsB = [
           { symbol: "C", meaning: "planned consumption" },
           { symbol: String.raw`I^P`, meaning: "planned investment" },
           { symbol: "G", meaning: "government purchases" },
-          { symbol: "NX", meaning: "net exports" },
+          { symbol: String.raw`\mathrm{NX}`, meaning: "net exports" },
         ],
         interpretation:
           "The superscript P emphasises planned investment; unplanned inventory changes separate PAE from actual expenditure.",
@@ -815,10 +818,10 @@ export const courseRecordsB = [
     equations: [
       {
         label: "MPC",
-        expression: String.raw`MPC = \frac{\Delta C}{\Delta Y_D}`,
+        expression: String.raw`MPC = \frac{\Delta C}{\Delta Y^D}`,
         variables: [
           { symbol: String.raw`\Delta C`, meaning: "change in consumption" },
-          { symbol: String.raw`\Delta Y_D`, meaning: "change in disposable income" },
+          { symbol: String.raw`\Delta Y^D`, meaning: "change in disposable income" },
         ],
         interpretation:
           "The numerator and denominator are changes, not their total levels.",
@@ -854,10 +857,10 @@ export const courseRecordsB = [
     equations: [
       {
         label: "APC",
-        expression: String.raw`APC = \frac{C}{Y_D}`,
+        expression: String.raw`APC = \frac{C}{Y^D}`,
         variables: [
           { symbol: "C", meaning: "consumption level" },
-          { symbol: "YD", meaning: "income level used by the model" },
+          { symbol: String.raw`Y^D`, meaning: "income level used by the model" },
         ],
         interpretation: "This uses levels, unlike the MPC, which uses changes.",
       },
@@ -878,7 +881,7 @@ export const courseRecordsB = [
     intuition:
       "Households may consume something even with little current income, while extra income usually raises consumption by less than one-for-one.",
     explanation: [
-      String.raw`The simple course form is \(C = C_0 + cY_D\), where \(C_0\) is autonomous consumption and c is the MPC. Later versions can include real interest rates or wealth.`,
+      String.raw`The simple course form is \(C = C_0 + cY^D\), where \(C_0\) is autonomous consumption and c is the MPC. Later versions can include real interest rates or wealth.`,
       "The function is a model assumption used to derive PAE and the multiplier, not a universal law applying identically to every household.",
     ],
     whyItMatters:
@@ -897,11 +900,11 @@ export const courseRecordsB = [
     equations: [
       {
         label: "Simple consumption function",
-        expression: String.raw`C = C_0 + cY_D`,
+        expression: String.raw`C = C_0 + cY^D`,
         variables: [
           { symbol: String.raw`C_0`, meaning: "autonomous consumption" },
           { symbol: "c", meaning: "MPC, between zero and one in the basic model" },
-          { symbol: String.raw`Y_D`, meaning: "disposable income" },
+          { symbol: String.raw`Y^D`, meaning: "disposable income" },
         ],
         interpretation: String.raw`\(C_0\) shifts the line; c controls its slope.`,
       },
@@ -975,7 +978,7 @@ export const courseRecordsB = [
     intuition:
       "Whatever part of an extra dollar is not consumed becomes saving in the simple two-sector model.",
     explanation: [
-      "Substituting the consumption function into S = YD − C produces an intercept and a slope related to the MPC. The slope of saving is the marginal propensity to save.",
+      String.raw`Substituting the consumption function into \(S=Y^D-C\) produces an intercept and a slope related to the MPC. The slope of saving is the marginal propensity to save.`,
       "The saving function is an accounting transformation of the model’s consumption choice, not a claim that saving is always positive.",
     ],
     whyItMatters:
@@ -1037,7 +1040,10 @@ export const courseRecordsB = [
         expression: String.raw`Y = PAE`,
         variables: [
           { symbol: "Y", meaning: "actual output" },
-          { symbol: "PAE", meaning: "planned aggregate expenditure" },
+          {
+            symbol: String.raw`\mathrm{PAE}`,
+            meaning: "planned aggregate expenditure",
+          },
         ],
         interpretation:
           "Solve this equation with the model’s PAE expression to find equilibrium output.",
@@ -1115,7 +1121,7 @@ export const courseRecordsB = [
     intuition:
       "One person’s extra spending becomes another person’s income, which induces further spending; the rounds shrink because some income is saved, taxed, or spent on imports.",
     explanation: [
-      "In the simple two-sector model, the multiplier is 1/(1−MPC). It is larger when the MPC is larger and smaller when leakages are larger.",
+      String.raw`In the simple two-sector model, the multiplier is \(\frac{1}{1-\mathrm{MPC}}\). It is larger when the MPC is larger and smaller when leakages are larger.`,
       "The multiplier is a comparative-static model result. It does not mean every dollar is spent infinitely many times or that capacity and prices never matter.",
     ],
     whyItMatters:
@@ -1494,8 +1500,8 @@ export const courseRecordsB = [
         label: "Average tax rate",
         expression: String.raw`\frac{\text{tax}}{\text{income}}`,
         variables: [
-          { symbol: "tax", meaning: "total tax paid" },
-          { symbol: "income", meaning: "total income" },
+          { symbol: String.raw`\text{tax}`, meaning: "total tax paid" },
+          { symbol: String.raw`\text{income}`, meaning: "total income" },
         ],
         interpretation:
           "Multiply by 100 for a percentage; this is a level ratio rather than a marginal response.",
@@ -1535,8 +1541,11 @@ export const courseRecordsB = [
         label: "Simple budget balance",
         expression: String.raw`\text{balance} = \text{revenue} - \text{spending}`,
         variables: [
-          { symbol: "revenue", meaning: "government receipts" },
-          { symbol: "spending", meaning: "government current uses, as specified" },
+          { symbol: String.raw`\text{revenue}`, meaning: "government receipts" },
+          {
+            symbol: String.raw`\text{spending}`,
+            meaning: "government current uses, as specified",
+          },
         ],
         interpretation:
           "Positive is a surplus; negative is a deficit. Check whether interest and transfers are included in the question.",
@@ -1638,8 +1647,14 @@ export const courseRecordsB = [
         label: "Debt-to-GDP ratio",
         expression: String.raw`\frac{\text{debt stock}}{\text{nominal GDP}}`,
         variables: [
-          { symbol: "debt stock", meaning: "outstanding government obligations" },
-          { symbol: "nominal GDP", meaning: "current-dollar annual output" },
+          {
+            symbol: String.raw`\text{debt stock}`,
+            meaning: "outstanding government obligations",
+          },
+          {
+            symbol: String.raw`\text{nominal GDP}`,
+            meaning: "current-dollar annual output",
+          },
         ],
         interpretation:
           "Use the numerator and denominator dates specified; do not substitute the deficit flow for debt stock.",

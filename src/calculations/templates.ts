@@ -83,16 +83,26 @@ function chooseNonZero(random: SeededRandom, values: readonly number[]): number 
   return random.pick(values.filter((value) => value !== 0));
 }
 
-function signed(value: number, decimals = 0): string {
-  return value > 0
-    ? `+${formatNumber(value, decimals)}`
-    : formatNumber(value, decimals);
-}
-
 function signedTerm(value: number, decimals = 0): string {
   return value < 0
-    ? `− ${formatNumber(Math.abs(value), decimals)}`
-    : `+ ${formatNumber(value, decimals)}`;
+    ? `- ${formatMathNumber(Math.abs(value), decimals)}`
+    : `+ ${formatMathNumber(value, decimals)}`;
+}
+
+function formatMathNumber(value: number, decimals = 0): string {
+  return formatNumber(value, decimals).replaceAll(",", "{,}");
+}
+
+function formatMathPercent(value: number, decimals = 2): string {
+  return `${formatMathNumber(value, decimals)}\\%`;
+}
+
+function formatMathSignedPercent(value: number, decimals = 2): string {
+  return `${value > 0 ? "+" : ""}${formatMathPercent(value, decimals)}`;
+}
+
+function inlineMath(expression: string): string {
+  return `\\(${expression}\\)`;
 }
 
 function finalLine(
@@ -101,7 +111,7 @@ function finalLine(
   unit: string,
   decimals: number,
 ): string {
-  return `${label} = ${formatNumber(roundFinal(value, decimals), decimals)}${unit}`;
+  return `${label} = ${inlineMath(formatMathNumber(roundFinal(value, decimals), decimals))}${unit}`;
 }
 
 export const calculationTemplates: readonly CalculationTemplate[] = [
@@ -123,8 +133,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Give the nearest whole inventory unit.",
         ),
         workedSolution: [
-          "Formula: inventory investment = ending inventories − beginning inventories.",
-          `Substitute: ${formatNumber(ending)} − ${formatNumber(beginning)} = ${formatNumber(change)}.`,
+          `Formula: ${inlineMath("\\text{inventory investment} = \\text{ending inventories} - \\text{beginning inventories}")}.`,
+          `Substitute: ${inlineMath(formatMathNumber(ending) + " - " + formatMathNumber(beginning) + " = " + formatMathNumber(change))}.`,
           finalLine("Inventory investment", change, " inventory units", 0),
         ],
         explanation:
@@ -166,8 +176,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
         ),
         answer: answer(realGdp, "currency", 0, "$", "Give the nearest whole dollar."),
         workedSolution: [
-          "Formula: real GDP = Σ(base-year price × current-year quantity).",
-          `Substitute: ${rows.map((row) => `${row.price}×${row.quantity}`).join(" + ")} = ${formatNumber(realGdp)}.`,
+          `Formula: ${inlineMath("\\text{real GDP} = \\sum(\\text{base-year price}\\times\\text{current-year quantity})")}.`,
+          `Substitute: ${inlineMath(rows.map((row) => row.price + "\\times" + row.quantity).join(" + ") + " = " + formatMathNumber(realGdp))}.`,
           finalLine("Current real GDP", realGdp, "", 0),
         ],
         explanation:
@@ -222,7 +232,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
               ],
             },
           ],
-          "LF = participation rate × working-age population; E = employment-to-population ratio × working-age population.",
+          `${inlineMath("\\text{LF} = \\text{participation rate}\\times\\text{working-age population}")}; ${inlineMath("\\text{E} = \\text{employment-to-population ratio}\\times\\text{working-age population}")}.`,
         ),
         answer: answer(
           unemploymentRate,
@@ -232,10 +242,10 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Enter the unemployment rate as a percentage, rounded to 2 decimal places.",
         ),
         workedSolution: [
-          `LF = ${formatPercent(participation, 0)} × ${formatNumber(population)} = ${formatNumber(labourForce)} people.`,
-          `E = ${formatPercent(employmentRatio, 0)} × ${formatNumber(population)} = ${formatNumber(employment)} people.`,
-          `U = LF − E = ${formatNumber(labourForce)} − ${formatNumber(employment)} = ${formatNumber(unemployed)} people.`,
-          `u = U/LF × 100 = ${formatNumber(unemployed)} ÷ ${formatNumber(labourForce)} × 100.`,
+          `${inlineMath("LF = " + formatMathPercent(participation, 0) + "\\times" + formatMathNumber(population) + " = " + formatMathNumber(labourForce))} people.`,
+          `${inlineMath("E = " + formatMathPercent(employmentRatio, 0) + "\\times" + formatMathNumber(population) + " = " + formatMathNumber(employment))} people.`,
+          `${inlineMath("U = LF - E = " + formatMathNumber(labourForce) + " - " + formatMathNumber(employment) + " = " + formatMathNumber(unemployed))} people.`,
+          `${inlineMath("u = \\frac{U}{LF}\\times100 = \\frac{" + formatMathNumber(unemployed) + "}{" + formatMathNumber(labourForce) + "}\\times100")}`,
           finalLine("Unemployment rate", unemploymentRate, "%", 2),
         ],
         explanation:
@@ -261,7 +271,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const finding = findingPercent / 100;
       const steadyState = (separation / (separation + finding)) * 100;
       return {
-        prompt: `The job-separation rate is s = ${formatPercent(separationPercent, 0)} and the job-finding rate is f = ${formatPercent(findingPercent, 0)}. Calculate the steady-state unemployment rate.`,
+        prompt: `The job-separation rate is ${inlineMath("s = " + formatMathPercent(separationPercent, 0))} and the job-finding rate is ${inlineMath("f = " + formatMathPercent(findingPercent, 0))}. Calculate the steady-state unemployment rate.`,
         answer: answer(
           steadyState,
           "percent",
@@ -270,9 +280,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Enter a percentage rounded to 2 decimal places.",
         ),
         workedSolution: [
-          "Formula: u* = s/(s + f).",
-          `Substitute decimal rates: u* = ${formatNumber(separation, 2)} ÷ (${formatNumber(separation, 2)} + ${formatNumber(finding, 2)}).`,
-          `u* = ${formatNumber(steadyState / 100, 4)} as a fraction.`,
+          `Formula: ${inlineMath("u^* = \\frac{s}{s+f}")}.`,
+          `Substitute decimal rates: ${inlineMath("u^* = \\frac{" + formatMathNumber(separation, 2) + "}{" + formatMathNumber(separation, 2) + "+" + formatMathNumber(finding, 2) + "}")}.`,
+          `${inlineMath("u^* = " + formatMathNumber(steadyState / 100, 4))} as a fraction.`,
           finalLine("Steady-state unemployment rate", steadyState, "%", 2),
         ],
         explanation:
@@ -291,7 +301,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
     const naturalRate = random.integer(3, 7);
     const actualRate = naturalRate - outputGap / beta;
     return {
-      prompt: `The output gap is ${signed(outputGap, 1)}%, β = ${formatNumber(beta, 1)}, and the natural unemployment rate is ${formatPercent(naturalRate, 0)}. Using the course Okun relationship, calculate actual unemployment u.`,
+      prompt: `The output gap is ${inlineMath(formatMathSignedPercent(outputGap, 1))}, ${inlineMath("\\beta = " + formatMathNumber(beta, 1))}, and the natural unemployment rate is ${inlineMath(formatMathPercent(naturalRate, 0))}. Using the course Okun relationship, calculate actual unemployment ${inlineMath("u")}.`,
       answer: answer(
         actualRate,
         "percent",
@@ -300,9 +310,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
         "Enter a percentage rounded to 2 decimal places.",
       ),
       workedSolution: [
-        "Formula: output gap = −β(u − u*).",
-        `Substitute: ${formatNumber(outputGap, 1)} = −${formatNumber(beta, 1)}(u − ${formatNumber(naturalRate, 0)}).`,
-        `Therefore u − u* = ${formatNumber(-outputGap / beta, 2)} percentage points.`,
+        `Formula: ${inlineMath("\\text{output gap} = -\\beta(u-u^*)")}.`,
+        `Substitute: ${inlineMath(formatMathNumber(outputGap, 1) + " = -" + formatMathNumber(beta, 1) + "(u-" + formatMathNumber(naturalRate, 0) + ")")}.`,
+        `Therefore ${inlineMath("u-u^* = " + formatMathNumber(-outputGap / beta, 2))} percentage points.`,
         finalLine("Actual unemployment", actualRate, "%", 2),
       ],
       explanation:
@@ -327,8 +337,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Enter expected inflation as a percentage rounded to 2 decimal places.",
         ),
         workedSolution: [
-          "Formula: i ≈ r + πᵉ, so πᵉ ≈ i − r.",
-          `Substitute: πᵉ = ${formatNumber(nominal, 2)}% − ${formatNumber(real, 2)}%.`,
+          `Formula: ${inlineMath("i\\approx r+\\pi^e")}, so ${inlineMath("\\pi^e\\approx i-r")}.`,
+          `Substitute: ${inlineMath("\\pi^e = " + formatMathPercent(nominal, 2) + " - " + formatMathPercent(real, 2))}.`,
           finalLine("Expected inflation", expectedInflation, "%", 2),
         ],
         explanation:
@@ -349,7 +359,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const impliedRate =
         ((beginningCapital + investment - endingCapital) / beginningCapital) * 100;
       return {
-        prompt: `A capital stock begins at K₀ = ${formatNumber(beginningCapital)}, gross investment is I = ${formatNumber(investment)}, and the ending stock is K₁ = ${formatNumber(endingCapital)}. Using the course one-period accumulation equation, calculate δ.`,
+        prompt: `A capital stock begins at ${inlineMath("K_0 = " + formatMathNumber(beginningCapital))}, gross investment is ${inlineMath("I = " + formatMathNumber(investment))}, and the ending stock is ${inlineMath("K_1 = " + formatMathNumber(endingCapital))}. Using the course one-period accumulation equation, calculate ${inlineMath("\\delta")}.`,
         answer: answer(
           impliedRate,
           "percent",
@@ -358,9 +368,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Enter the depreciation rate as a percentage rounded to 2 decimal places.",
         ),
         workedSolution: [
-          "Formula: K₁ = K₀ + I − δK₀, so δ = (K₀ + I − K₁)/K₀.",
-          `Substitute: δ = (${formatNumber(beginningCapital)} + ${formatNumber(investment)} − ${formatNumber(endingCapital)}) ÷ ${formatNumber(beginningCapital)}.`,
-          `Depreciation = ${formatNumber(beginningCapital + investment - endingCapital)} and δ = ${formatNumber(impliedRate / 100, 4)} as a fraction.`,
+          `Formula: ${inlineMath("K_1=K_0+I-\\delta K_0")}, so ${inlineMath("\\delta=\\frac{K_0+I-K_1}{K_0}")}.`,
+          `Substitute: ${inlineMath("\\delta=\\frac{" + formatMathNumber(beginningCapital) + "+" + formatMathNumber(investment) + "-" + formatMathNumber(endingCapital) + "}{" + formatMathNumber(beginningCapital) + "}")}.`,
+          `Depreciation = ${inlineMath(formatMathNumber(beginningCapital + investment - endingCapital))} and ${inlineMath("\\delta = " + formatMathNumber(impliedRate / 100, 4))} as a fraction.`,
           finalLine("Depreciation rate", impliedRate, "%", 2),
         ],
         explanation:
@@ -384,7 +394,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const multiplier = 1 / (1 - c);
       const outputChange = autonomousChange * multiplier;
       return {
-        prompt: `An economy has marginal propensity to consume c = ${formatNumber(c, 2)} and autonomous planned investment changes by ${signed(autonomousChange)}. Calculate the resulting equilibrium output change.`,
+        prompt: `An economy has marginal propensity to consume ${inlineMath("c = " + formatMathNumber(c, 2))} and autonomous planned investment changes by ${inlineMath(formatMathNumber(autonomousChange))}. Calculate the resulting equilibrium output change.`,
         answer: answer(
           outputChange,
           "currency_millions",
@@ -393,9 +403,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Give the output change to 1 decimal place in $ million.",
         ),
         workedSolution: [
-          "Formula: multiplier k = 1/(1 − c).",
-          `Substitute: k = 1/(1 − ${formatNumber(c, 2)}) = ${formatNumber(multiplier, 2)}.`,
-          `ΔY = k × autonomous change = ${formatNumber(multiplier, 2)} × ${signed(autonomousChange)}.`,
+          `Formula: multiplier ${inlineMath("k = \\frac{1}{1-c}")}.`,
+          `Substitute: ${inlineMath("k = \\frac{1}{1-" + formatMathNumber(c, 2) + "} = " + formatMathNumber(multiplier, 2))}.`,
+          `${inlineMath("\\Delta Y = k\\times\\text{autonomous change} = " + formatMathNumber(multiplier, 2) + "\\times" + formatMathNumber(autonomousChange))}.`,
           finalLine("Equilibrium output change", outputChange, " $ million", 1),
         ],
         explanation:
@@ -417,7 +427,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const denominator = 1 - c + m;
       const equilibriumOutput = autonomousSpending / denominator;
       return {
-        prompt: `In a small open economy, C = ${formatNumber(autonomousConsumption)} + ${formatNumber(c, 2)}Y, planned investment is ${formatNumber(plannedInvestment)}, exports are ${formatNumber(exports)}, and M = ${formatNumber(m, 2)}Y. Calculate equilibrium output Y.`,
+        prompt: `In a small open economy, ${inlineMath("C = " + formatMathNumber(autonomousConsumption) + " + " + formatMathNumber(c, 2) + "Y")}, planned investment is ${inlineMath("I^P = " + formatMathNumber(plannedInvestment))}, exports are ${inlineMath("X = " + formatMathNumber(exports))}, and ${inlineMath("M = " + formatMathNumber(m, 2) + "Y")}. Calculate equilibrium output ${inlineMath("Y")}.`,
         answer: answer(
           equilibriumOutput,
           "currency_millions",
@@ -426,9 +436,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Give equilibrium output to 1 decimal place in $ million.",
         ),
         workedSolution: [
-          "Formula: Y = (C₀ + Iᴾ + X)/(1 − c + m).",
-          `Autonomous spending = ${formatNumber(autonomousConsumption)} + ${formatNumber(plannedInvestment)} + ${formatNumber(exports)} = ${formatNumber(autonomousSpending)}.`,
-          `Leakage-adjusted denominator = 1 − ${formatNumber(c, 2)} + ${formatNumber(m, 2)} = ${formatNumber(denominator, 2)}.`,
+          `Formula: ${inlineMath("Y = \\frac{C_0+I^P+X}{1-c+m}")}.`,
+          `Autonomous spending = ${inlineMath(formatMathNumber(autonomousConsumption) + " + " + formatMathNumber(plannedInvestment) + " + " + formatMathNumber(exports) + " = " + formatMathNumber(autonomousSpending))}.`,
+          `Leakage-adjusted denominator = ${inlineMath("1-" + formatMathNumber(c, 2) + "+" + formatMathNumber(m, 2) + " = " + formatMathNumber(denominator, 2))}.`,
           finalLine("Equilibrium output", equilibriumOutput, " $ million", 1),
         ],
         explanation:
@@ -454,7 +464,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const taxRate = random.pick([0.1, 0.2, 0.3, 0.4]);
       const multiplier = (1 - c) / (1 - c * (1 - taxRate));
       return {
-        prompt: `With marginal propensity to consume c = ${formatNumber(c, 2)} and proportional tax rate t = ${formatPercent(taxRate * 100, 0)}, calculate the balanced-budget multiplier k_BB.`,
+        prompt: `With marginal propensity to consume ${inlineMath("c = " + formatMathNumber(c, 2))} and proportional tax rate ${inlineMath("t = " + formatMathPercent(taxRate * 100, 0))}, calculate the balanced-budget multiplier ${inlineMath("k_{BB}")}.`,
         answer: answer(
           multiplier,
           "ratio",
@@ -463,9 +473,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Give the multiplier to 3 decimal places.",
         ),
         workedSolution: [
-          "Formula: k_BB = (1 − c)/[1 − c(1 − t)].",
-          `Numerator: 1 − ${formatNumber(c, 2)} = ${formatNumber(1 - c, 2)}.`,
-          `Denominator: 1 − ${formatNumber(c, 2)}(1 − ${formatNumber(taxRate, 2)}) = ${formatNumber(1 - c * (1 - taxRate), 3)}.`,
+          `Formula: ${inlineMath("k_{BB}=\\frac{1-c}{1-c(1-t)}")}.`,
+          `Numerator: ${inlineMath("1-" + formatMathNumber(c, 2) + " = " + formatMathNumber(1 - c, 2))}.`,
+          `Denominator: ${inlineMath("1-" + formatMathNumber(c, 2) + "(1-" + formatMathNumber(taxRate, 2) + ") = " + formatMathNumber(1 - c * (1 - taxRate), 3))}.`,
           finalLine("Balanced-budget multiplier", multiplier, "", 3),
         ],
         explanation:
@@ -489,9 +499,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
         "Enter the price rounded to 2 decimal places.",
       ),
       workedSolution: [
-        "Formula: bond price = face value/(1 + i).",
-        `Convert the rate to a decimal: i = ${formatNumber(interestRate / 100, 4)}.`,
-        `Price = ${formatNumber(faceValue)} ÷ (1 + ${formatNumber(interestRate / 100, 4)}) = ${formatNumber(price, 4)}.`,
+        `Formula: ${inlineMath("\\text{bond price}=\\frac{\\text{face value}}{1+i}")}.`,
+        `Convert the rate to a decimal: ${inlineMath("i = " + formatMathNumber(interestRate / 100, 4))}.`,
+        `Price = ${inlineMath("\\frac{" + formatMathNumber(faceValue) + "}{1+" + formatMathNumber(interestRate / 100, 4) + "} = " + formatMathNumber(price, 4))}.`,
         finalLine("Bond price", price, "", 2),
       ],
       explanation:
@@ -508,7 +518,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const interestDecimal = interestRate / 100;
       const realMoneyDemand = 0.8 * income - 1200 * interestDecimal;
       return {
-        prompt: `Real money demand follows MD/P = 0.8Y − 1200i, with i in decimal form. If Y = ${formatNumber(income)} and i = ${formatPercent(interestRate, 0)}, calculate MD/P.`,
+        prompt: `Real money demand follows ${inlineMath("MD/P = 0.8Y-1200i")}, with i in decimal form. If ${inlineMath("Y = " + formatMathNumber(income))} and ${inlineMath("i = " + formatMathPercent(interestRate, 0))}, calculate ${inlineMath("MD/P")}.`,
         answer: answer(
           realMoneyDemand,
           "units",
@@ -517,9 +527,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Give the nearest whole real money unit.",
         ),
         workedSolution: [
-          "Formula: MD/P = 0.8Y − 1200i.",
-          `Convert i: ${formatPercent(interestRate, 0)} = ${formatNumber(interestDecimal, 2)}.`,
-          `MD/P = 0.8(${formatNumber(income)}) − 1200(${formatNumber(interestDecimal, 2)}) = ${formatNumber(realMoneyDemand)}.`,
+          `Formula: ${inlineMath("MD/P = 0.8Y-1200i")}.`,
+          `Convert i: ${inlineMath(formatMathPercent(interestRate, 0) + " = " + formatMathNumber(interestDecimal, 2))}.`,
+          `${inlineMath("MD/P = 0.8(" + formatMathNumber(income) + ")-1200(" + formatMathNumber(interestDecimal, 2) + ") = " + formatMathNumber(realMoneyDemand))}.`,
           finalLine("Real money demand", realMoneyDemand, " real money units", 0),
         ],
         explanation:
@@ -545,8 +555,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Enter inflation as a percentage rounded to 2 decimal places.",
         ),
         workedSolution: [
-          "With constant velocity: π ≈ gM − gY.",
-          `Substitute: π ≈ ${formatNumber(moneyGrowth, 2)}% − ${formatNumber(realOutputGrowth, 2)}%.`,
+          `With constant velocity: ${inlineMath("\\pi\\approx g_M-g_Y")}.`,
+          `Substitute: ${inlineMath("\\pi\\approx" + formatMathPercent(moneyGrowth, 2) + "-" + formatMathPercent(realOutputGrowth, 2))}.`,
           finalLine("Predicted inflation", inflation, "%", 2),
         ],
         explanation:
@@ -592,7 +602,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const interestRatePoints = random.integer(2, 38) / 10;
       const reserves = 10 - 2.5 * interestRatePoints;
       return {
-        prompt: `Reserve demand is Rᵈ = 10 − 2.5i, where i is measured in percentage points. At i = ${formatNumber(interestRatePoints, 1)}, calculate reserves demanded.`,
+        prompt: `Reserve demand is ${inlineMath("R^d = 10-2.5i")}, where i is measured in percentage points. At ${inlineMath("i = " + formatMathNumber(interestRatePoints, 1))}, calculate reserves demanded.`,
         answer: answer(
           reserves,
           "units",
@@ -601,8 +611,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Give reserves demanded to 2 decimal places.",
         ),
         workedSolution: [
-          "Formula: Rᵈ = 10 − 2.5i.",
-          `Substitute the percentage-point rate directly: Rᵈ = 10 − 2.5(${formatNumber(interestRatePoints, 1)}).`,
+          `Formula: ${inlineMath("R^d = 10-2.5i")}.`,
+          `Substitute the percentage-point rate directly: ${inlineMath("R^d = 10-2.5(" + formatMathNumber(interestRatePoints, 1) + ")")}.`,
           finalLine("Reserves demanded", reserves, " reserve units", 2),
         ],
         explanation:
@@ -628,8 +638,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Enter the annualised two-year rate to 2 decimal places.",
         ),
         workedSolution: [
-          "Approximate expectations-hypothesis formula: two-year annual rate = (current one-year rate + expected next one-year rate)/2.",
-          `Substitute: (${formatNumber(currentRate, 2)}% + ${formatNumber(expectedNextRate, 2)}%)/2.`,
+          `Approximate expectations-hypothesis formula: ${inlineMath("\\text{two-year annual rate}=\\frac{\\text{current one-year rate}+\\text{expected next one-year rate}}{2}")}.`,
+          `Substitute: ${inlineMath("\\frac{" + formatMathPercent(currentRate, 2) + "+" + formatMathPercent(expectedNextRate, 2) + "}{2}")}.`,
           finalLine("Approximate two-year annual rate", twoYearRate, "%", 2),
         ],
         explanation:
@@ -647,7 +657,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const outputGap = random.pick([-2, -1, 0, 1, 2]);
       const policyRate = 4 + 1.5 * (inflation - inflationTarget) + 0.5 * outputGap;
       return {
-        prompt: `Use i = 4 + 1.5(π − πᵀ) + 0.5(output gap), with π = ${formatPercent(inflation, 2)}, πᵀ = ${formatPercent(inflationTarget, 0)}, and output gap = ${signed(outputGap)}%. Calculate the prescribed policy rate i.`,
+        prompt: `Use ${inlineMath("i=4+1.5(\\pi-\\pi^T)+0.5(\\text{output gap})")}, with ${inlineMath("\\pi=" + formatMathPercent(inflation, 2))}, ${inlineMath("\\pi^T=" + formatMathPercent(inflationTarget, 0))}, and output gap = ${inlineMath(formatMathSignedPercent(outputGap))}. Calculate the prescribed policy rate ${inlineMath("i")}.`,
         answer: answer(
           policyRate,
           "percent",
@@ -656,9 +666,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Enter the policy rate as a percentage rounded to 2 decimal places.",
         ),
         workedSolution: [
-          "Formula: i = 4 + 1.5(π − πᵀ) + 0.5(output gap).",
-          `Inflation gap = ${formatNumber(inflation, 2)} − ${formatNumber(inflationTarget, 0)} = ${formatNumber(inflation - inflationTarget, 2)} percentage points.`,
-          `i = 4 + 1.5(${formatNumber(inflation - inflationTarget, 2)}) + 0.5(${formatNumber(outputGap, 0)}).`,
+          `Formula: ${inlineMath("i=4+1.5(\\pi-\\pi^T)+0.5(\\text{output gap})")}.`,
+          `Inflation gap = ${inlineMath(formatMathPercent(inflation, 2) + "-" + formatMathPercent(inflationTarget, 0) + " = " + formatMathNumber(inflation - inflationTarget, 2))} percentage points.`,
+          `${inlineMath("i=4+1.5(" + formatMathNumber(inflation - inflationTarget, 2) + ")+0.5(" + formatMathNumber(outputGap, 0) + ")")}.`,
           finalLine("Prescribed policy rate", policyRate, "%", 2),
         ],
         explanation:
@@ -692,7 +702,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           ? "currency_millions"
           : "currency_millions_per_percentage_point";
       return {
-        prompt: `Consumption is C = ${formatNumber(consumptionIntercept)} + ${formatNumber(consumptionSlope, 2)}Y − ${formatNumber(consumptionRateCoefficient)}r and investment is I = ${formatNumber(investmentIntercept)} − ${formatNumber(investmentRateCoefficient)}r. After combining C and I into PAE, what is the ${target === "intercept" ? "combined autonomous intercept" : "coefficient on r"}?${target === "rate_coefficient" ? " Include its sign." : ""}`,
+        prompt: `Consumption is ${inlineMath("C=" + formatMathNumber(consumptionIntercept) + "+" + formatMathNumber(consumptionSlope, 2) + "Y-" + formatMathNumber(consumptionRateCoefficient) + "r")} and investment is ${inlineMath("I=" + formatMathNumber(investmentIntercept) + "-" + formatMathNumber(investmentRateCoefficient) + "r")}. After combining C and I into PAE, what is the ${target === "intercept" ? "combined autonomous intercept" : "coefficient on r"}?${target === "rate_coefficient" ? " Include its sign." : ""}`,
         answer: answer(
           targetValue,
           targetUnit,
@@ -701,9 +711,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           `Give the ${target === "intercept" ? "combined autonomous intercept" : "coefficient on r"} to the nearest whole ${targetDisplayUnit}.`,
         ),
         workedSolution: [
-          "Formula: PAE = C + I.",
-          `Substitute the generated equations: PAE = (${formatNumber(consumptionIntercept)} + ${formatNumber(consumptionSlope, 2)}Y − ${formatNumber(consumptionRateCoefficient)}r) + (${formatNumber(investmentIntercept)} − ${formatNumber(investmentRateCoefficient)}r).`,
-          `Combine like terms: PAE = ${formatNumber(combinedIntercept)} + ${formatNumber(consumptionSlope, 2)}Y − (${formatNumber(consumptionRateCoefficient)} + ${formatNumber(investmentRateCoefficient)})r = ${formatNumber(combinedIntercept)} + ${formatNumber(consumptionSlope, 2)}Y ${signedTerm(combinedRateCoefficient)}r.`,
+          `Formula: ${inlineMath("PAE = C + I")}.`,
+          `Substitute the generated equations: ${inlineMath("PAE=(" + formatMathNumber(consumptionIntercept) + "+" + formatMathNumber(consumptionSlope, 2) + "Y-" + formatMathNumber(consumptionRateCoefficient) + "r)+(" + formatMathNumber(investmentIntercept) + "-" + formatMathNumber(investmentRateCoefficient) + "r)")}.`,
+          `Combine like terms: ${inlineMath("PAE=" + formatMathNumber(combinedIntercept) + "+" + formatMathNumber(consumptionSlope, 2) + "Y-(" + formatMathNumber(consumptionRateCoefficient) + "+" + formatMathNumber(investmentRateCoefficient) + ")r=" + formatMathNumber(combinedIntercept) + "+" + formatMathNumber(consumptionSlope, 2) + "Y" + signedTerm(combinedRateCoefficient) + "r")}.`,
           finalLine(targetLabel, targetValue, ` ${targetDisplayUnit}`, 0),
         ],
         explanation:
@@ -737,7 +747,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       );
       const targetValue = target === "intercept" ? adIntercept : adInflationCoefficient;
       const targetLabel =
-        target === "intercept" ? "AD intercept" : "AD coefficient on π";
+        target === "intercept" ? "AD intercept" : "AD coefficient on \\(\\pi\\)";
       const targetDisplayUnit =
         target === "intercept" ? "$ million" : "$ million per percentage point";
       const targetUnit =
@@ -745,7 +755,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           ? "currency_millions"
           : "currency_millions_per_percentage_point";
       return {
-        prompt: `Equilibrium output is Y = ${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}r and the policy reaction function is r = ${formatNumber(policyIntercept, 2)} + ${formatNumber(policyInflationCoefficient, 2)}π. After substituting the PRF into the output relation, what is the ${target === "intercept" ? "AD intercept" : "coefficient on π"}?${target === "inflation_coefficient" ? " Include its sign." : ""}`,
+        prompt: `Equilibrium output is ${inlineMath("Y=" + formatMathNumber(equilibriumIntercept) + "-" + formatMathNumber(equilibriumRateCoefficient) + "r")} and the policy reaction function is ${inlineMath("r=" + formatMathNumber(policyIntercept, 2) + "+" + formatMathNumber(policyInflationCoefficient, 2) + "\\pi")}. After substituting the PRF into the output relation, what is the ${target === "intercept" ? "AD intercept" : "coefficient on π"}?${target === "inflation_coefficient" ? " Include its sign." : ""}`,
         answer: answer(
           targetValue,
           targetUnit,
@@ -754,9 +764,9 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           `Give the ${target === "intercept" ? "AD intercept" : "coefficient on π"} to 1 decimal place in ${targetDisplayUnit}.`,
         ),
         workedSolution: [
-          "Formula: substitute \\(r=r_0+\\gamma\\pi\\) into \\(Y=A-Br\\).",
-          `Y = ${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}(${formatNumber(policyIntercept, 2)} + ${formatNumber(policyInflationCoefficient, 2)}π).`,
-          `AD equation: Y = (${formatNumber(equilibriumIntercept)} − ${formatNumber(equilibriumRateCoefficient)}×${formatNumber(policyIntercept, 2)}) − (${formatNumber(equilibriumRateCoefficient)}×${formatNumber(policyInflationCoefficient, 2)})π = ${formatNumber(adIntercept, 1)} ${signedTerm(adInflationCoefficient, 1)}π.`,
+          `Formula: substitute ${inlineMath("r=r_0+\\gamma\\pi")} into ${inlineMath("Y=A-B\\,r")}.`,
+          `${inlineMath("Y=" + formatMathNumber(equilibriumIntercept) + "-" + formatMathNumber(equilibriumRateCoefficient) + "(" + formatMathNumber(policyIntercept, 2) + "+" + formatMathNumber(policyInflationCoefficient, 2) + "\\pi)")}.`,
+          `AD equation: ${inlineMath("Y=(" + formatMathNumber(equilibriumIntercept) + "-" + formatMathNumber(equilibriumRateCoefficient) + "\\times" + formatMathNumber(policyIntercept, 2) + ")-(" + formatMathNumber(equilibriumRateCoefficient) + "\\times" + formatMathNumber(policyInflationCoefficient, 2) + ")\\pi=" + formatMathNumber(adIntercept, 1) + signedTerm(adInflationCoefficient, 1) + "\\pi")}.`,
           finalLine(targetLabel, targetValue, ` ${targetDisplayUnit}`, 1),
         ],
         explanation:
@@ -779,7 +789,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
     const australianDollars = random.integer(8, 60) * 10;
     const usDollars = exchangeRate * australianDollars;
     return {
-      prompt: `The course quote is e = ${formatNumber(exchangeRate, 2)} USD/AUD. How many US dollars does A$${formatNumber(australianDollars)} buy?`,
+      prompt: `The course quote is ${inlineMath("e=" + formatMathNumber(exchangeRate, 2) + "\\,\\mathrm{USD/AUD}")}. How many US dollars does A$${formatNumber(australianDollars)} buy?`,
       answer: answer(
         usDollars,
         "currency",
@@ -788,8 +798,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
         "Enter the US-dollar amount rounded to 2 decimal places.",
       ),
       workedSolution: [
-        "Quote convention: e = USD per AUD.",
-        `USD = AUD × (USD/AUD) = ${formatNumber(australianDollars)} × ${formatNumber(exchangeRate, 2)}.`,
+        `Quote convention: ${inlineMath("e=\\mathrm{USD/AUD}")}.`,
+        `${inlineMath("\\mathrm{USD} = \\mathrm{AUD}\\times(\\mathrm{USD/AUD}) = " + formatMathNumber(australianDollars) + "\\times" + formatMathNumber(exchangeRate, 2))}.`,
         finalLine("US-dollar value", usDollars, " US$", 2),
       ],
       explanation:
@@ -803,7 +813,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
     const australianDollars = random.integer(8, 60) * 10;
     const usDollars = exchangeRate * australianDollars;
     return {
-      prompt: `The course quote is e = ${formatNumber(exchangeRate, 2)} USD/AUD. How many Australian dollars are needed for US$${formatNumber(usDollars, 2)}?`,
+      prompt: `The course quote is ${inlineMath("e=" + formatMathNumber(exchangeRate, 2) + "\\,\\mathrm{USD/AUD}")}. How many Australian dollars are needed for US$${formatNumber(usDollars, 2)}?`,
       answer: answer(
         australianDollars,
         "currency",
@@ -812,8 +822,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
         "Enter the Australian-dollar amount rounded to 2 decimal places.",
       ),
       workedSolution: [
-        "Quote convention: e = USD per AUD.",
-        `AUD = USD ÷ (USD/AUD) = ${formatNumber(usDollars, 2)} ÷ ${formatNumber(exchangeRate, 2)}.`,
+        `Quote convention: ${inlineMath("e=\\mathrm{USD/AUD}")}.`,
+        `${inlineMath("\\mathrm{AUD}=\\frac{\\mathrm{USD}}{\\mathrm{USD/AUD}}=" + formatMathNumber(usDollars, 2) + "\\div" + formatMathNumber(exchangeRate, 2))}.`,
         finalLine("Australian-dollar amount", australianDollars, " A$", 2),
       ],
       explanation:
@@ -827,7 +837,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
     const eurUsd = random.pick([0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25]);
     const eurPerAud = audUsd / eurUsd;
     return {
-      prompt: `If 1 AUD = ${formatNumber(audUsd, 2)} USD and 1 EUR = ${formatNumber(eurUsd, 2)} USD, calculate how many EUR 1 AUD buys.`,
+      prompt: `If ${inlineMath("1\\,\\mathrm{AUD}=" + formatMathNumber(audUsd, 2) + "\\,\\mathrm{USD}")}, and ${inlineMath("1\\,\\mathrm{EUR}=" + formatMathNumber(eurUsd, 2) + "\\,\\mathrm{USD}")}, calculate how many EUR 1 AUD buys.`,
       answer: answer(
         eurPerAud,
         "ratio",
@@ -837,7 +847,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       ),
       workedSolution: [
         "Use the shared USD currency to form the cross rate.",
-        `EUR/AUD = (USD/AUD) ÷ (USD/EUR) = ${formatNumber(audUsd, 2)} ÷ ${formatNumber(eurUsd, 2)}.`,
+        `${inlineMath("\\mathrm{EUR/AUD}=\\frac{\\mathrm{USD/AUD}}{\\mathrm{USD/EUR}}=" + formatMathNumber(audUsd, 2) + "\\div" + formatMathNumber(eurUsd, 2))}.`,
         finalLine("Cross rate", eurPerAud, " EUR/AUD", 4),
       ],
       explanation:
@@ -862,8 +872,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Give the exchange rate to 4 decimal places in USD/AUD.",
         ),
         workedSolution: [
-          "LOOP requires Australian price × (USD/AUD) = US price.",
-          `Therefore USD/AUD = US price ÷ Australian price = ${formatNumber(usPrice, 2)} ÷ ${formatNumber(australianPrice, 2)}.`,
+          `LOOP requires ${inlineMath("\\text{Australian price}\\times\\mathrm{USD/AUD}=\\text{US price}")}.`,
+          `Therefore ${inlineMath("\\mathrm{USD/AUD}=\\frac{\\text{US price}}{\\text{Australian price}}=" + formatMathNumber(usPrice, 2) + "\\div" + formatMathNumber(australianPrice, 2))}.`,
           finalLine("LOOP exchange rate", exchangeRate, " USD/AUD", 4),
         ],
         explanation:
@@ -886,8 +896,8 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
         "Give the estimate to 1 decimal place in years.",
       ),
       workedSolution: [
-        "Rule of 70: doubling time ≈ 70 ÷ annual growth rate in percent units.",
-        `Doubling time ≈ 70 ÷ ${formatNumber(growthRate, 2)}.`,
+        `Rule of 70: ${inlineMath("\\text{doubling time}\\approx\\frac{70}{\\text{annual growth rate in percent units}}")}.`,
+        `${inlineMath("\\text{doubling time}\\approx\\frac{70}{" + formatMathNumber(growthRate, 2) + "}")}.`,
         finalLine("Estimated doubling time", doublingTime, " years", 1),
       ],
       explanation:
@@ -903,7 +913,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
     const alpha = random.pick([0.2, 0.25, 0.3, 0.35, 0.4]);
     const tfpGrowth = outputGrowth - alpha * capitalGrowth - (1 - alpha) * labourGrowth;
     return {
-      prompt: `Output grows by ${formatPercent(outputGrowth, 2)}, capital grows by ${formatPercent(capitalGrowth, 2)}, labour grows by ${formatPercent(labourGrowth, 2)}, and α = ${formatNumber(alpha, 2)}. Calculate TFP growth using growth accounting.`,
+      prompt: `Output grows by ${inlineMath(formatMathPercent(outputGrowth, 2))}, capital grows by ${inlineMath(formatMathPercent(capitalGrowth, 2))}, labour grows by ${inlineMath(formatMathPercent(labourGrowth, 2))}, and ${inlineMath("\\alpha=" + formatMathNumber(alpha, 2))}. Calculate TFP growth using growth accounting.`,
       answer: answer(
         tfpGrowth,
         "percent",
@@ -912,10 +922,10 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
         "Enter TFP growth as a percentage rounded to 2 decimal places.",
       ),
       workedSolution: [
-        "Formula: gA = gY − αgK − (1 − α)gL.",
-        `Capital contribution = ${formatNumber(alpha, 2)} × ${formatNumber(capitalGrowth, 2)} = ${formatNumber(alpha * capitalGrowth, 2)} percentage points.`,
-        `Labour contribution = ${formatNumber(1 - alpha, 2)} × ${formatNumber(labourGrowth, 2)} = ${formatNumber((1 - alpha) * labourGrowth, 2)} percentage points.`,
-        `gA = ${formatNumber(outputGrowth, 2)} − ${formatNumber(alpha * capitalGrowth + (1 - alpha) * labourGrowth, 2)}.`,
+        `Formula: ${inlineMath("g_A=g_Y-\\alpha g_K-(1-\\alpha)g_L")}.`,
+        `Capital contribution = ${inlineMath(formatMathNumber(alpha, 2) + "\\times" + formatMathPercent(capitalGrowth, 2) + " = " + formatMathPercent(alpha * capitalGrowth, 2))} percentage points.`,
+        `Labour contribution = ${inlineMath(formatMathNumber(1 - alpha, 2) + "\\times" + formatMathPercent(labourGrowth, 2) + " = " + formatMathPercent((1 - alpha) * labourGrowth, 2))} percentage points.`,
+        `${inlineMath("g_A=" + formatMathPercent(outputGrowth, 2) + "-" + formatMathPercent(alpha * capitalGrowth + (1 - alpha) * labourGrowth, 2))}.`,
         finalLine("TFP growth", tfpGrowth, "%", 2),
       ],
       explanation:
@@ -935,7 +945,7 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
       const labourContribution = (1 - alpha) * labourGrowth;
       const outputGrowth = tfpGrowth + capitalContribution + labourContribution;
       return {
-        prompt: `In a Cobb–Douglas growth-accounting exercise, α = ${formatNumber(alpha, 2)}, capital grows by ${formatPercent(capitalGrowth, 2)}, labour grows by ${formatPercent(labourGrowth, 2)}, and TFP grows by ${formatPercent(tfpGrowth, 2)}. Calculate predicted output growth.`,
+        prompt: `In a Cobb–Douglas growth-accounting exercise, ${inlineMath("\\alpha=" + formatMathNumber(alpha, 2))}, capital grows by ${inlineMath(formatMathPercent(capitalGrowth, 2))}, labour grows by ${inlineMath(formatMathPercent(labourGrowth, 2))}, and TFP grows by ${inlineMath(formatMathPercent(tfpGrowth, 2))}. Calculate predicted output growth.`,
         answer: answer(
           outputGrowth,
           "percent",
@@ -944,10 +954,10 @@ export const calculationTemplates: readonly CalculationTemplate[] = [
           "Enter predicted output growth as a percentage rounded to 2 decimal places.",
         ),
         workedSolution: [
-          "Formula: gY = gA + αgK + (1 − α)gL.",
-          `Capital contribution = ${formatNumber(alpha, 2)} × ${formatNumber(capitalGrowth, 2)} = ${formatNumber(capitalContribution, 2)} percentage points.`,
-          `Labour contribution = ${formatNumber(1 - alpha, 2)} × ${formatNumber(labourGrowth, 2)} = ${formatNumber(labourContribution, 2)} percentage points.`,
-          `gY = ${formatNumber(tfpGrowth, 2)} + ${formatNumber(capitalContribution, 2)} + ${formatNumber(labourContribution, 2)}.`,
+          `Formula: ${inlineMath("g_Y=g_A+\\alpha g_K+(1-\\alpha)g_L")}.`,
+          `Capital contribution = ${inlineMath(formatMathNumber(alpha, 2) + "\\times" + formatMathPercent(capitalGrowth, 2) + " = " + formatMathPercent(capitalContribution, 2))} percentage points.`,
+          `Labour contribution = ${inlineMath(formatMathNumber(1 - alpha, 2) + "\\times" + formatMathPercent(labourGrowth, 2) + " = " + formatMathPercent(labourContribution, 2))} percentage points.`,
+          `${inlineMath("g_Y=" + formatMathPercent(tfpGrowth, 2) + "+" + formatMathPercent(capitalContribution, 2) + "+" + formatMathPercent(labourContribution, 2))}.`,
           finalLine("Predicted output growth", outputGrowth, "%", 2),
         ],
         explanation:

@@ -74,7 +74,10 @@ export const courseRecordsD = [
         expression: String.raw`VMPL = P \times MPL`,
         variables: [
           { symbol: "P", meaning: "price of the firm’s output" },
-          { symbol: "MPL", meaning: "extra output from another unit of labour" },
+          {
+            symbol: String.raw`\mathrm{MPL}`,
+            meaning: "extra output from another unit of labour",
+          },
         ],
         interpretation:
           "In the competitive model the firm compares VMPL with the real wage or its equivalent cost.",
@@ -275,8 +278,14 @@ export const courseRecordsD = [
         label: "Real wage",
         expression: String.raw`\frac{\text{nominal wage}}{\text{price level}}`,
         variables: [
-          { symbol: "nominal wage", meaning: "money payment for labour" },
-          { symbol: "price level", meaning: "cost of goods and services" },
+          {
+            symbol: String.raw`\text{nominal wage}`,
+            meaning: "money payment for labour",
+          },
+          {
+            symbol: String.raw`\text{price level}`,
+            meaning: "cost of goods and services",
+          },
         ],
         interpretation:
           "The result is in purchasing-power units; compare rates of change consistently when using approximations.",
@@ -1146,8 +1155,14 @@ export const courseRecordsD = [
         label: "Trade balance",
         expression: String.raw`\text{exports} - \text{imports}`,
         variables: [
-          { symbol: "exports", meaning: "goods and services sold abroad" },
-          { symbol: "imports", meaning: "goods and services bought from abroad" },
+          {
+            symbol: String.raw`\text{exports}`,
+            meaning: "goods and services sold abroad",
+          },
+          {
+            symbol: String.raw`\text{imports}`,
+            meaning: "goods and services bought from abroad",
+          },
         ],
         interpretation:
           "Do not add income flows unless the question asks for the current account.",
@@ -1313,11 +1328,11 @@ export const courseRecordsD = [
         expression: String.raw`\text{current account} + \text{financial-account balance} = 0`,
         variables: [
           {
-            symbol: "current account",
+            symbol: String.raw`\text{current account}`,
             meaning: "current goods, services, income, and transfer balance",
           },
           {
-            symbol: "financial-account balance",
+            symbol: String.raw`\text{financial-account balance}`,
             meaning: "matching financial-flow entry under the convention",
           },
         ],
@@ -1404,9 +1419,9 @@ export const courseRecordsD = [
         label: "Open-economy saving identity",
         expression: String.raw`NS - I = NX`,
         variables: [
-          { symbol: "NS", meaning: "national saving" },
+          { symbol: String.raw`\mathrm{NS}`, meaning: "national saving" },
           { symbol: "I", meaning: "domestic investment" },
-          { symbol: "NX", meaning: "net exports" },
+          { symbol: String.raw`\mathrm{NX}`, meaning: "net exports" },
         ],
         interpretation:
           "With the course’s convention, a saving shortfall relative to investment corresponds to negative net exports.",
@@ -2128,8 +2143,14 @@ export const courseRecordsD = [
             symbol: String.raw`\text{exchange-rate growth}`,
             meaning: "change under the chosen quotation",
           },
-          { symbol: "domestic inflation", meaning: "home price-index growth" },
-          { symbol: "foreign inflation", meaning: "foreign price-index growth" },
+          {
+            symbol: String.raw`\text{domestic inflation}`,
+            meaning: "home price-index growth",
+          },
+          {
+            symbol: String.raw`\text{foreign inflation}`,
+            meaning: "foreign price-index growth",
+          },
         ],
         interpretation:
           "The sign must be adapted to whether the quote is foreign currency per AUD or AUD per foreign currency.",

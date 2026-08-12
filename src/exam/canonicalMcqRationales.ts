@@ -62,7 +62,7 @@ export const canonicalMcqChoiceRationales: Readonly<Record<string, FourRationale
   "mix-004": [
     "The output gap is negative when unemployment is above the natural rate; the positive sign reverses Okun’s-law direction.",
     "This uses the unemployment gap itself as the output gap and omits multiplication by β.",
-    "This has the right negative direction but uses β=1 instead of the stated β=2.",
+    String.raw`This has the right negative direction but uses \(\beta=1\) instead of the stated \(\beta=2\).`,
     String.raw`Using \(\text{output gap}=-\beta(u-u^*)\) gives \(-2\times2=-4\%\).`,
   ],
   "mix-005": [
@@ -87,13 +87,13 @@ export const canonicalMcqChoiceRationales: Readonly<Record<string, FourRationale
     "This divides the autonomous investment change by the multiplier instead of applying the multiplier.",
     "This is only the first-round spending change and omits induced consumption rounds.",
     "This uses an incomplete multiplier and understates the total equilibrium effect.",
-    "With MPC .75, k=1/(1-.75)=4, so a $20 autonomous increase raises equilibrium GDP by $80.",
+    String.raw`With \(MPC=.75\), \(k=\frac{1}{1-.75}=4\), so a $20 autonomous increase raises equilibrium GDP by $80.`,
   ],
   "mix-009": [
     "This is not the government-spending multiplier for the stated proportional-tax model.",
     "This omits the consumption response and tax leakage that determine the denominator.",
-    "The correct denominator is 1-.8(1-.25)=.4, so k_G=1/.4=2.5.",
-    String.raw`5 is the no-tax two-sector multiplier \(1/(1-.8)\); proportional taxes reduce the multiplier here.`,
+    String.raw`The correct denominator is \(1-.8(1-.25)=.4\), so \(k_G=\frac{1}{.4}=2.5\).`,
+    String.raw`5 is the no-tax two-sector multiplier \(\frac{1}{1-.8}\); proportional taxes reduce the multiplier here.`,
   ],
   "mix-010": [
     "A rise in G has a positive initial demand effect, and the equal tax rise reduces consumption only through MPC, so GDP need not be unchanged.",
@@ -116,7 +116,7 @@ export const canonicalMcqChoiceRationales: Readonly<Record<string, FourRationale
   "mix-013": [
     "A higher interest rate changes the quantity demanded along the existing money-demand curve rather than shifting the curve.",
     "Higher real income raises transaction demand at each interest rate, shifting real money demand right.",
-    "A higher price level changes nominal units; with Y and i fixed, real demand MD/P is not shifted by P alone.",
+    "A higher price level changes nominal units; with Y and i fixed, real demand \\(\\frac{MD}{P}\\) is not shifted by P alone.",
     "This describes a movement along the curve, not a rightward shift caused by higher income.",
   ],
   "mix-014": [
@@ -127,7 +127,7 @@ export const canonicalMcqChoiceRationales: Readonly<Record<string, FourRationale
   ],
   "mix-015": [
     "Real output growth is not inflation; it is the real component of nominal spending growth.",
-    "With constant velocity, g_M≈π+g_Y, so π≈7%-2%=5%.",
+    String.raw`With constant velocity, \(g_M\approx\pi+g_Y\), so \(\pi\approx7\%-2\%=5\%\).`,
     "This treats all money growth as price growth and ignores the 2% real-output increase.",
     "Adding money and output growth reverses the quantity-equation rearrangement.",
   ],

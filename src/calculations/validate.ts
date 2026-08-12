@@ -5,6 +5,7 @@ import {
   type GeneratedCalculationInstance,
 } from "./model";
 import { validateQuestionStimulus } from "../stimulus/validateStimulus";
+import { validateFreeMathContent } from "../math/contentValidation";
 
 export interface CalculationTemplateValidationStats {
   readonly canonicalCalculationCards: number;
@@ -111,6 +112,31 @@ export function validateGeneratedCalculationInstance(
   template: CalculationTemplate,
   instance: GeneratedCalculationInstance,
 ): void {
+  const generatedMathFields = [
+    ["prompt", instance.prompt],
+    ...instance.workedSolution.map((step, index) => [
+      "workedSolution[" + index + "]",
+      step,
+    ]),
+    ["explanation", instance.explanation],
+    ["commonTrap", instance.commonTrap],
+  ] as const;
+  for (const [field, value] of generatedMathFields) {
+    try {
+      validateFreeMathContent(value, "calculation " + template.id + "." + field);
+    } catch (error: unknown) {
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : "Calculation " +
+              template.id +
+              "." +
+              field +
+              " contains invalid math content.",
+      );
+    }
+  }
+
   if (
     instance.templateId !== template.id ||
     instance.reviewCardId !== template.reviewCardId ||

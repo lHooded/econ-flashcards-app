@@ -279,12 +279,12 @@
     "stem": "With a constant labour force, the job-separation rate is \\(s=0.03\\) and the job-finding rate is \\(f=0.17\\). What is the steady-state unemployment rate?",
     "choices": ["3%", "17%", "20%", "15%"],
     "correctChoice": 3,
-    "explanation": "The steady-state rate is \\(u^*=s/(s+f)=0.03/(0.03+0.17)=0.03/0.20=0.15\\), or 15%.",
+    "explanation": "The steady-state rate is \\(u^*=\\frac{s}{s+f}=\\frac{0.03}{0.03+0.17}=\\frac{0.03}{0.20}=0.15\\), or 15%.",
     "choiceRationales": [
       "This reports separations alone and omits the job-finding flow in the steady-state denominator.",
       "This reports the job-finding rate rather than the unemployment stock implied by both flows.",
       "This adds the two rates but does not form the steady-state ratio.",
-      "The correct formula is s/(s+f)=.03/.20=.15, or 15%."
+      "The correct formula is \\(\\frac{s}{s+f}=\\frac{.03}{.20}=.15\\), or 15%"
     ],
     "reviewCardId": "ch02-013",
     "sourceCardIds": ["ch02-013"],
@@ -302,7 +302,7 @@
     "correctChoice": 0,
     "explanation": "The output gap is \\(\\frac{Y-Y^*}{Y^*}\\times100=\\frac{980-1{,}000}{1{,}000}\\times100=-2\\%\\).",
     "choiceRationales": [
-      "Actual output is $20 below potential, and dividing by potential gives -20/1,000=-2%.",
+      "Actual output is $20 below potential, and dividing by potential gives \\(\\frac{-20}{1{,}000}\\times100=-2\\%\\).",
       "This reverses the sign even though actual output is below potential.",
       "This treats the dollar gap as a percentage without dividing by potential output.",
       "The dollar gap is 20, not 20% of potential, and its direction is negative."
@@ -378,7 +378,7 @@
       "Hire the additional worker because \\(VMPL=\\$60\\) exceeds \\(W=\\$54\\)."
     ],
     "correctChoice": 3,
-    "explanation": "The value of marginal product is p×\\(MPL=\\$12\\times5=\\$60\\). Since it exceeds the $54 nominal wage, the additional worker adds more revenue than cost at the margin.",
+    "explanation": "The value of marginal product is \\(p\\times MPL=\\$12\\times5=\\$60\\). Since it exceeds the $54 nominal wage, the additional worker adds more revenue than cost at the margin.",
     "choiceRationales": [
       "The marginal rule uses VMPL, so average product is not needed for this decision.",
       "Comparing W with p alone ignores the worker’s marginal physical contribution.",
@@ -602,7 +602,7 @@
     "stem": "A capital stock begins at \\(K_0=500\\), gross investment is \\(I=80\\), and the ending stock is \\(K_1=550\\). Using \\(K_1=K_0+I-\\delta K_0\\), what depreciation rate is implied?",
     "choices": ["6%", "10%", "16%", "30%"],
     "correctChoice": 0,
-    "explanation": "The stock rose by 50, while gross investment was 80, so depreciation was 30. Thus \\(\\delta=30\\)/500=6%.",
+    "explanation": "The stock rose by 50, while gross investment was 80, so depreciation was 30. Thus \\(\\delta=\\frac{30}{500}=6\\%\\).",
     "choiceRationales": [
       "Solving \\(550=500+80-500\\delta\\) gives \\(500\\delta=30\\) and \\(\\delta=6\\%\\).",
       "10% would imply depreciation of 50 and an ending stock of 530, not 550.",
@@ -847,7 +847,7 @@
       "The multiplier becomes negative because households consume more of each extra dollar."
     ],
     "correctChoice": 0,
-    "explanation": "The two-sector multiplier is \\(k=1/(1-c)\\). A higher MPC c reduces the leakage into saving, raises k, and makes equilibrium GDP more responsive to an autonomous spending change.",
+    "explanation": "The two-sector multiplier is \\(k=\\frac{1}{1-c}\\). A higher MPC c reduces the leakage into saving, raises k, and makes equilibrium GDP more responsive to an autonomous spending change.",
     "choiceRationales": [
       "A larger c makes 1-c smaller, so k rises and each autonomous shock has a larger total effect.",
       "The direction is reversed: a higher MPC increases rather than reduces the multiplier.",
@@ -893,7 +893,7 @@
     "choiceRationales": [
       "$300 is autonomous PAE before induced consumption and imports are solved out.",
       "$400 does not satisfy \\(Y=300+.4Y\\).",
-      "The open-economy multiplier is 1/(1-.5+.1)=1/.6, so \\(Y=300/.6=\\$500\\).",
+      "The open-economy multiplier is \\(\\frac{1}{1-.5+.1}=\\frac{1}{.6}\\), so \\(Y=300/.6=\\$500\\).",
       "This applies an incorrect slope or multiplier and overstates equilibrium output."
     ],
     "reviewCardId": "ch04-024",
@@ -1040,7 +1040,7 @@
       "Tax receipts are a leakage from disposable income; they do not become government purchases automatically in this multiplier formula.",
       "The tax rate enters the induced-consumption coefficient c(1-t), so MPC alone does not determine \\(k_G\\) here.",
       "A higher t lowers c(1-t), weakens induced consumption and reduces \\(k_G\\).",
-      "The multiplier remains positive for standard 0<c<1 and 0≤\\(t≤1\\); a higher tax rate does not make it negative."
+      "The multiplier remains positive for standard \\(0<c<1\\) and \\(0\\le t\\le1\\); a higher tax rate does not make it negative."
     ],
     "reviewCardId": "ch05-013",
     "sourceCardIds": ["ch05-013"],
@@ -1061,7 +1061,7 @@
       "This omits the subsequent induced-income rounds in the denominator.",
       "This uses the denominator as the multiplier rather than dividing by it.",
       "-2.50 is the negative of the government-spending multiplier, but the tax numerator is c rather than 1.",
-      "The tax multiplier is -0.75/.40=-1.875, including its negative demand effect."
+      "The tax multiplier is \\(-.75/.40=-1.875\\), including its negative demand effect."
     ],
     "reviewCardId": "ch05-008",
     "sourceCardIds": ["ch05-008"],
@@ -1202,7 +1202,7 @@
     "stem": "In the four-sector model, \\(c=0.80\\), \\(t=0.25\\) and the marginal propensity to import is \\(m=0.10\\). What is the multiplier for an autonomous spending change?",
     "choices": ["1.25", "2.00", "2.50", "5.00"],
     "correctChoice": 1,
-    "explanation": "The four-sector multiplier is 1/[1-c(1-t)+m]=1/[1-.8(.75)+.1]=1/.5=2.",
+    "explanation": "The four-sector multiplier is \\(\\frac{1}{1-c(1-t)+m}=\\frac{1}{1-.8(.75)+.1}=\\frac{1}{.5}=2\\).",
     "choiceRationales": [
       "This does not use the induced-consumption and import leakages in the four-sector denominator.",
       "The denominator is 1-.60+.10=.50, so the multiplier equals 2.00.",
@@ -1625,11 +1625,11 @@
     "choices": [
       "Cash rate falls → real rates rise → C and I rise → AD falls.",
       "Cash rate rises → expected inflation rises one-for-one → real rates fall → AD rises.",
-      "\\[\\text{cash rate rises}\\to\\text{broader and expected real rates rise}\\to\\text{interest-sensitive }C\\text{ and }I\\text{ fall}\\to PAE/AD\\text{ falls}\\]",
+      "\\[\\text{cash rate rises}\\to\\text{broader and expected real rates rise}\\to\\text{interest-sensitive }C\\text{ and }I\\text{ fall}\\to\\text{PAE/AD falls}\\]",
       "Cash rate rises → exports rise mechanically → AD rises, with no spending response."
     ],
     "correctChoice": 2,
-    "explanation": "Tighter policy raises the cash rate and broader borrowing/return rates. For given inflation expectations, expected real rates rise, reducing interest-sensitive consumption and investment and lowering PAE/AD.",
+    "explanation": "Tighter policy raises the cash rate and broader borrowing/return rates. For given inflation expectations, expected real rates rise, reducing interest-sensitive consumption and investment and lowering \\(\\text{PAE/AD}\\).",
     "choiceRationales": [
       "This reverses the policy-rate movement and the spending response.",
       "If expected inflation rose one-for-one, the real rate would not rise; this is not the tightening channel.",
@@ -2077,7 +2077,7 @@
     "stem": "Under the course quote \\(e=0.72 USD/AUD\\), how many US dollars does A$250 buy?",
     "choices": ["US$180", "US$347.22", "US$250.72", "US$0.35"],
     "correctChoice": 0,
-    "explanation": "The quote gives USD per AUD, so multiply: 0.72 USD/AUD × 250 \\(AUD = US\\$180\\).",
+    "explanation": "The quote gives USD per AUD, so multiply: \\(0.72\\,\\mathrm{USD/AUD}\\times250\\,\\mathrm{AUD}=\\mathrm{US\\$180}\\).",
     "choiceRationales": [
       "The units cancel correctly: .72 USD per AUD times 250 AUD equals US$180.",
       "This divides by .72 when the quote already gives dollars per Australian dollar.",
@@ -2116,7 +2116,7 @@
     "topic": "Real exchange rate",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "With e quoted as foreign currency per Australian dollar, let \\(e=0.72\\), \\(P_domestic=120\\) and \\(P_foreign=100\\). What is \\(q=eP_domestic/P_foreign\\)?",
+    "stem": "With e quoted as foreign currency per Australian dollar, let \\(e=0.72\\), \\(P_{\\text{domestic}}=120\\) and \\(P_{\\text{foreign}}=100\\). What is \\(q=e\\frac{P_{\\text{domestic}}}{P_{\\text{foreign}}}\\)?",
     "choices": ["0.60", "0.72", "0.864", "1.20"],
     "correctChoice": 2,
     "explanation": "Using the course convention, \\(q=0.72\\times120/100=0.864\\).",
@@ -2557,7 +2557,7 @@
     "stem": "A policy reaction function would recommend a nominal rate of -1% during a deflation episode. The effective lower bound prevents the RBA from setting below 0%, and expected inflation is -2%. Using the Fisher approximation, what real rate actually results?",
     "choices": ["-2%", "0%", "+1%", "+2%"],
     "correctChoice": 3,
-    "explanation": "At the lower bound the nominal rate is 0%. With expected inflation of -2%, the Fisher relation \\(r \\approx i - \\pi^e gives r \\approx 0\\% - (-2\\%) = +2\\%\\). Deflation can therefore leave the real rate positive even when the nominal policy rate cannot fall further.",
+    "explanation": "At the lower bound the nominal rate is 0%. With expected inflation of -2%, the Fisher relation \\(r \\approx i-\\pi^e\\) gives \\(r \\approx 0\\%-(-2\\%)=+2\\%\\). Deflation can therefore leave the real rate positive even when the nominal policy rate cannot fall further.",
     "choiceRationales": [
       "This treats the negative inflation rate as if it were the nominal rate and ignores the lower bound.",
       "Zero is the nominal rate at the bound, not the implied real rate.",

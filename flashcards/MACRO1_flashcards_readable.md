@@ -256,7 +256,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** How is the GDP price index/deflator related to nominal and real GDP?
 
-**Answer:** GDP price index = nominal GDP / real GDP (often multiplied by 100).
+**Answer:** GDP price index = \(\frac{\text{nominal GDP}}{\text{real GDP}}\) (often multiplied by 100).
 
 **Explanation:** Rearranging gives real \(GDP=\frac{\text{nominal GDP}}{\text{price index}}\) when the index is written as a ratio rather than 100-based. The percentage change in the price index measures broad domestic-output inflation.
 
@@ -544,7 +544,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** How do you calculate the labour force?
 
-**Answer:** Labour force \(LF=E+U\).
+**Answer:** Labour force \(LF=E+U\), where \(E\) is employed and \(U\) is unemployed.
 
 **Explanation:** The labour force excludes people classified as not in the labour force. It is the denominator of the unemployment rate and the numerator component of the participation rate.
 
@@ -699,7 +699,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 **Explanation:** In steady state, flows into unemployment equal flows out: \(sE = fU\). Using \(E = LF - U\) and dividing by LF yields \(u^* = \frac{s}{s+f}\). Higher finding rates lower the steady-state unemployment rate; higher separation rates raise it.
 
 
-**Common trap:** Do not use s/f without the +s in the denominator.
+**Common trap:** Do not use \(s/f\) without the +s in the denominator.
 
 
 *Tags: formula, natural-rate, flows*
@@ -919,7 +919,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** In the course model, what is the effect of an income tax on workers on labour supply and the wage wedge?
 
-**Answer:** Labour supply shifts up/left; employment falls; the wage paid by firms exceeds the after-tax wage received by workers.
+**Answer:** Labour supply shifts up and left; employment falls; the wage paid by firms exceeds the after-tax wage received by workers.
 
 **Explanation:** For a given employer cost, workers keep less after tax, reducing willingness to work. The tax wedge is the difference between the real labour cost to firms and the real wage workers retain.
 
@@ -1147,7 +1147,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** How is net investment defined?
 
-**Answer:** Net investment = \(I-\delta K\).
+**Answer:** Net investment = gross investment \(I\) minus depreciation \(\delta K\).
 
 **Explanation:** Positive net investment raises the capital stock; zero net investment keeps it constant; negative net investment means the capital stock shrinks.
 
@@ -1282,9 +1282,9 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** What is household saving in the course national-accounts framework?
 
-**Answer:** Household saving \(S_h=Y_D-C\).
+**Answer:** Household saving \(S_h=Y^D-C\), where \(Y^D\) is disposable income and \(C\) is consumption.
 
-**Explanation:** The textbook defines \(Y_D\) from household receipts net of taxes and retained earnings: \(Y_D=Y-TA+TR+INT-RE\) under its notation. Household saving is a flow that can add to net wealth.
+**Explanation:** The textbook defines \(Y^D\) from household receipts net of taxes and retained earnings: \(Y^D=Y-TA+TR+INT-RE\) under its notation. Household saving is a flow that can add to net wealth.
 
 
 **Common trap:** Do not confuse national income Y with household disposable income when taxes/transfers are present.
@@ -1357,7 +1357,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** How is public saving/budget balance defined in Chapter 3 notation?
 
-**Answer:** Public saving = \(T-G\), where \(T\) is tax receipts net of transfers and government interest payments.
+**Answer:** Public saving \(=T-G\), where \(T\) is tax receipts minus transfers and government interest payments.
 
 **Explanation:** A positive value is a budget surplus and adds to national saving; a negative value is a budget deficit and reduces national saving.
 
@@ -1570,7 +1570,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** What is the marginal propensity to consume (MPC)?
 
-**Answer:** The increase in consumption caused by a one-unit increase in disposable income; in \(C=C_0+cY_D\), it is \(c\).
+**Answer:** The increase in consumption caused by a one-unit increase in disposable income; in \(C=C_0+cY^D\), it is \(c\).
 
 **Explanation:** If \(c=0.6\), an extra $100 of disposable income raises consumption by $60. The remainder is marginal saving in the simple model.
 
@@ -1585,9 +1585,9 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** How is the average propensity to consume (APC) defined?
 
-**Answer:** \(APC = C / Y^D\).
+**Answer:** \(APC = \frac{C}{Y^D}\).
 
-**Explanation:** Unlike the MPC, APC generally changes with income when autonomous consumption \(C_0\) is nonzero. For \(C=C_0+cY^D\), \(APC=C_0/Y^D+c\) and tends toward c as income grows.
+**Explanation:** Unlike the MPC, APC generally changes with income when autonomous consumption \(C_0\) is nonzero. For \(C=C_0+cY^D\), \(APC=\frac{C_0}{Y^D}+c\) and tends toward c as income grows.
 
 
 **Common trap:** Do not confuse APC with the slope of the consumption function.
@@ -1630,9 +1630,9 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** What is the two-sector income-expenditure multiplier?
 
-**Answer:** \(k = 1/(1-c)\).
+**Answer:** \(k = \frac{1}{1-c}\).
 
-**Explanation:** A one-unit rise in autonomous spending first raises output by one, then induces c more consumption, then \(c^{2}\), and so on. The geometric series sums to 1/(1-c).
+**Explanation:** A one-unit rise in autonomous spending first raises output by one, then induces c more consumption, then \(c^{2}\), and so on. The geometric series sums to \(\frac{1}{1-c}\).
 
 
 **Common trap:** The multiplier is larger when MPC c is larger, not smaller.
@@ -1780,9 +1780,9 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** What is the multiplier in the simple open economy with no government?
 
-**Answer:** \(k = 1/(1-c+m)\).
+**Answer:** \(k = \frac{1}{1-c+m}\).
 
-**Explanation:** Imports add another leakage. Compared with the two-sector multiplier 1/(1-c), a positive m makes the denominator larger and the multiplier smaller.
+**Explanation:** Imports add another leakage. Compared with the two-sector multiplier \(\frac{1}{1-c}\), a positive m makes the denominator larger and the multiplier smaller.
 
 
 **Common trap:** The import term enters the denominator with a plus sign because M is subtracted from expenditure.
@@ -1857,7 +1857,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Answer:** It rises.
 
-**Explanation:** With a larger c, less of each extra dollar leaks into saving and more is respent, so the chain of induced expenditure decays more slowly. Algebraically 1/(1-c) increases as c increases.
+**Explanation:** With a larger c, less of each extra dollar leaks into saving and more is respent, so the chain of induced expenditure decays more slowly. Algebraically \(\frac{1}{1-c}\) increases as c increases.
 
 
 **Common trap:** A high MPC makes the economy more responsive to autonomous spending shocks.
@@ -1872,7 +1872,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Answer:** It falls.
 
-**Explanation:** More of each extra dollar of income leaks into imported goods rather than demand for domestic output. In \(k=1/(1-c+m)\), a larger m increases the denominator.
+**Explanation:** More of each extra dollar of income leaks into imported goods rather than demand for domestic output. In \(k=\frac{1}{1-c+m}\), a larger m increases the denominator.
 
 
 **Common trap:** Imports are a leakage, so greater import responsiveness dampens domestic multiplier effects.
@@ -1998,7 +1998,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 **Explanation:** An extra dollar of G enters PAE dollar-for-dollar in the first round, then creates induced consumption in later rounds. The automatic tax response reduces those subsequent rounds.
 
 
-**Common trap:** \(k_G\) is not always the simple 1/(1-c) once t>0.
+**Common trap:** \(k_G\) is not always the simple \(\frac{1}{1-c}\) once \(t>0\).
 
 
 *Tags: fiscal-multiplier, formula*
@@ -2313,7 +2313,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 **Explanation:** The text also stresses that empirical growth thresholds are contested. The conceptual mechanisms matter more for an introductory MCQ than memorising a particular disputed threshold.
 
 
-**Common trap:** Do not treat a specific debt/GDP threshold as an iron economic law.
+**Common trap:** Do not treat a specific debt-to-GDP threshold as an iron economic law.
 
 
 *Tags: public-debt, costs*
@@ -2383,7 +2383,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** What is the four-sector equilibrium condition in leakage-injection form?
 
-**Answer:** S + T + \(M = Iᴾ + G + X\).
+**Answer:** \(S+T+M=I^P+G+X\).
 
 **Explanation:** Private saving, net taxes and imports are leakages from the circular flow; planned investment, government purchases and exports are injections. This is algebraically equivalent to \(Y=PAE\).
 
@@ -2416,7 +2416,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** What are a bond’s principal (face value), coupon and maturity?
 
-**Answer:** Principal/face value is the promised amount repaid at maturity; the coupon is any periodic interest payment; maturity is the date/term until final repayment.
+**Answer:** Principal (face value) is the promised amount repaid at maturity; the coupon is any periodic interest payment; maturity is the date or term until final repayment.
 
 **Explanation:** A zero-coupon bond has no periodic coupon and instead pays its face value at maturity. Bond prices today depend on the present value of promised future payments.
 
@@ -2521,7 +2521,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** In the simplified banking model, what makes up the money stock?
 
-**Answer:** Money stock is \(M=C_u+D\): currency held by the public plus bank deposits usable for payment..
+**Answer:** The money stock is \(M=C_u+D\), where \(C_u\) is currency held by the public and \(D\) is bank deposits usable for payment.
 
 **Explanation:** Deposits count because they can directly make payments. Currency sitting inside a bank’s vault or settlement account is not simultaneously currency held by the public.
 
@@ -2811,7 +2811,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 **Explanation:** Under those assumptions, a permanent proportional rise in M produces the same proportional rise in P. In growth rates, money growth in excess of real-output growth (adjusted for velocity growth) produces inflation.
 
 
-**Common trap:** Do not call \(MV=PY\) is itself an accounting identity, not a causal theory; it becomes causal only after behavioural assumptions are added.
+**Common trap:** Do not call \(MV=PY\) itself a theory; it becomes causal only after behavioural assumptions are added.
 
 
 *Tags: quantity-theory, money, inflation*
@@ -2823,7 +2823,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Answer:** \(g_M+g_V\approx\pi+g_Y\).
 
-**Explanation:** Taking percentage growth rates of \(MV=PY\) gives money growth plus velocity growth approximately equal to inflation plus real-output growth. If V is constant, \(\pi\)≈\(g_M-g_Y\).
+**Explanation:** Taking percentage growth rates of \(MV=PY\) gives money growth plus velocity growth approximately equal to inflation plus real-output growth. If V is constant, \(\pi\approx g_M-g_Y\).
 
 
 **Common trap:** “Money growth equals inflation” requires both stable velocity and no real-output growth, or an explicit long-run simplification.
@@ -2838,7 +2838,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Answer:** About 5%.
 
-**Explanation:** With \(g_V=0\), \(\pi\)≈\(g_M-g_Y=8\%-3\%=5\%\). The extra nominal spending not absorbed by higher real production appears as a higher price level.
+**Explanation:** With \(g_V=0\), \(\pi\approx g_M-g_Y=8\%-3\%=5\%\). The extra nominal spending not absorbed by higher real production appears as a higher price level.
 
 
 **Common trap:** Subtract real-output growth; do not simply report the money-growth rate as inflation.
@@ -3094,7 +3094,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** Give the core interest-rate channel from tighter monetary policy to aggregate demand.
 
-**Answer:** \[\text{cash rate}\uparrow\to\text{broader nominal interest rates}\uparrow\to\text{expected real interest rates}\uparrow\to\text{interest-sensitive }C\text{ and }I\downarrow\to PAE/AD\downarrow\to\text{output pressure}\downarrow\]
+**Answer:** \[\text{cash rate}\uparrow\to\text{broader nominal interest rates}\uparrow\to\text{expected real interest rates}\uparrow\; (\text{for given inflation expectations})\to\text{interest-sensitive }C\text{ and }I\downarrow\to\text{PAE/AD}\downarrow\to\text{output pressure}\downarrow\]
 
 **Explanation:** Other channels can include exchange rates, asset prices, credit and expectations, but the course’s macro model foregrounds the real interest-rate effect on consumption and investment.
 
@@ -3126,7 +3126,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Answer:** A relationship between yields/interest rates and maturity for otherwise comparable debt securities.
 
-**Explanation:** Its shape reflects expectations of future short-term rates plus term/risk premia. Monetary policy influences short rates directly and longer rates partly through expectations of the future policy path.
+**Explanation:** Its shape reflects expectations of future short-term rates plus term and risk premia. Monetary policy influences short rates directly and longer rates partly through expectations of the future policy path.
 
 
 **Common trap:** Comparing yields across very different default risks confounds maturity with credit risk.
@@ -3169,7 +3169,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** Why can a long-term interest rate differ from the average expected future short rates?
 
-**Answer:** Investors may require a term/risk premium for holding longer-maturity securities.
+**Answer:** Investors may require a term or risk premium for holding longer-maturity securities.
 
 **Explanation:** Long bonds expose holders to interest-rate and inflation uncertainty over a longer horizon. The simple expectations hypothesis abstracts from this premium; richer versions add it.
 
@@ -3579,7 +3579,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Answer:** Shift the PRF downward, lowering the real interest rate at each inflation rate and shifting AD right.
 
-**Explanation:** Lower real rates support \(C\) and \(I\), reducing the contractionary output gap. Fiscal expansion can also shift autonomous \(PAE/AD\) right.
+**Explanation:** Lower real rates support \(C\) and \(I\), reducing the contractionary output gap. Fiscal expansion can also shift autonomous \(\text{PAE/AD}\) right.
 
 
 **Common trap:** A rate cut is expansionary because it lowers r; an upward PRF shift would worsen the contraction.
@@ -3667,7 +3667,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** What happens when potential output Y* permanently falls, holding AD initially unchanged?
 
-**Answer:** The long-run sustainable output benchmark shifts left/down; the old level of Y now represents a positive output gap, creating upward inflation pressure until output adjusts to the new lower Y*.
+**Answer:** The long-run sustainable output benchmark shifts left and down; the old level of Y now represents a positive output gap, creating upward inflation pressure until output adjusts to the new lower Y*.
 
 **Explanation:** This is different from a temporary cost shock because productive capacity itself has changed. Long-run output cannot be restored by demand stimulus alone.
 
@@ -3744,7 +3744,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Answer:** b becomes larger: output responds more strongly to inflation-induced real-rate changes.
 
-**Explanation:** Stronger interest sensitivity amplifies the chain \(\pi\)→r→C/I→Y. In a graph with inflation vertical and output horizontal, be careful translating the algebraic coefficient into visual “steepness.”
+**Explanation:** Stronger interest sensitivity amplifies the chain \(\pi\to r\to C\text{ and }I\to Y\). In a graph with inflation vertical and output horizontal, be careful translating the algebraic coefficient into visual “steepness.”
 
 
 **Common trap:** Do not rely on the word “steeper” without checking which variable is on which axis; use the equation’s comparative statics.
@@ -4090,7 +4090,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Q:** With e quoted as foreign currency per domestic currency, what real exchange-rate formula is used?
 
-**Answer:** \(q = e P_domestic / P_foreign\).
+**Answer:** \(q=e\frac{P_{\text{domestic}}}{P_{\text{foreign}}}\).
 
 **Explanation:** q compares the foreign-currency price of the domestic consumption basket with the foreign basket. A rise in q is a real appreciation under this convention.
 
@@ -4421,7 +4421,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 ### ch10-004 — Rule of 70 · recall · D1
 
-**Q:** What is the rule of 70 (or roughly 69/72) for growth?
+**Q:** What is the rule of 70 (or roughly \(69\) or \(72\)) for growth?
 
 **Answer:** Doubling time in years \(\approx\frac{70}{\text{annual percentage growth rate}}\).
 
@@ -4440,7 +4440,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Answer:** About 28 years.
 
-**Explanation:** 70/2.5=28. The exact compound-growth answer is close. Such calculations highlight the power of persistent differences in growth rates.
+**Explanation:** \(\frac{70}{2.5}=28\). The exact compound-growth answer is close. Such calculations highlight the power of persistent differences in growth rates.
 
 
 **Common trap:** Do not divide 70 by 0.025.
@@ -4985,10 +4985,10 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 
 **Answer:** 2.5.
 
-**Explanation:** \(k_G=1/[1-c(1-t)]=1/[1-0.8\times0.75]=1/0.4=2.5\).
+**Explanation:** \(k_G=\frac{1}{1-c(1-t)}=\frac{1}{1-0.8\times0.75}=\frac{1}{0.4}=2.5\).
 
 
-**Common trap:** Do not use 1/(1-c)=5 when proportional taxes are present.
+**Common trap:** Do not use \(\frac{1}{1-c}=5\) when proportional taxes are present.
 
 
 **Choices:** A. 1.25 | B. 2.0 | C. 2.5 | D. 5.0
@@ -5390,7 +5390,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 **Common trap:** A graph can move “up” in PRF space while the AD curve shifts “left”; keep track of each diagram separately.
 
 
-**Choices:** A. \[\text{PRF}\uparrow\to r\downarrow\to C/I\uparrow\to\text{AD right}\] | B. \[\text{PRF}\downarrow\to r\uparrow\to C/I\downarrow\to\text{AD left}\] | C. \[\text{PRF}\uparrow\to r\uparrow\to C/I\downarrow\to\text{AD left}\] | D. \[\text{PRF}\uparrow\to r\uparrow\to C/I\uparrow\to\text{AD right}\]
+**Choices:** A. \[\text{PRF}\uparrow\to r\downarrow\to C\text{ and }I\uparrow\to\text{AD right}\] | B. \[\text{PRF}\downarrow\to r\uparrow\to C\text{ and }I\downarrow\to\text{AD left}\] | C. \[\text{PRF}\uparrow\to r\uparrow\to C\text{ and }I\downarrow\to\text{AD left}\] | D. \[\text{PRF}\uparrow\to r\uparrow\to C\text{ and }I\uparrow\to\text{AD right}\]
 **Correct:** C
 
 

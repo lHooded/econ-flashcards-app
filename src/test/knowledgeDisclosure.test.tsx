@@ -135,9 +135,7 @@ describe("question-aware knowledge disclosure", () => {
       dialog.querySelector(".knowledge-equation .katex-mathml"),
     ).toBeInTheDocument();
     expect(
-      dialog
-        .querySelector(".knowledge-equation .math-expression")
-        ?.getAttribute("aria-label"),
+      dialog.querySelector(".knowledge-equation .katex-mathml annotation")?.textContent,
     ).toMatch(/70.*annual growth rate/i);
   });
 

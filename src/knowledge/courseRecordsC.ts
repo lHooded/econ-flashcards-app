@@ -67,9 +67,9 @@ export const courseRecordsC = [
         label: "Simple holding return",
         expression: String.raw`\frac{\text{income} + \text{price gain}}{\text{price paid}}`,
         variables: [
-          { symbol: "income", meaning: "cash payment received" },
-          { symbol: "price gain", meaning: "change in market price" },
-          { symbol: "price paid", meaning: "initial asset price" },
+          { symbol: String.raw`\text{income}`, meaning: "cash payment received" },
+          { symbol: String.raw`\text{price gain}`, meaning: "change in market price" },
+          { symbol: String.raw`\text{price paid}`, meaning: "initial asset price" },
         ],
         interpretation:
           "The return is a rate; the asset’s cash payment is only one part of the return when resale is possible.",
@@ -783,11 +783,14 @@ export const courseRecordsC = [
         expression: String.raw`\text{assets} = \text{liabilities} + \text{equity}`,
         variables: [
           {
-            symbol: "assets",
+            symbol: String.raw`\text{assets}`,
             meaning: "loans, reserves, securities, and other owned claims",
           },
-          { symbol: "liabilities", meaning: "deposits and other amounts owed" },
-          { symbol: "equity", meaning: "owners’ residual claim" },
+          {
+            symbol: String.raw`\text{liabilities}`,
+            meaning: "deposits and other amounts owed",
+          },
+          { symbol: String.raw`\text{equity}`, meaning: "owners’ residual claim" },
         ],
         interpretation:
           "A balance-sheet identity must hold after every correctly recorded transaction.",
@@ -854,8 +857,8 @@ export const courseRecordsC = [
         label: "Reserve-deposit ratio",
         expression: String.raw`\frac{\text{reserves}}{\text{deposits}}`,
         variables: [
-          { symbol: "reserves", meaning: "liquid reserve assets" },
-          { symbol: "deposits", meaning: "deposit liabilities" },
+          { symbol: String.raw`\text{reserves}`, meaning: "liquid reserve assets" },
+          { symbol: String.raw`\text{deposits}`, meaning: "deposit liabilities" },
         ],
         interpretation:
           "Multiply by 100 for a percentage; use the stated reserve and deposit definitions.",

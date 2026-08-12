@@ -1,5 +1,4 @@
 import { knowledgeConceptById, knowledgeConcepts } from "../data";
-import { normalizeLegacyMathText } from "../../math/content";
 import type { KnowledgeConcept } from "../model";
 import {
   guidedCheckIdForConcept,
@@ -66,10 +65,10 @@ function makeMcqVariant(
     id: `${guidedCheckIdForConcept(conceptId)}:${draft.id}`,
     fingerprint: `${guidedCheckIdForConcept(conceptId)}:${draft.id}:${draft.prompt}`,
     requiredConceptIds: Object.freeze([...requiredConceptIds]),
-    prompt: normalizeLegacyMathText(draft.prompt),
-    choices: Object.freeze(choices.map(normalizeLegacyMathText)),
+    prompt: draft.prompt,
+    choices: Object.freeze([...choices]),
     correctChoice: (draft.correctChoice + shift) % draft.choices.length,
-    explanation: normalizeLegacyMathText(draft.explanation),
+    explanation: draft.explanation,
   });
 }
 
@@ -102,15 +101,15 @@ function normalizeGuidedVariant(variant: GuidedCheckVariant): GuidedCheckVariant
   if (variant.kind === "mcq") {
     return {
       ...variant,
-      prompt: normalizeLegacyMathText(variant.prompt),
-      choices: variant.choices.map(normalizeLegacyMathText),
-      explanation: normalizeLegacyMathText(variant.explanation),
+      prompt: variant.prompt,
+      choices: [...variant.choices],
+      explanation: variant.explanation,
     };
   }
   return {
     ...variant,
-    prompt: normalizeLegacyMathText(variant.prompt),
-    explanation: normalizeLegacyMathText(variant.explanation),
+    prompt: variant.prompt,
+    explanation: variant.explanation,
   };
 }
 

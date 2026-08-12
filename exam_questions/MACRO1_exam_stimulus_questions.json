@@ -205,7 +205,7 @@
     "stimulus": {
       "type": "econ_graph",
       "title": "Labour market with a wage floor",
-      "description": "An upward-sloping labour-supply curve S and a downward-sloping labour-demand curve D intersect at E. A dashed horizontal line labelled w̄ lies above E, with its intersections with the two curves marked Lᴅ and Lˢ.",
+      "description": "An upward-sloping labour-supply curve S and a downward-sloping labour-demand curve D intersect at E. A dashed horizontal line labelled w_f lies above E, with its intersections with the two curves marked L_D and L_S.",
       "xAxis": {
         "label": "Quantity of labour",
         "domain": [0, 100],
@@ -250,15 +250,15 @@
       ],
       "points": [
         { "id": "E", "label": "E", "x": 50, "y": 50 },
-        { "id": "LD", "label": "Lᴅ", "x": 40, "y": 60, "guideLines": ["x"] },
-        { "id": "LS", "label": "Lˢ", "x": 63.33, "y": 60, "guideLines": ["x"] }
+        { "id": "LD", "label": "L_D", "x": 40, "y": 60, "guideLines": ["x"] },
+        { "id": "LS", "label": "L_S", "x": 63.33, "y": 60, "guideLines": ["x"] }
       ],
       "referenceLines": [
         {
           "id": "w-floor",
           "orientation": "horizontal",
           "value": 60,
-          "label": "w̄",
+          "label": "w_f",
           "lineStyle": "dashed"
         }
       ]
@@ -364,7 +364,7 @@
     "choiceRationales": [
       "Ten percent is the 2024 rate, not the rate calculated from the 2025 row.",
       "This uses an incorrect denominator or numerator for the 2025 labour force.",
-      "The 2025 labour force is 1,000 and 80 / 1,000 = 8%.",
+      "The 2025 labour force is 1,000 and \\(80/1{,}000=8\\%\\).",
       "This incorrectly divides unemployment by employment rather than by the labour force."
     ],
     "reviewCardId": "ch02-004",
@@ -771,7 +771,7 @@
     "stem": "For scenario B, use \\(k=\\frac{1}{1-c+m}\\) to calculate the change in equilibrium output caused by the displayed autonomous-expenditure increase.",
     "choices": ["80", "100", "120", "160"],
     "correctChoice": 1,
-    "explanation": "For B, \\(k = 1/(1-0.8+0.2) = 2.5\\). Multiplying by the autonomous increase of 40 gives \\(\\Delta Y = 100\\).",
+    "explanation": "For B, \\(k = \\frac{1}{1-0.8+0.2} = 2.5\\). Multiplying by the autonomous increase of 40 gives \\(\\Delta Y = 100\\).",
     "choiceRationales": [
       "This does not apply the displayed multiplier parameters correctly.",
       "The multiplier is 2.5 and \\(2.5\\times40=100\\).",
@@ -796,7 +796,7 @@
         { "id": "B", "cells": ["B", "0.8", "0.2", "40"] },
         { "id": "C", "cells": ["C", "0.7", "0.1", "25"] }
       ],
-      "note": "The multiplier is \\(k = 1 / (1 - c + m)\\)."
+      "note": "The multiplier is \\(k = \\frac{1}{1-c+m}\\)."
     }
   },
   {
@@ -1158,7 +1158,7 @@
     "choiceRationales": [
       "This is below the ratio implied by 75 divided by 750.",
       "This does not match the displayed reserves and deposits.",
-      "75 / 750 = 0.10, so the ratio is 10%.",
+      "\\(75/750=0.10\\), so the ratio is 10%.",
       "This overstates the reserve share of Bank B’s deposits."
     ],
     "reviewCardId": "ch06-020",
@@ -1509,7 +1509,7 @@
     "stimulus": {
       "type": "econ_graph",
       "title": "Short-run inflation-output diagram",
-      "description": "The graph has output on the horizontal axis and inflation on the vertical axis. A downward-sloping curve labelled AD crosses a horizontal line labelled π₀ at E0 and a lower horizontal line labelled π₁ at E1. E1 lies to the right of E0.",
+      "description": "The graph has output on the horizontal axis and inflation on the vertical axis. A downward-sloping curve labelled AD crosses a horizontal line labelled π0 at E0 and a lower horizontal line labelled π1 at E1. E1 lies to the right of E0.",
       "xAxis": {
         "label": "Output, Y",
         "domain": [0, 100],
@@ -1543,7 +1543,7 @@
         },
         {
           "id": "pi0",
-          "label": "π₀",
+          "label": "π0",
           "points": [
             { "x": 0, "y": 5 },
             { "x": 100, "y": 5 }
@@ -1553,7 +1553,7 @@
         },
         {
           "id": "pi1",
-          "label": "π₁",
+          "label": "π1",
           "points": [
             { "x": 0, "y": 3.5 },
             { "x": 100, "y": 3.5 }
@@ -1733,7 +1733,7 @@
     "stimulus": {
       "type": "econ_graph",
       "title": "AUD market with a fixed exchange rate",
-      "description": "The vertical axis measures e in USD per AUD. A downward-sloping AUD-demand curve D and an upward-sloping AUD-supply curve S intersect at e=0.60. A horizontal dashed fixed-rate line labelled ē is above the intersection at e=0.75.",
+      "description": "The vertical axis measures e in USD per AUD. A downward-sloping AUD-demand curve D and an upward-sloping AUD-supply curve S intersect at e=0.60. A horizontal dashed fixed-rate line labelled e_bar is above the intersection at e=0.75.",
       "xAxis": {
         "label": "Quantity of AUD",
         "domain": [0, 100],
@@ -1783,7 +1783,7 @@
           "id": "fixed-rate",
           "orientation": "horizontal",
           "value": 0.75,
-          "label": "ē",
+          "label": "e_bar",
           "lineStyle": "dashed"
         }
       ]
@@ -1989,7 +1989,7 @@
     "choiceRationales": [
       "This underweights the capital contribution or omits part of the displayed calculation.",
       "The TFP, capital and labour contributions sum to 2% + 1.8% + 0.7% = 4.5%.",
-      "This does not apply the \\(\\alpha\\) and 1−\\(\\alpha\\) weights to the two factor-growth rates correctly.",
+      "This does not apply the \\(\\alpha\\) and \\(1-\\alpha\\) weights to the two factor-growth rates correctly.",
       "This overstates the weighted contributions and does not follow the growth-accounting identity."
     ],
     "reviewCardId": "ch10-025",
@@ -2010,7 +2010,7 @@
         { "id": "A", "cells": ["A", "4%", "2%", "0.25", "1%"] },
         { "id": "B", "cells": ["B", "6%", "1%", "0.30", "2%"] }
       ],
-      "note": "All growth rates are percentages. The labour exponent is 1−\\(\\alpha\\)."
+      "note": "All growth rates are percentages. The labour exponent is \\(1-\\alpha\\)."
     }
   }
 ]

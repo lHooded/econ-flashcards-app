@@ -1,4 +1,4 @@
-import { accessibleMathLabel, renderMathToHtml } from "../../math/markup";
+import { renderMathToHtml } from "../../math/markup";
 
 export function MathExpression({
   expression,
@@ -23,7 +23,6 @@ export function MathExpression({
   return (
     <span
       className={`math-expression ${displayMode ? "math-display" : "math-inline"}`}
-      aria-label={`Mathematical expression: ${accessibleMathLabel(expression)}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
