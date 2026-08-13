@@ -203,12 +203,12 @@ export function HomePage() {
         <StatCard
           label="Unseen"
           value={summary.unseen}
-          detail="No usable review evidence"
+          detail="No review evidence or manual override"
         />
         <StatCard
           label="Coverage"
           value={`${summary.coveragePercent}%`}
-          detail={`${summary.seen} / ${summary.total} seen`}
+          detail={`${summary.seen} / ${summary.total} covered`}
         />
         <StatCard
           label="Learned"
@@ -343,7 +343,7 @@ export function HomePage() {
         <div className="chapter-breakdown" role="table" aria-label="Chapter progress">
           <div className="chapter-row chapter-header" role="row">
             <span role="columnheader">Chapter</span>
-            <span role="columnheader">Seen</span>
+            <span role="columnheader">Covered</span>
             <span role="columnheader">Learned</span>
             <span role="columnheader">Manual-only</span>
             <span role="columnheader">Due</span>
@@ -357,7 +357,7 @@ export function HomePage() {
               <span className="chapter-name" role="cell">
                 <strong>Ch. {chapter.chapter}</strong> {chapter.name}
               </span>
-              <span data-label="Seen" role="cell">
+              <span data-label="Covered" role="cell">
                 {chapter.seen} / {chapter.total}
               </span>
               <span data-label="Learned" role="cell">

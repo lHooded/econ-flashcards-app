@@ -34,8 +34,9 @@ review events, and exam settings; scheduler state is not persisted.
 Home includes a derived **Study Time Forecast** for the cram window. It estimates
 additional active review time, review count, and elapsed time including Exam-SRS
 spacing for five transparent, operational targets: Full coverage, Working (80%
-Learned), Exam-ready (90% Learned plus every critical exam-yield card seen), Strong
-(95% Learned plus every critical card Learned), and Near-complete (100% Learned).
+operationally Learned), Exam-ready (90% operationally Learned plus every critical
+exam-yield card operationally covered), Strong (95% operationally Learned plus every
+critical card operationally Learned), and Near-complete (100% operationally Learned).
 
 The forecast calibrates overall review-cycle timing from recent chronological
 review-event timestamps and calibrates failure / weak-success / strong-success

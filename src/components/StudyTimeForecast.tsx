@@ -27,8 +27,8 @@ export function StudyTimeForecast({ forecast }: StudyTimeForecastProps) {
         <p className="section-kicker">Study time forecast</p>
         <h2 id="study-forecast-title">How far could you realistically get?</h2>
         <p className="muted-text">
-          App-defined study targets based on your recent Exam-SRS evidence, pace, and
-          spacing.
+          App-defined study targets based on your current Exam-SRS state, recent pace,
+          and spacing.
         </p>
       </div>
 
@@ -68,9 +68,11 @@ export function StudyTimeForecast({ forecast }: StudyTimeForecastProps) {
         <summary>How is this calculated?</summary>
         <div className="forecast-help-copy">
           <p>
-            These are transparent, operational study targets: coverage, Learned-card
-            thresholds, and an exam-yield critical-card constraint. Exam yield is used
-            only as an importance label, not as a mark or mastery score.
+            These are transparent, operational study targets: coverage, operational
+            Learned-card thresholds, and an exam-yield critical-card constraint. Active
+            manual learned overrides count toward operational coverage and Learned, but
+            remain separate from retrieval evidence. Exam yield is used only as an
+            importance label, not as a mark or mastery score.
           </p>
           <p>
             The forecast calibrates review-cycle timing from recent event timestamps,
@@ -127,20 +129,20 @@ function ForecastTargetRow({ target }: { readonly target: TargetForecast }) {
             <span>Current</span>
             <strong>
               {Math.round(target.currentCoverage)}% covered · {target.currentLearned}{" "}
-              Learned
+              operationally Learned
             </strong>
           </div>
           {target.id === "coverage" ? (
             <div>
               <span>Coverage target</span>
               <strong>
-                {target.currentSeen}/{target.totalCards} seen → {target.totalCards}/
-                {target.totalCards} seen
+                {target.currentSeen}/{target.totalCards} covered → {target.totalCards}/
+                {target.totalCards} covered
               </strong>
             </div>
           ) : (
             <div>
-              <span>Learned target</span>
+              <span>Operational Learned target</span>
               <strong>{target.targetLearned} cards</strong>
             </div>
           )}
@@ -179,8 +181,9 @@ function ForecastTargetRow({ target }: { readonly target: TargetForecast }) {
             <div>
               <span>Critical cards</span>
               <strong>
-                {target.currentCriticalSeen}/{target.criticalCardCount} seen ·{" "}
-                {target.currentCriticalLearned}/{target.criticalCardCount} Learned
+                {target.currentCriticalSeen}/{target.criticalCardCount} covered ·{" "}
+                {target.currentCriticalLearned}/{target.criticalCardCount} operationally
+                Learned
               </strong>
             </div>
           )}
@@ -192,12 +195,12 @@ function ForecastTargetRow({ target }: { readonly target: TargetForecast }) {
 
 function targetLabelDetail(target: TargetForecast): string {
   if (target.id === "coverage") {
-    return `${target.currentSeen}/${target.totalCards} seen · 100% coverage target`;
+    return `${target.currentSeen}/${target.totalCards} covered · 100% coverage target`;
   }
   const definition = STUDY_FORECAST_TARGETS.find(
     (candidate) => candidate.id === target.id,
   );
-  return `${definition?.learnedPercent ?? 0}% Learned target`;
+  return `${definition?.learnedPercent ?? 0}% operational Learned target`;
 }
 
 function formatDeadlineStatus(status: ForecastDeadlineStatus): string {

@@ -689,7 +689,7 @@ describe("Study Time Forecast target definitions", () => {
     .slice(0, 9);
   const cards = [criticalCard, ...ordinaryCards];
 
-  it("enforces coverage, Learned thresholds, and critical constraints", () => {
+  it("enforces operational coverage, Learned thresholds, and critical constraints", () => {
     const states = [
       state(criticalCard.id, "weak"),
       ...ordinaryCards.map((entry) => state(entry.id, "learned")),
@@ -724,7 +724,7 @@ describe("Study Time Forecast target definitions", () => {
     ).toBe(true);
   });
 
-  it("requires every card to have usable evidence for full coverage", () => {
+  it("requires every card to be operationally covered for full coverage", () => {
     const progress = getForecastTargetProgress(cards, {
       states: cards.map((entry, index) =>
         index === 0 ? state(entry.id, "unseen", 0) : state(entry.id, "learned"),
@@ -734,6 +734,31 @@ describe("Study Time Forecast target definitions", () => {
     expect(getForecastTargetDefinition("near_complete").isSatisfied(progress)).toBe(
       false,
     );
+  });
+
+  it("counts an unseen manual card as operational coverage without retrieval evidence", () => {
+    const manualCard = card("manual-only");
+    const scheduler = deriveExamSrsSnapshot(
+      [manualCard],
+      [],
+      NO_EXAM,
+      START,
+      new Set([manualCard.id]),
+    );
+    const progress = getForecastTargetProgress([manualCard], scheduler);
+    const coverage = getForecastTargetDefinition("coverage");
+
+    expect(scheduler.stateByCardId[manualCard.id]).toMatchObject({
+      reviewCount: 0,
+      isManuallyLearned: true,
+      learningState: "learned",
+      lastReviewedAt: null,
+      lastOutcome: null,
+    });
+    expect(progress).toMatchObject({ seen: 1, learned: 1 });
+    expect(coverage.isSatisfied(progress)).toBe(true);
+    expect(coverage.criterion).toContain("manually marked learned");
+    expect(coverage.criterion).not.toContain("usable review evidence");
   });
 });
 

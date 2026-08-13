@@ -184,13 +184,13 @@ and effective current time, another device can recreate the same forecast.
 
 The V1 targets are defined together in `src/study/forecast/targets.ts`:
 
-| Target        | Operational criterion                                                                                                |
-| ------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Full coverage | Every canonical card has usable review evidence; no card is `unseen`.                                                |
-| Working       | Full coverage and at least 80% of canonical cards are `learned`.                                                     |
-| Exam-ready    | Full coverage, at least 90% are `learned`, and every card whose current exam-yield tier is `critical` has been seen. |
-| Strong        | Full coverage, at least 95% are `learned`, and every current `critical` card is `learned`.                           |
-| Near-complete | 100% of canonical cards are `learned`.                                                                               |
+| Target        | Operational criterion                                                                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full coverage | Every canonical card is operationally covered: reviewed with usable evidence or manually marked learned.                                                               |
+| Working       | 100% operational coverage and at least 80% of canonical cards are operationally `learned`.                                                                            |
+| Exam-ready    | 100% operational coverage, at least 90% are operationally `learned`, and every critical exam-yield card is operationally covered.                                    |
+| Strong        | 100% operational coverage, at least 95% are operationally `learned`, and every current `critical` card is operationally `learned`.                                   |
+| Near-complete | 100% of canonical cards are operationally `learned`.                                                                                                                  |
 
 `critical` is read through the existing exam-yield API only as a transparent
 importance constraint. Its numerical score is not treated as a probability, mark,

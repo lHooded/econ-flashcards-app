@@ -38,14 +38,16 @@ export const STUDY_FORECAST_TARGETS: readonly ForecastTargetDefinition[] =
     {
       id: "coverage",
       label: "Full coverage",
-      criterion: "Every canonical card has usable review evidence.",
+      criterion:
+        "Every canonical card is operationally covered: reviewed with usable evidence or manually marked learned.",
       learnedPercent: 0,
       isSatisfied: (progress) => progress.seen === progress.total,
     },
     {
       id: "working",
       label: "Working",
-      criterion: "100% coverage and at least 80% of cards are Learned.",
+      criterion:
+        "100% operational coverage and at least 80% of cards are operationally Learned.",
       learnedPercent: 80,
       isSatisfied: (progress) =>
         progress.seen === progress.total &&
@@ -55,7 +57,7 @@ export const STUDY_FORECAST_TARGETS: readonly ForecastTargetDefinition[] =
       id: "exam_ready",
       label: "Exam-ready",
       criterion:
-        "100% coverage, at least 90% Learned, and every critical exam-yield card seen.",
+        "100% operational coverage, at least 90% operationally Learned, and every critical exam-yield card is operationally covered.",
       learnedPercent: 90,
       isSatisfied: (progress) =>
         progress.seen === progress.total &&
@@ -66,7 +68,7 @@ export const STUDY_FORECAST_TARGETS: readonly ForecastTargetDefinition[] =
       id: "strong",
       label: "Strong",
       criterion:
-        "100% coverage, at least 95% Learned, and every critical exam-yield card Learned.",
+        "100% operational coverage, at least 95% operationally Learned, and every current critical card is operationally Learned.",
       learnedPercent: 95,
       isSatisfied: (progress) =>
         progress.seen === progress.total &&
@@ -76,7 +78,7 @@ export const STUDY_FORECAST_TARGETS: readonly ForecastTargetDefinition[] =
     {
       id: "near_complete",
       label: "Near-complete",
-      criterion: "100% of canonical cards are Learned.",
+      criterion: "100% of canonical cards are operationally Learned.",
       learnedPercent: 100,
       isSatisfied: (progress) => progress.learned === progress.total,
     },
