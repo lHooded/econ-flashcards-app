@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useProgress } from "../app/progressContext";
+import type { AppSettings, ReviewEvent } from "../domain/progress";
 import { StatCard } from "../components/StatCard";
 import { cards, deck } from "../data/deck";
 import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
@@ -13,6 +14,15 @@ import { useNow } from "../utils/useNow";
 import { buildStudyHash } from "../study/studyScope";
 import { deriveMockClock } from "../exam/mock/timer";
 import { KnowledgeText } from "../components/knowledge/KnowledgeText";
+import { StudyTimeForecast } from "../components/StudyTimeForecast";
+import type { DeriveStudyTimeForecastInput } from "../study/forecast/forecast";
+import { buildForecastClockKey } from "../study/forecast/clockKey";
+import type { StudyTimeForecast as StudyTimeForecastModel } from "../study/forecast/model";
+import {
+  reduceForecastWorkerResponse,
+  type ForecastWorkerResponse,
+} from "../study/forecast/workerProtocol";
+
 import { getEffectiveManualLearned } from "../study/manualLearned";
 
 function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): string {
@@ -67,6 +77,49 @@ export function HomePage() {
           ),
     [evidenceScheduler, scheduler],
   );
+  const forecastClockKey = useMemo(
+    () =>
+      buildForecastClockKey({
+        nowMs,
+        scheduler,
+        reviewEvents: snapshot?.reviewEvents ?? null,
+        settings: snapshot?.settings ?? null,
+        manuallyLearnedCardIds: manualLearned.cardIds,
+        manuallySatisfiedConceptIds: manualLearned.coveredConceptIds,
+      }),
+    [
+      manualLearned.cardIds,
+      manualLearned.coveredConceptIds,
+      nowMs,
+      scheduler,
+      snapshot,
+    ],
+  );
+  const forecastInputs = useStableForecastInputs(
+    forecastClockKey,
+    scheduler,
+    nowMs,
+    snapshot?.reviewEvents ?? null,
+    snapshot?.settings ?? null,
+    manualLearned.coveredConceptIds,
+  );
+  const forecastRequest = useMemo<DeriveStudyTimeForecastInput | null>(
+    () =>
+      forecastInputs.scheduler === null ||
+      forecastInputs.reviewEvents === null ||
+      forecastInputs.settings === null
+        ? null
+        : {
+            cards,
+            reviewEvents: forecastInputs.reviewEvents,
+            settings: forecastInputs.settings,
+            scheduler: forecastInputs.scheduler,
+            nowMs: forecastInputs.nowMs,
+            manuallySatisfiedConceptIds: forecastInputs.manuallySatisfiedConceptIds,
+          },
+    [forecastInputs],
+  );
+  const forecastState = useStudyTimeForecast(forecastRequest);
 
   if (snapshot === null || scheduler === null || summary === null) {
     return null;
@@ -150,12 +203,12 @@ export function HomePage() {
         <StatCard
           label="Unseen"
           value={summary.unseen}
-          detail="No usable review evidence"
+          detail="No review evidence or manual override"
         />
         <StatCard
           label="Coverage"
           value={`${summary.coveragePercent}%`}
-          detail={`${summary.seen} / ${summary.total} seen`}
+          detail={`${summary.seen} / ${summary.total} covered`}
         />
         <StatCard
           label="Learned"
@@ -169,6 +222,35 @@ export function HomePage() {
           detail={`${summary.learning} still learning`}
         />
       </section>
+
+      {forecastState.error !== null ? (
+        <section className="study-time-forecast panel" role="alert">
+          <p className="section-kicker">Study time forecast</p>
+          <h2>Study forecast unavailable right now</h2>
+          <p className="muted-text">
+            Your progress is safe. The estimate could not be calculated in the
+            background, so the rest of Home remains available.
+          </p>
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={forecastState.retry}
+          >
+            Retry forecast
+          </button>
+        </section>
+      ) : forecastState.forecast === null ? (
+        <section className="study-time-forecast panel" aria-live="polite">
+          <p className="section-kicker">Study time forecast</p>
+          <h2>Calibrating your study estimate…</h2>
+          <p className="muted-text">
+            The model is checking your recent pace and Exam-SRS spacing in the
+            background.
+          </p>
+        </section>
+      ) : (
+        <StudyTimeForecast forecast={forecastState.forecast} />
+      )}
 
       <section className="quick-start panel" aria-labelledby="quick-start-title">
         <div className="panel-heading quick-start-heading">
@@ -261,7 +343,7 @@ export function HomePage() {
         <div className="chapter-breakdown" role="table" aria-label="Chapter progress">
           <div className="chapter-row chapter-header" role="row">
             <span role="columnheader">Chapter</span>
-            <span role="columnheader">Seen</span>
+            <span role="columnheader">Covered</span>
             <span role="columnheader">Learned</span>
             <span role="columnheader">Manual-only</span>
             <span role="columnheader">Due</span>
@@ -275,7 +357,7 @@ export function HomePage() {
               <span className="chapter-name" role="cell">
                 <strong>Ch. {chapter.chapter}</strong> {chapter.name}
               </span>
-              <span data-label="Seen" role="cell">
+              <span data-label="Covered" role="cell">
                 {chapter.seen} / {chapter.total}
               </span>
               <span data-label="Learned" role="cell">
@@ -329,4 +411,107 @@ export function HomePage() {
       </details>
     </div>
   );
+}
+
+function useStudyTimeForecast(request: DeriveStudyTimeForecastInput | null): {
+  readonly forecast: StudyTimeForecastModel | null;
+  readonly error: string | null;
+  readonly retry: () => void;
+} {
+  const [forecast, setForecast] = useState<StudyTimeForecastModel | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  useEffect(() => {
+    if (request === null) {
+      setForecast(null);
+      setError(null);
+      return;
+    }
+
+    setForecast(null);
+    setError(null);
+    let cancelled = false;
+    const fail = (message: string) => {
+      if (!cancelled) setError(message);
+    };
+    if (typeof Worker === "undefined") {
+      void import("../study/forecast/forecast")
+        .then(({ deriveStudyTimeForecast }) => {
+          if (!cancelled) setForecast(deriveStudyTimeForecast(request));
+        })
+        .catch(() => fail("The fallback forecast calculation failed."));
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    let worker: Worker | null = null;
+    try {
+      worker = new Worker(new URL("../study/forecast/worker.ts", import.meta.url), {
+        type: "module",
+      });
+      worker.onmessage = (event: MessageEvent<ForecastWorkerResponse>) => {
+        const result = reduceForecastWorkerResponse(event.data, cancelled);
+        if (result === null) return;
+        if (result.status === "ready") {
+          setForecast(result.forecast);
+        } else {
+          fail(result.message || "The forecast worker returned an error.");
+        }
+      };
+      worker.onerror = () => {
+        fail("The background forecast worker stopped unexpectedly.");
+      };
+      worker.onmessageerror = () => {
+        fail("The forecast result could not be read.");
+      };
+      worker.postMessage(request);
+    } catch {
+      fail("The background forecast worker could not be started.");
+      worker?.terminate();
+      worker = null;
+    }
+    return () => {
+      cancelled = true;
+      worker?.terminate();
+    };
+  }, [request, retryCount]);
+
+  return {
+    forecast,
+    error,
+    retry: () => {
+      setRetryCount((count) => count + 1);
+    },
+  };
+}
+
+function useStableForecastInputs(
+  clockKey: string,
+  scheduler: ReturnType<typeof deriveExamSrsSnapshot> | null,
+  nowMs: number,
+  reviewEvents: readonly ReviewEvent[] | null,
+  settings: AppSettings | null,
+  manuallySatisfiedConceptIds: ReadonlySet<string>,
+) {
+  const inputs = useRef({
+    clockKey: "",
+    scheduler,
+    nowMs,
+    reviewEvents,
+    settings,
+    manuallySatisfiedConceptIds,
+  });
+  if (inputs.current.clockKey !== clockKey) {
+    inputs.current = {
+      clockKey,
+      scheduler,
+      nowMs,
+      reviewEvents,
+      settings,
+      manuallySatisfiedConceptIds,
+    };
+  }
+  return inputs.current;
 }

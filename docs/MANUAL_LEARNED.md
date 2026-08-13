@@ -56,9 +56,11 @@ failure or due state.
 Manual exclusions count toward operational coverage and the operational learned
 summary, while the canonical deck denominator remains unchanged. Home and chapter
 summaries distinguish evidence-derived learned cards from manual-only cards; a manual
-assertion is never retrieval evidence. Forecast and other simulation consumers should
-use the override-aware snapshot and short-circuit cards with `isManuallyLearned: true`
-instead of deriving a future due date from preserved history.
+assertion is never retrieval evidence. The Study Time Forecast uses the override-aware
+snapshot, short-circuits cards with `isManuallyLearned: true`, and receives
+`coveredConceptIds` for prerequisite guidance instead of deriving future due dates from
+preserved history. Restoring an override returns both normal study and the forecast to
+the unchanged evidence-derived state.
 
 ## Persistence, backup, and sync
 

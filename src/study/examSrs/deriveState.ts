@@ -23,10 +23,10 @@ export interface ReviewEvidence {
   readonly strengthDelta: number;
 }
 
-interface LatestEvidence {
-  readonly event: ReviewEvent;
+interface DueEvidence {
   readonly outcome: SchedulerOutcome;
   readonly resultingStrength: number;
+  readonly reviewedAtMs: number;
 }
 
 export function getStudyDeadlineMs(settings: AppSettings): number | null {
@@ -115,6 +115,111 @@ export function deriveLearningState(
   return strength < 2 ? "learning" : "learned";
 }
 
+export interface AdvanceExamSrsCardStateInput {
+  readonly previousState: ExamSrsCardState;
+  readonly evidence: ReviewEvidence;
+  readonly reviewedAtMs: number;
+  /** Preserve an imported timestamp spelling when reconstructing history. */
+  readonly reviewedAt?: string;
+  readonly settings: AppSettings;
+  readonly nowMs: number;
+  /** Historical reviewCount includes unusable events; simulation passes its own count. */
+  readonly reviewCount?: number;
+}
+
+export function createInitialExamSrsCardState(cardId: string): ExamSrsCardState {
+  return {
+    cardId,
+    learningState: "unseen",
+    strength: 0,
+    reviewCount: 0,
+    lastReviewedAt: null,
+    lastOutcome: null,
+    dueAt: null,
+    isDue: false,
+  };
+}
+
+/**
+ * Apply one usable review outcome using the authoritative Exam-SRS rules.
+ * Historical reconstruction and forecast simulation both call this primitive.
+ */
+export function advanceExamSrsCardState(
+  input: AdvanceExamSrsCardStateInput,
+): ExamSrsCardState {
+  const { evidence, previousState } = input;
+  const strength =
+    evidence.outcome === "failure"
+      ? 0
+      : Math.min(6, previousState.strength + evidence.strengthDelta);
+  const learningState = deriveLearningState(evidence.outcome, strength);
+  const dueAtMs = deriveDueAtMs(
+    {
+      outcome: evidence.outcome,
+      resultingStrength: strength,
+      reviewedAtMs: input.reviewedAtMs,
+    },
+    learningState,
+    input.settings,
+    input.nowMs,
+  );
+
+  return {
+    cardId: previousState.cardId,
+    learningState,
+    strength,
+    reviewCount: input.reviewCount ?? previousState.reviewCount + 1,
+    lastReviewedAt: input.reviewedAt ?? new Date(input.reviewedAtMs).toISOString(),
+    lastOutcome: evidence.outcome,
+    dueAt: new Date(dueAtMs).toISOString(),
+    isDue: dueAtMs <= input.nowMs,
+  };
+}
+
+/**
+ * Recompute only the time-sensitive due fields from compact derived state.
+ * This lets a forward simulation cross cram, buffer, and post-exam boundaries
+ * without replaying the complete historical ReviewEvent list.
+ */
+export function refreshExamSrsCardStateAt(
+  state: ExamSrsCardState,
+  settings: AppSettings,
+  nowMs: number,
+): ExamSrsCardState {
+  // Manual learned is an operational exclusion, not a new retrieval event.
+  // In particular, do not let a phase change resurrect historical evidence as
+  // a due card while the learner-authored override is active.
+  if (state.isManuallyLearned === true) {
+    return state;
+  }
+
+  if (state.lastOutcome === null || state.lastReviewedAt === null) {
+    return state;
+  }
+
+  const reviewedAtMs = Date.parse(state.lastReviewedAt);
+  if (!Number.isFinite(reviewedAtMs)) {
+    return state;
+  }
+
+  const dueAtMs = deriveDueAtMs(
+    {
+      outcome: state.lastOutcome,
+      resultingStrength: state.strength,
+      reviewedAtMs,
+    },
+    state.learningState,
+    settings,
+    nowMs,
+  );
+
+  return {
+    ...state,
+    dueAt: new Date(dueAtMs).toISOString(),
+    isDue: dueAtMs <= nowMs,
+  };
+}
+
 export function deriveCardState(
   cardId: string,
   reviews: readonly ReviewEvent[],
@@ -124,75 +229,40 @@ export function deriveCardState(
 ): ExamSrsCardState {
   const isManuallyLearned = manuallyLearnedCardIds?.has(cardId) === true;
   const chronologicalReviews = [...reviews].sort(compareReviewEventsChronologically);
-  let strength = 0;
-  let latestEvidence: LatestEvidence | null = null;
+  let state = createInitialExamSrsCardState(cardId);
 
-  for (const review of chronologicalReviews) {
+  for (const [index, review] of chronologicalReviews.entries()) {
     const evidence = deriveReviewEvidence(review);
-    if (evidence === null || !Number.isFinite(Date.parse(review.reviewedAt))) {
+    const reviewedAtMs = Date.parse(review.reviewedAt);
+    if (evidence === null || !Number.isFinite(reviewedAtMs)) {
       continue;
     }
 
-    strength =
-      evidence.outcome === "failure"
-        ? 0
-        : Math.min(6, strength + evidence.strengthDelta);
-    latestEvidence = {
-      event: review,
-      outcome: evidence.outcome,
-      resultingStrength: strength,
-    };
+    state = advanceExamSrsCardState({
+      previousState: state,
+      evidence,
+      reviewedAtMs,
+      reviewedAt: review.reviewedAt,
+      settings,
+      nowMs,
+      reviewCount: index + 1,
+    });
   }
 
-  if (latestEvidence === null) {
-    return {
-      cardId,
-      learningState: isManuallyLearned ? "learned" : "unseen",
-      strength: 0,
-      reviewCount: chronologicalReviews.length,
-      lastReviewedAt: null,
-      lastOutcome: null,
-      dueAt: null,
-      isDue: false,
-      ...(isManuallyLearned ? { isManuallyLearned: true } : {}),
-    };
+  const evidenceDerivedState = { ...state, reviewCount: chronologicalReviews.length };
+  if (!isManuallyLearned) {
+    return evidenceDerivedState;
   }
 
-  const learningState = deriveLearningState(
-    latestEvidence.outcome,
-    latestEvidence.resultingStrength,
-  );
-  // Manual exclusion supersedes the operational state without changing the
-  // evidence fields above. Return before due-date derivation so refresh and
-  // simulation code cannot accidentally schedule this card again.
-  if (isManuallyLearned) {
-    return {
-      cardId,
-      learningState: "learned",
-      strength: latestEvidence.resultingStrength,
-      reviewCount: chronologicalReviews.length,
-      lastReviewedAt: latestEvidence.event.reviewedAt,
-      lastOutcome: latestEvidence.outcome,
-      dueAt: null,
-      isDue: false,
-      isManuallyLearned: true,
-    };
-  }
-
-  const dueAtMs = deriveDueAtMs(latestEvidence, learningState, settings, nowMs);
-  const dueAt = new Date(dueAtMs).toISOString();
-
-  const derived: ExamSrsCardState = {
-    cardId,
-    learningState,
-    strength: latestEvidence.resultingStrength,
-    reviewCount: chronologicalReviews.length,
-    lastReviewedAt: latestEvidence.event.reviewedAt,
-    lastOutcome: latestEvidence.outcome,
-    dueAt,
-    isDue: dueAtMs <= nowMs,
+  // Preserve every evidence-derived field above; only overlay the operational
+  // exclusion. No synthetic ReviewEvent or strength change is created.
+  return {
+    ...evidenceDerivedState,
+    learningState: "learned",
+    dueAt: null,
+    isDue: false,
+    isManuallyLearned: true,
   };
-  return derived;
 }
 
 export function deriveExamSrsSnapshot(
@@ -228,12 +298,12 @@ export function deriveExamSrsSnapshot(
 }
 
 function deriveDueAtMs(
-  latestEvidence: LatestEvidence,
+  latestEvidence: DueEvidence,
   learningState: LearningState,
   settings: AppSettings,
   nowMs: number,
 ): number {
-  const reviewedAtMs = Date.parse(latestEvidence.event.reviewedAt);
+  const reviewedAtMs = latestEvidence.reviewedAtMs;
   const baseIntervalMs = getBaseIntervalMs(
     latestEvidence.outcome,
     latestEvidence.resultingStrength,

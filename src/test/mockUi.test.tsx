@@ -14,6 +14,13 @@ import {
   type MockQuestionAttemptState,
 } from "../exam/mock/model";
 
+function normalizeRenderedText(text: string): string {
+  return text
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function writingAttempt(id: string, createdOffsetMs = 15 * 60 * 1000): MockAttempt {
   return createMockAttempt({
     ...buildMockExam({ bank: examQuestions, seed: id }),
@@ -632,13 +639,19 @@ describe("mock and Practice Lab interactions", () => {
         <PracticePage initialMode="mcq" />
       </ProgressContext.Provider>,
     );
-    const stem = screen.getByRole("heading", { level: 2 }).textContent;
+    const originalStem = normalizeRenderedText(
+      screen.getByRole("heading", { level: 2 }).textContent ?? "",
+    );
     await user.click(screen.getAllByRole("radio")[0]);
     await user.click(screen.getByRole("button", { name: "Submit answer" }));
     expect(screen.getByRole("button", { name: "Change format" })).toBeDisabled();
     expect(screen.getByLabelText("Chapter")).toBeDisabled();
     expect(screen.getByRole("button", { name: "New set" })).toBeDisabled();
-    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(stem ?? "");
+    expect(
+      normalizeRenderedText(
+        screen.getByRole("heading", { level: 2 }).textContent ?? "",
+      ),
+    ).toBe(originalStem);
 
     pending.reject(new Error("practice save unavailable"));
     await waitFor(() =>

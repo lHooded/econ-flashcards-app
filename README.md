@@ -29,6 +29,56 @@ review events, and exam settings; scheduler state is not persisted.
 - Recall cards retain `Forgot`, `Struggled`, and `Got it` self-ratings. Authored MCQs
   use objective grading and retain the failed-save retry flow and exact retry payload.
 
+### Study Time Forecast
+
+Home includes a derived **Study Time Forecast** for the cram window. It estimates
+additional active review time, review count, and elapsed time including Exam-SRS
+spacing for five transparent, operational targets: Full coverage, Working (80%
+operationally Learned), Exam-ready (90% operationally Learned plus every critical
+exam-yield card operationally covered), Strong (95% operationally Learned plus every
+critical card operationally Learned), and Near-complete (100% operationally Learned).
+
+The forecast calibrates overall review-cycle timing from recent chronological
+review-event timestamps and calibrates failure / weak-success / strong-success
+outcomes from the most recent 300 usable observations, replaying older history first
+so each outcome keeps its true preceding learning bucket. Sparse outcome evidence is
+smoothed hierarchically through fallback prior → global learner → mode family →
+learning bucket, so one success or failure cannot collapse the model to 0%/100%.
+Timestamp gaps are not treated as reliable recall-versus-MCQ cycle times; the
+simulation uses one global pace distribution across canonical modes. Sparse pace
+history is regularised with conservative fallback pseudo-samples and becomes
+increasingly empirical as real gaps accumulate. A deterministic seeded simulation
+reuses normal Exam-SRS selection, transitions, recent-card avoidance, prerequisite
+guidance, and deadline intervals. It samples the full calibrated pace distribution
+after break filtering and sparse-history regularisation, then reports empirical
+20th-percentile, median, and 80th-percentile
+model quantiles where censoring makes them identifiable—not a statistical confidence
+interval. Displayed confidence describes calibration evidence only.
+
+Runs that do not reach a target within the defensive review-count or elapsed-time
+horizon are censored, not assigned an invented completion time. Completed trajectories
+provide observed completion times while censored trajectories establish that the
+target took longer than the model horizon. Each requested quantile is shown only when
+mathematically identifiable after accounting for the completion fraction; an
+unresolved median is not used for deadline recommendations. Recommendations choose
+the highest target with an identifiable median before the effective study deadline,
+then the highest such target before the exam if the buffer is needed. A worker
+calculation failure is a temporary forecast-availability issue; it does not affect
+saved progress and can be retried.
+
+When a manual learned override is active, its card is operationally complete for these
+targets and is excluded from forward simulation; direct manual concept satisfaction is
+also supplied to prerequisite guidance. This is not retrieval evidence. Restoring an
+override immediately returns the forecast to the unchanged historical ReviewEvents,
+without manufacturing or deleting an event.
+
+Forecast state is never persisted. It is recreated from the canonical cards, review
+events, exam settings, effective manual card/concept exclusions, model version, and
+current time. Active study time excludes
+waiting for due intervals, while elapsed time includes that spacing. The Study Time
+Forecast is not a predicted exam mark, probability of recall, or guarantee of exam
+performance.
+
 ### Focused study
 
 The Study page has one small, optional focus scope. **Smart** is the recommended
