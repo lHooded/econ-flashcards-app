@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useProgress } from "../app/progressContext";
+import type { AppSettings, ReviewEvent } from "../domain/progress";
 import { StatCard } from "../components/StatCard";
 import { cards, deck } from "../data/deck";
 import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
@@ -15,14 +16,14 @@ import { deriveMockClock } from "../exam/mock/timer";
 import { KnowledgeText } from "../components/knowledge/KnowledgeText";
 import { StudyTimeForecast } from "../components/StudyTimeForecast";
 import type { DeriveStudyTimeForecastInput } from "../study/forecast/forecast";
+import { buildForecastClockKey } from "../study/forecast/clockKey";
 import type { StudyTimeForecast as StudyTimeForecastModel } from "../study/forecast/model";
 import {
   reduceForecastWorkerResponse,
   type ForecastWorkerResponse,
 } from "../study/forecast/workerProtocol";
-import { MINUTE_MS } from "../study/examSrs/intervals";
 
-const FORECAST_CLOCK_BUCKET_MS = 5 * MINUTE_MS;
+import { getEffectiveManualLearned } from "../study/manualLearned";
 
 function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): string {
   switch (phase) {
@@ -40,7 +41,24 @@ function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): s
 export function HomePage() {
   const { snapshot } = useProgress();
   const nowMs = useNow();
+  const manualLearned = useMemo(
+    () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
+    [snapshot?.manualLearnedOverrides],
+  );
   const scheduler = useMemo(
+    () =>
+      snapshot === null
+        ? null
+        : deriveExamSrsSnapshot(
+            cards,
+            snapshot.reviewEvents,
+            snapshot.settings,
+            nowMs,
+            manualLearned.cardIds,
+          ),
+    [manualLearned.cardIds, nowMs, snapshot],
+  );
+  const evidenceScheduler = useMemo(
     () =>
       snapshot === null
         ? null
@@ -49,54 +67,57 @@ export function HomePage() {
   );
   const summary = useMemo(
     () =>
-      scheduler === null
+      scheduler === null || evidenceScheduler === null
         ? null
-        : summarizeExamSrs(cards, scheduler, deck.metadata.chapterNames),
-    [scheduler],
+        : summarizeExamSrs(
+            cards,
+            scheduler,
+            deck.metadata.chapterNames,
+            evidenceScheduler,
+          ),
+    [evidenceScheduler, scheduler],
   );
   const forecastClockKey = useMemo(
     () =>
-      scheduler === null
-        ? "loading"
-        : [
-            Math.floor(nowMs / FORECAST_CLOCK_BUCKET_MS),
-            scheduler.phase,
-            scheduler.states
-              .filter((state) => state.isDue)
-              .map((state) => state.cardId)
-              .join(","),
-            snapshot?.reviewEvents
-              .map((review) =>
-                [
-                  review.id,
-                  review.cardId,
-                  review.reviewedAt,
-                  review.mode,
-                  review.correct,
-                  review.rating,
-                  review.responseTimeMs,
-                  review.selectedChoice,
-                ].join(":"),
-              )
-              .join(",") ?? "loading",
-            snapshot?.settings.examAt ?? "no-exam",
-            snapshot?.settings.studyBufferHours ?? "loading",
-          ].join("|"),
-    [nowMs, scheduler, snapshot],
+      buildForecastClockKey({
+        nowMs,
+        scheduler,
+        reviewEvents: snapshot?.reviewEvents ?? null,
+        settings: snapshot?.settings ?? null,
+        manuallyLearnedCardIds: manualLearned.cardIds,
+        manuallySatisfiedConceptIds: manualLearned.coveredConceptIds,
+      }),
+    [
+      manualLearned.cardIds,
+      manualLearned.coveredConceptIds,
+      nowMs,
+      scheduler,
+      snapshot,
+    ],
   );
-  const forecastInputs = useStableForecastInputs(forecastClockKey, scheduler, nowMs);
+  const forecastInputs = useStableForecastInputs(
+    forecastClockKey,
+    scheduler,
+    nowMs,
+    snapshot?.reviewEvents ?? null,
+    snapshot?.settings ?? null,
+    manualLearned.coveredConceptIds,
+  );
   const forecastRequest = useMemo<DeriveStudyTimeForecastInput | null>(
     () =>
-      snapshot === null || forecastInputs.scheduler === null
+      forecastInputs.scheduler === null ||
+      forecastInputs.reviewEvents === null ||
+      forecastInputs.settings === null
         ? null
         : {
             cards,
-            reviewEvents: snapshot.reviewEvents,
-            settings: snapshot.settings,
+            reviewEvents: forecastInputs.reviewEvents,
+            settings: forecastInputs.settings,
             scheduler: forecastInputs.scheduler,
             nowMs: forecastInputs.nowMs,
+            manuallySatisfiedConceptIds: forecastInputs.manuallySatisfiedConceptIds,
           },
-    [forecastInputs, snapshot],
+    [forecastInputs],
   );
   const forecastState = useStudyTimeForecast(forecastRequest);
 
@@ -192,7 +213,7 @@ export function HomePage() {
         <StatCard
           label="Learned"
           value={`${summary.learned} / ${summary.total}`}
-          detail="Cards at current criterion"
+          detail={`${summary.evidenceLearned} from retrieval · ${summary.manuallyLearnedOnly} manual-only`}
         />
         <StatCard label="Due now" value={summary.dueNow} detail="Scheduled reviews" />
         <StatCard
@@ -324,6 +345,7 @@ export function HomePage() {
             <span role="columnheader">Chapter</span>
             <span role="columnheader">Seen</span>
             <span role="columnheader">Learned</span>
+            <span role="columnheader">Manual-only</span>
             <span role="columnheader">Due</span>
           </div>
           {summary.chapterSummaries.map((chapter) => (
@@ -340,6 +362,9 @@ export function HomePage() {
               </span>
               <span data-label="Learned" role="cell">
                 {chapter.learned} / {chapter.total}
+              </span>
+              <span data-label="Manual-only" role="cell">
+                {chapter.manuallyLearnedOnly}
               </span>
               <span data-label="Due" role="cell">
                 {chapter.dueNow}
@@ -466,10 +491,27 @@ function useStableForecastInputs(
   clockKey: string,
   scheduler: ReturnType<typeof deriveExamSrsSnapshot> | null,
   nowMs: number,
+  reviewEvents: readonly ReviewEvent[] | null,
+  settings: AppSettings | null,
+  manuallySatisfiedConceptIds: ReadonlySet<string>,
 ) {
-  const inputs = useRef({ clockKey: "", scheduler, nowMs });
+  const inputs = useRef({
+    clockKey: "",
+    scheduler,
+    nowMs,
+    reviewEvents,
+    settings,
+    manuallySatisfiedConceptIds,
+  });
   if (inputs.current.clockKey !== clockKey) {
-    inputs.current = { clockKey, scheduler, nowMs };
+    inputs.current = {
+      clockKey,
+      scheduler,
+      nowMs,
+      reviewEvents,
+      settings,
+      manuallySatisfiedConceptIds,
+    };
   }
   return inputs.current;
 }

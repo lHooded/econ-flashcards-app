@@ -92,6 +92,8 @@ export function simulateStudyForecast(input: {
   readonly pace: PaceCalibration;
   readonly outcomes: OutcomeCalibration;
   readonly seed: number;
+  /** Directly satisfied concepts supplied by application state. */
+  readonly manuallySatisfiedConceptIds?: ReadonlySet<string>;
   readonly runCount?: number;
   readonly maxReviewsPerRun?: number;
   /** Test hook; production uses the named defensive horizon above. */
@@ -172,6 +174,7 @@ function simulateOneRun(input: {
   readonly maxReviewsPerRun: number;
   readonly maxElapsedMs: number;
   readonly progress: ReturnType<typeof getForecastTargetProgress>;
+  readonly manuallySatisfiedConceptIds?: ReadonlySet<string>;
   readonly random: { next: () => number };
 }): {
   readonly completions: Map<ForecastTargetId, SimulationCompletion>;
@@ -213,6 +216,8 @@ function simulateOneRun(input: {
   const prerequisiteTracker = createCardPrerequisiteReadinessTracker(
     input.cards,
     scheduler,
+    undefined,
+    input.manuallySatisfiedConceptIds,
   );
 
   while (

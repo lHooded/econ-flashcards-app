@@ -9,13 +9,24 @@ import {
   type NewReviewEvent,
   type ReviewEvent,
 } from "../domain/progress";
-import { validateLessonSeenConceptIds, type ProgressBackupV2 } from "../domain/backup";
+import { validateLessonSeenConceptIds, type ProgressBackupV3 } from "../domain/backup";
+import {
+  isManualLearnedKind,
+  manualLearnedKey,
+  parseStoredManualLearnedOverride,
+  validateManualLearnedOverrides,
+  type ManualLearnedKind,
+  type ManualLearnedOverride,
+} from "../domain/manualLearned";
 import { validateMockAttempt, type MockAttempt } from "../exam/mock/model";
+import { examQuestions } from "../exam/questionBank";
+import { cardIds } from "../data/deck";
 import { knowledgeConceptIds } from "../knowledge/data";
 import {
   openProgressDatabase,
   SETTINGS_KEY,
   type GuidedLessonSeenRecord,
+  type ManualLearnedOverrideRecord,
   type SettingsRecord,
 } from "./database";
 import { createDisconnectedSyncConfig, validateSyncConfig } from "./syncRepository";
@@ -40,14 +51,28 @@ export interface RecordedReview {
   readonly cardState: CardState;
 }
 
+export interface ManualLearnedTargetIds {
+  readonly cardIds?: ReadonlySet<string>;
+  readonly conceptIds?: ReadonlySet<string>;
+  readonly questionIds?: ReadonlySet<string>;
+}
+
 export class ProgressRepository {
   private readonly database: ReturnType<typeof openProgressDatabase>;
+  private readonly validManualCardIds: ReadonlySet<string>;
+  private readonly validManualConceptIds: ReadonlySet<string>;
+  private readonly validManualQuestionIds: ReadonlySet<string>;
 
   public constructor(
     private readonly validCardIds: ReadonlySet<string>,
     databaseName?: string,
+    targetIds: ManualLearnedTargetIds = {},
   ) {
     this.database = openProgressDatabase(databaseName);
+    this.validManualCardIds = targetIds.cardIds ?? new Set(cardIds);
+    this.validManualConceptIds = targetIds.conceptIds ?? knowledgeConceptIds;
+    this.validManualQuestionIds =
+      targetIds.questionIds ?? new Set(examQuestions.map((question) => question.id));
   }
 
   public async load(): Promise<{
@@ -55,10 +80,17 @@ export class ProgressRepository {
     cardStates: CardState[];
     reviews: ReviewEvent[];
     lessonSeenConceptIds: string[];
+    manualLearnedOverrides: ManualLearnedOverride[];
   }> {
     const database = await this.database;
     const transaction = database.transaction(
-      ["settings", "cardStates", "reviewEvents", "guidedLessonSeen"],
+      [
+        "settings",
+        "cardStates",
+        "reviewEvents",
+        "guidedLessonSeen",
+        "manualLearnedOverrides",
+      ],
       "readonly",
     );
     const settingsRecord = (await transaction
@@ -73,6 +105,9 @@ export class ProgressRepository {
     const lessonSeenRecords = (await transaction
       .objectStore("guidedLessonSeen")
       .getAll()) as GuidedLessonSeenRecord[];
+    const manualLearnedRecords = (await transaction
+      .objectStore("manualLearnedOverrides")
+      .getAll()) as unknown[];
     await transaction.done;
 
     // IndexedDB returns reviewEvents in primary-key order, but IDs are random.
@@ -84,6 +119,20 @@ export class ProgressRepository {
       cardStates,
       reviews,
       lessonSeenConceptIds: lessonSeenRecords.map((record) => record.conceptId).sort(),
+      // Local IndexedDB is a trust boundary too. Ignore malformed rows rather
+      // than allowing an invalid kind or key to become an effective override;
+      // structurally valid orphan targets remain stored and are ignored only by
+      // the content-aware resolver.
+      manualLearnedOverrides: manualLearnedRecords
+        .flatMap((record) => {
+          if (typeof record !== "object" || record === null || Array.isArray(record)) {
+            return [];
+          }
+          const row = record as { readonly key?: unknown };
+          const parsed = parseStoredManualLearnedOverride(record, row.key);
+          return parsed === null ? [] : [parsed];
+        })
+        .sort(compareManualLearnedOverrides),
     };
   }
 
@@ -96,6 +145,41 @@ export class ProgressRepository {
 
     const database = await this.database;
     await database.put("guidedLessonSeen", { conceptId });
+  }
+
+  public async markLearnedPermanently(
+    kind: ManualLearnedKind,
+    targetId: string,
+  ): Promise<ManualLearnedOverride> {
+    this.validateManualLearnedTarget(kind, targetId);
+    const override: ManualLearnedOverride = {
+      kind,
+      targetId,
+      createdAt: new Date().toISOString(),
+    };
+    const key = manualLearnedKey(kind, targetId);
+    const database = await this.database;
+    const transaction = database.transaction("manualLearnedOverrides", "readwrite");
+    const existing = (await transaction.store.get(key)) as
+      ManualLearnedOverrideRecord | undefined;
+    const existingOverride =
+      existing === undefined ? null : parseStoredManualLearnedOverride(existing, key);
+    if (existingOverride === null) {
+      transaction.store.put({ ...override, key });
+    }
+    await transaction.done;
+    return existingOverride ?? override;
+  }
+
+  public async restoreManualLearned(
+    kind: ManualLearnedKind,
+    targetId: string,
+  ): Promise<void> {
+    if (!isManualLearnedKind(kind) || targetId.trim().length === 0) {
+      throw new Error("Manual learned override target is invalid.");
+    }
+    const database = await this.database;
+    await database.delete("manualLearnedOverrides", manualLearnedKey(kind, targetId));
   }
 
   public async saveSettings(settings: AppSettings): Promise<void> {
@@ -360,7 +444,7 @@ export class ProgressRepository {
     return { event, cardState };
   }
 
-  public async replaceAll(backup: ProgressBackupV2): Promise<void> {
+  public async replaceAll(backup: ProgressBackupV3): Promise<void> {
     for (const state of backup.cardStates) {
       if (!this.validCardIds.has(state.cardId)) {
         throw new Error(`Cannot import unknown card ID "${state.cardId}".`);
@@ -378,6 +462,12 @@ export class ProgressRepository {
       backup.lessonSeenConceptIds ?? [],
       knowledgeConceptIds,
     );
+    const manualLearnedOverrides = validateManualLearnedOverrides(
+      backup.manualLearnedOverrides ?? [],
+      this.validManualCardIds,
+      this.validManualQuestionIds,
+      this.validManualConceptIds,
+    );
 
     const database = await this.database;
     const transaction = database.transaction(
@@ -388,6 +478,7 @@ export class ProgressRepository {
         "mockAttempts",
         "syncConfig",
         "guidedLessonSeen",
+        "manualLearnedOverrides",
       ],
       "readwrite",
     );
@@ -400,6 +491,7 @@ export class ProgressRepository {
     transaction.objectStore("reviewEvents").clear();
     transaction.objectStore("mockAttempts").clear();
     transaction.objectStore("guidedLessonSeen").clear();
+    transaction.objectStore("manualLearnedOverrides").clear();
     transaction.objectStore("settings").put({
       key: SETTINGS_KEY,
       value: backup.settings,
@@ -416,6 +508,13 @@ export class ProgressRepository {
     for (const attempt of backup.mockAttempts) mockStore.put(attempt);
     const lessonSeenStore = transaction.objectStore("guidedLessonSeen");
     for (const conceptId of lessonSeenConceptIds) lessonSeenStore.put({ conceptId });
+    const manualLearnedStore = transaction.objectStore("manualLearnedOverrides");
+    for (const override of manualLearnedOverrides) {
+      manualLearnedStore.put({
+        ...override,
+        key: manualLearnedKey(override.kind, override.targetId),
+      });
+    }
     if (syncRecord?.group !== null && syncRecord !== undefined) {
       syncStore.put({
         ...syncRecord,
@@ -532,6 +631,7 @@ export class ProgressRepository {
         "mockAttempts",
         "syncConfig",
         "guidedLessonSeen",
+        "manualLearnedOverrides",
       ],
       "readwrite",
     );
@@ -543,6 +643,7 @@ export class ProgressRepository {
     transaction.objectStore("reviewEvents").clear();
     transaction.objectStore("mockAttempts").clear();
     transaction.objectStore("guidedLessonSeen").clear();
+    transaction.objectStore("manualLearnedOverrides").clear();
     if (syncRecord !== undefined) {
       transaction
         .objectStore("syncConfig")
@@ -566,6 +667,32 @@ export class ProgressRepository {
     const database = await this.database;
     database.close();
   }
+
+  private validateManualLearnedTarget(kind: ManualLearnedKind, targetId: string): void {
+    if (!isManualLearnedKind(kind) || targetId.trim().length === 0) {
+      throw new Error("Manual learned override target is invalid.");
+    }
+    const validTargets =
+      kind === "card"
+        ? this.validManualCardIds
+        : kind === "concept"
+          ? this.validManualConceptIds
+          : this.validManualQuestionIds;
+    if (!validTargets.has(targetId)) {
+      throw new Error(`Cannot mark unknown ${kind} ID "${targetId}" as learned.`);
+    }
+  }
+}
+
+function compareManualLearnedOverrides(
+  left: ManualLearnedOverride,
+  right: ManualLearnedOverride,
+): number {
+  return (
+    left.kind.localeCompare(right.kind) ||
+    left.targetId.localeCompare(right.targetId) ||
+    Date.parse(left.createdAt) - Date.parse(right.createdAt)
+  );
 }
 
 function settingsEqual(left: AppSettings, right: AppSettings): boolean {

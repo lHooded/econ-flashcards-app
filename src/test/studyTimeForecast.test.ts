@@ -27,6 +27,7 @@ import {
   deriveStudyTimeForecast,
   makeForecastRecommendation,
 } from "../study/forecast/forecast";
+import { buildForecastClockKey } from "../study/forecast/clockKey";
 import { sampleCycleMs, simulateStudyForecast } from "../study/forecast/simulate";
 import { createSeededRandom } from "../study/forecast/random";
 import {
@@ -36,6 +37,8 @@ import {
 import { reduceForecastWorkerResponse } from "../study/forecast/workerProtocol";
 import type { StudyTimeForecast, TargetForecast } from "../study/forecast/model";
 import type { ExamSrsCardState, ExamSrsSnapshot } from "../study/examSrs/model";
+import { createCardPrerequisiteReadinessTracker } from "../knowledge/mastery";
+import { knowledgeConceptById } from "../knowledge/data";
 
 const MINUTE_MS = 60 * 1000;
 
@@ -734,6 +737,195 @@ describe("Study Time Forecast target definitions", () => {
   });
 });
 
+describe("Study Time Forecast manual learned integration", () => {
+  it("keeps an overridden card excluded across every finite-horizon phase", () => {
+    const manualCard = realCards.find((entry) => entry.id === "ch01-001")!;
+    const failure = review("manual-failure", manualCard.id, START - 11 * MINUTE_MS, {
+      correct: false,
+      rating: "forgot",
+    });
+    const settings = {
+      examAt: new Date(START + 6 * 60 * MINUTE_MS).toISOString(),
+      studyBufferHours: 2,
+    } as const;
+    const manualSet = new Set([manualCard.id]);
+    const scheduler = deriveExamSrsSnapshot(
+      [manualCard],
+      [failure],
+      settings,
+      START,
+      manualSet,
+    );
+    const original = scheduler.stateByCardId[manualCard.id];
+    expect(original).toMatchObject({
+      learningState: "learned",
+      reviewCount: 1,
+      lastOutcome: "failure",
+      dueAt: null,
+      isDue: false,
+      isManuallyLearned: true,
+    });
+
+    const mutable = mutableSnapshotFor([manualCard], [original]);
+    const cached = createExamSrsForecastSelector({
+      cards: [manualCard],
+      scheduler: mutable,
+      coverage: getExamSrsCoverage([manualCard], mutable.states),
+    });
+    for (const virtualNowMs of [
+      START,
+      START + 5 * 60 * MINUTE_MS,
+      START + 7 * 60 * MINUTE_MS,
+    ]) {
+      mutable.phase = deriveExamPhase(settings, virtualNowMs);
+      const refreshed = refreshExamSrsCardStateAt(
+        mutable.stateByCardId[manualCard.id],
+        settings,
+        virtualNowMs,
+      );
+      mutable.states[0] = refreshed;
+      mutable.stateByCardId[manualCard.id] = refreshed;
+      cached.updateState(refreshed);
+      cached.rebuild();
+
+      expect(refreshed).toEqual(original);
+      expect(
+        selectNextCardFromSnapshot({
+          cards: [manualCard],
+          scheduler: mutable,
+          nowMs: virtualNowMs,
+          studyAhead: true,
+        }).selection,
+      ).toBeNull();
+      expect(cached.select({ nowMs: virtualNowMs }).selection).toBeNull();
+    }
+
+    const restored = deriveExamSrsSnapshot([manualCard], [failure], settings, START)
+      .stateByCardId[manualCard.id];
+    expect(restored).toMatchObject({
+      learningState: "relearning",
+      reviewCount: 1,
+      lastOutcome: "failure",
+    });
+    expect(restored.isManuallyLearned).not.toBe(true);
+    expect(restored.dueAt).not.toBeNull();
+    expect(restored.isDue).toBe(true);
+  });
+
+  it("passes direct manual concept satisfaction into incremental prerequisite readiness", () => {
+    const candidate = realCards.find((entry) => entry.id === "ch01-001")!;
+    const candidateConcept = knowledgeConceptById.get("gross-domestic-product");
+    expect(candidateConcept?.prerequisites).toContain("price");
+    expect(candidateConcept?.linkedCardIds).toContain(candidate.id);
+    const prerequisiteIds = new Set(candidateConcept?.prerequisites ?? []);
+
+    const scheduler = deriveExamSrsSnapshot([candidate], [], NO_EXAM, START);
+    const ordinary = createCardPrerequisiteReadinessTracker([candidate], scheduler);
+    const manual = createCardPrerequisiteReadinessTracker(
+      [candidate],
+      scheduler,
+      undefined,
+      prerequisiteIds,
+    );
+
+    expect(ordinary.readinessByCardId.get(candidate.id)).toBe(false);
+    expect(manual.readinessByCardId.get(candidate.id)).toBe(true);
+  });
+
+  it("counts a reviewCount-zero manual card as introduced prerequisite evidence operationally", () => {
+    const candidate = realCards.find((entry) => entry.id === "ch01-008")!;
+    const prerequisiteCard = realCards.find((entry) => entry.id === "mix-001")!;
+    const cards = [candidate, prerequisiteCard];
+    const ordinaryScheduler = deriveExamSrsSnapshot(cards, [], NO_EXAM, START);
+    const manualScheduler = deriveExamSrsSnapshot(
+      cards,
+      [],
+      NO_EXAM,
+      START,
+      new Set([prerequisiteCard.id]),
+    );
+
+    const ordinary = createCardPrerequisiteReadinessTracker(cards, ordinaryScheduler);
+    const manual = createCardPrerequisiteReadinessTracker(cards, manualScheduler);
+    expect(ordinary.readinessByCardId.get(candidate.id)).toBe(false);
+    expect(manualScheduler.stateByCardId[prerequisiteCard.id]).toMatchObject({
+      reviewCount: 0,
+      isManuallyLearned: true,
+    });
+    expect(manual.readinessByCardId.get(candidate.id)).toBe(true);
+  });
+
+  it("treats a manually learned critical card as operationally complete without evidence", () => {
+    const critical = realCards.find((entry) => entry.id === "ch08-006")!;
+    const scheduler = deriveExamSrsSnapshot(
+      [critical],
+      [],
+      NO_EXAM,
+      START,
+      new Set([critical.id]),
+    );
+    const progress = getForecastTargetProgress([critical], scheduler);
+
+    expect(progress).toMatchObject({
+      seen: 1,
+      learned: 1,
+      criticalSeen: 1,
+      criticalLearned: 1,
+      criticalTotal: 1,
+    });
+  });
+
+  it("changes forecast identity when manual card or concept inputs change", () => {
+    const forecastCard = realCards[0];
+    const settings = { examAt: null, studyBufferHours: 24 } as const;
+    const scheduler = deriveExamSrsSnapshot([forecastCard], [], settings, START);
+    const base = buildForecastClockKey({
+      nowMs: START,
+      scheduler,
+      reviewEvents: [],
+      settings,
+      manuallyLearnedCardIds: new Set(),
+      manuallySatisfiedConceptIds: new Set(),
+    });
+    const manualCard = buildForecastClockKey({
+      nowMs: START,
+      scheduler,
+      reviewEvents: [],
+      settings,
+      manuallyLearnedCardIds: new Set([forecastCard.id]),
+      manuallySatisfiedConceptIds: new Set(),
+    });
+    const manualConcept = buildForecastClockKey({
+      nowMs: START,
+      scheduler,
+      reviewEvents: [],
+      settings,
+      manuallyLearnedCardIds: new Set(),
+      manuallySatisfiedConceptIds: new Set(["percentage-change"]),
+    });
+
+    expect(manualCard).not.toBe(base);
+    expect(manualConcept).not.toBe(base);
+    const sortedA = buildForecastClockKey({
+      nowMs: START,
+      scheduler,
+      reviewEvents: [],
+      settings,
+      manuallyLearnedCardIds: new Set(["z-card", "a-card"]),
+      manuallySatisfiedConceptIds: new Set(["z-concept", "a-concept"]),
+    });
+    const sortedB = buildForecastClockKey({
+      nowMs: START,
+      scheduler,
+      reviewEvents: [],
+      settings,
+      manuallyLearnedCardIds: new Set(["a-card", "z-card"]),
+      manuallySatisfiedConceptIds: new Set(["a-concept", "z-concept"]),
+    });
+    expect(sortedA).toBe(sortedB);
+  });
+});
+
 describe("Study Time Forecast simulation and determinism", () => {
   const cards = [card("a", 1), card("b", 2)];
   const settings = NO_EXAM;
@@ -889,13 +1081,22 @@ describe("Study Time Forecast simulation and determinism", () => {
             : [-15 * MINUTE_MS, -90 * 1000, 2 * MINUTE_MS, 40 * MINUTE_MS][
                 Math.floor(random.next() * 4)
               ];
-        return stateAt(
+        const generated = stateAt(
           entry.id,
           learningState,
           nowMs,
           dueOffsetMs,
           scenario === 0 ? 1 : Math.floor(random.next() * 6),
         );
+        return index % 11 === 0
+          ? {
+              ...generated,
+              learningState: "learned" as const,
+              dueAt: null,
+              isDue: false,
+              isManuallyLearned: true,
+            }
+          : generated;
       });
       const scheduler = mutableSnapshotFor(cards, states);
       const cached = createExamSrsForecastSelector({
@@ -909,7 +1110,9 @@ describe("Study Time Forecast simulation and determinism", () => {
         for (let index = 0; index < scheduler.states.length; index += 1) {
           const current = scheduler.states[index];
           const isDue =
-            current.dueAt !== null && Date.parse(current.dueAt) <= stepNowMs;
+            current.isManuallyLearned === true
+              ? false
+              : current.dueAt !== null && Date.parse(current.dueAt) <= stepNowMs;
           if (current.isDue !== isDue) {
             const refreshed = { ...current, isDue };
             scheduler.states[index] = refreshed;
@@ -940,8 +1143,13 @@ describe("Study Time Forecast simulation and determinism", () => {
           recentlyShownCardIds,
           newCardPrerequisiteReadyByCardId: readiness,
         });
+        const fallbackCard = cards.find(
+          (entry) => scheduler.stateByCardId[entry.id]?.isManuallyLearned !== true,
+        );
         const selectedId =
-          expected.selection?.card.id ?? cards[(scenario + step) % cards.length].id;
+          expected.selection?.card.id ??
+          fallbackCard?.id ??
+          cards[(scenario + step) % cards.length].id;
         const selectedIndex = cards.findIndex((entry) => entry.id === selectedId);
         const current = scheduler.states[selectedIndex];
         const nextLearningState =

@@ -32,6 +32,8 @@ export interface DeriveStudyTimeForecastInput {
   readonly nowMs: number;
   /** Reuse the Home page's already-derived snapshot when available. */
   readonly scheduler?: ExamSrsSnapshot;
+  /** Operationally satisfied concepts used only for prerequisite guidance. */
+  readonly manuallySatisfiedConceptIds?: ReadonlySet<string>;
 }
 
 export interface ForecastDeadlineInterpretation {
@@ -59,7 +61,15 @@ export function deriveStudyTimeForecast(
     scheduler,
     pace,
     outcomes,
-    seed: seedForecastSimulation(input.reviewEvents, input.settings),
+    manuallySatisfiedConceptIds: input.manuallySatisfiedConceptIds,
+    seed: seedForecastSimulation(
+      input.reviewEvents,
+      input.settings,
+      scheduler.states
+        .filter((state) => state.isManuallyLearned === true)
+        .map((state) => state.cardId),
+      input.manuallySatisfiedConceptIds,
+    ),
   });
   const currentProgress = getForecastTargetProgress(input.cards, scheduler);
   const targets = STUDY_FORECAST_TARGETS.map((target) =>

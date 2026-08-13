@@ -7,11 +7,17 @@ import {
   type ProgressSnapshot,
   type ReviewEvent,
 } from "./progress";
+import {
+  validateManualLearnedOverrides as validateManualLearnedOverrideRecords,
+  type ManualLearnedOverride,
+} from "./manualLearned";
 import { validateMockAttempt, type MockAttempt } from "../exam/mock/model";
+import { cardIds } from "../data/deck";
+import { examQuestions } from "../exam/questionBank";
 import { knowledgeConceptIds } from "../knowledge/data";
 
 export const BACKUP_FORMAT = "econ-flashcards-progress" as const;
-export const BACKUP_VERSION = 2 as const;
+export const BACKUP_VERSION = 3 as const;
 
 export interface ProgressBackupV1 {
   readonly format: typeof BACKUP_FORMAT;
@@ -32,12 +38,28 @@ export interface ProgressBackupV2 {
   readonly mockAttempts: readonly MockAttempt[];
   /** Optional so version-2 backups created before Guided lesson persistence remain valid. */
   readonly lessonSeenConceptIds?: readonly string[];
+  /** Transitional PR #13 V2 exports included this optional field before V3. */
+  readonly manualLearnedOverrides?: readonly ManualLearnedOverride[];
+}
+
+export interface ProgressBackupV3 {
+  readonly format: typeof BACKUP_FORMAT;
+  readonly version: 3;
+  readonly exportedAt: string;
+  readonly settings: AppSettings;
+  readonly cardStates: readonly CardState[];
+  readonly reviews: readonly ReviewEvent[];
+  readonly mockAttempts: readonly MockAttempt[];
+  /** Optional for the pre-guided-lesson V2 shape carried forward by V3. */
+  readonly lessonSeenConceptIds?: readonly string[];
+  /** Durable learner-authored source records; never retrieval evidence. */
+  readonly manualLearnedOverrides: readonly ManualLearnedOverride[];
 }
 
 export function createProgressBackup(
   snapshot: ProgressSnapshot,
   exportedAt = new Date().toISOString(),
-): ProgressBackupV2 {
+): ProgressBackupV3 {
   if (!Number.isFinite(Date.parse(exportedAt))) {
     throw new Error("Export timestamp must be a valid ISO date-time.");
   }
@@ -56,6 +78,9 @@ export function createProgressBackup(
       questionStates: attempt.questionStates.map((state) => ({ ...state })),
     })),
     lessonSeenConceptIds: [...(snapshot.lessonSeenConceptIds ?? [])],
+    manualLearnedOverrides: (snapshot.manualLearnedOverrides ?? []).map((override) => ({
+      ...override,
+    })),
   };
 }
 
@@ -69,9 +94,12 @@ export function serializeProgressBackup(
 export function parseProgressBackup(
   input: unknown,
   validCardIds: ReadonlySet<string>,
-  validQuestionIds: ReadonlySet<string> = new Set(),
+  validQuestionIds: ReadonlySet<string> = new Set(
+    examQuestions.map((question) => question.id),
+  ),
   validLessonConceptIds: ReadonlySet<string> = knowledgeConceptIds,
-): ProgressBackupV2 {
+  validManualCardIds: ReadonlySet<string> = new Set(cardIds),
+): ProgressBackupV3 {
   if (!isRecord(input)) {
     throw new Error("Backup validation failed: the top-level value must be an object.");
   }
@@ -80,9 +108,9 @@ export function parseProgressBackup(
     throw new Error(`Unsupported backup format: expected "${BACKUP_FORMAT}".`);
   }
 
-  if (input.version !== 1 && input.version !== BACKUP_VERSION) {
+  if (input.version !== 1 && input.version !== 2 && input.version !== BACKUP_VERSION) {
     throw new Error(
-      `Unsupported backup version: expected 1 or ${BACKUP_VERSION}, received ${String(input.version)}.`,
+      `Unsupported backup version: expected 1, 2, or ${BACKUP_VERSION}, received ${String(input.version)}.`,
     );
   }
 
@@ -98,6 +126,16 @@ export function parseProgressBackup(
     input.version === 1 || input.lessonSeenConceptIds === undefined
       ? []
       : validateLessonSeenConceptIds(input.lessonSeenConceptIds, validLessonConceptIds);
+  const manualLearnedOverrides =
+    input.version === 1 ||
+    (input.version === 2 && input.manualLearnedOverrides === undefined)
+      ? []
+      : validateBackupManualLearnedOverrides(
+          input.manualLearnedOverrides,
+          validManualCardIds,
+          validQuestionIds,
+          validLessonConceptIds,
+        );
 
   return {
     format: BACKUP_FORMAT,
@@ -108,15 +146,19 @@ export function parseProgressBackup(
     reviews,
     mockAttempts,
     lessonSeenConceptIds,
+    manualLearnedOverrides,
   };
 }
 
 export function parseProgressBackupText(
   text: string,
   validCardIds: ReadonlySet<string>,
-  validQuestionIds: ReadonlySet<string> = new Set(),
+  validQuestionIds: ReadonlySet<string> = new Set(
+    examQuestions.map((question) => question.id),
+  ),
   validLessonConceptIds: ReadonlySet<string> = knowledgeConceptIds,
-): ProgressBackupV2 {
+  validManualCardIds: ReadonlySet<string> = new Set(cardIds),
+): ProgressBackupV3 {
   let input: unknown;
   try {
     input = JSON.parse(text) as unknown;
@@ -129,7 +171,30 @@ export function parseProgressBackupText(
     validCardIds,
     validQuestionIds,
     validLessonConceptIds,
+    validManualCardIds,
   );
+}
+
+function validateBackupManualLearnedOverrides(
+  value: unknown,
+  validCardIds: ReadonlySet<string>,
+  validQuestionIds: ReadonlySet<string>,
+  validConceptIds: ReadonlySet<string>,
+): ManualLearnedOverride[] {
+  try {
+    return validateManualLearnedOverrideRecords(
+      value,
+      validCardIds,
+      validQuestionIds,
+      validConceptIds,
+    );
+  } catch (error: unknown) {
+    throw new Error(
+      `Backup validation failed: ${
+        error instanceof Error ? error.message : "manual learned overrides are invalid."
+      }`,
+    );
+  }
 }
 
 export function validateLessonSeenConceptIds(

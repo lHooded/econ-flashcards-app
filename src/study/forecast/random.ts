@@ -41,6 +41,8 @@ export function hashForecastSeed(value: string): number {
 export function seedForecastSimulation(
   reviews: readonly ReviewEvent[],
   settings: AppSettings,
+  manuallyLearnedCardIds: readonly string[] = [],
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
 ): number {
   const history = sortReviewEventsChronologically(reviews)
     .map((review) =>
@@ -62,6 +64,8 @@ export function seedForecastSimulation(
       settings.examAt ?? "null",
       String(settings.studyBufferHours),
       history,
+      [...manuallyLearnedCardIds].sort().join(","),
+      [...manuallySatisfiedConceptIds].sort().join(","),
     ].join("\u001f"),
   );
 }

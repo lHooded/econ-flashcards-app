@@ -30,6 +30,7 @@ export interface SelectNextCardInput {
   readonly studyAhead?: boolean;
   /** Guidance only: used to order otherwise-comparable unseen cards. */
   readonly newCardPrerequisiteReadyByCardId?: ReadonlyMap<string, boolean>;
+  readonly manuallyLearnedCardIds?: ReadonlySet<string>;
 }
 
 export interface RankExamSrsCandidatesInput {
@@ -59,6 +60,7 @@ export function selectNextCard(input: SelectNextCardInput): NextCardSelection {
     input.reviews,
     input.settings,
     input.nowMs,
+    input.manuallyLearnedCardIds,
   );
   return selectNextCardFromSnapshot({
     ...input,
@@ -111,6 +113,7 @@ export function selectNextCardFromSnapshot(input: {
       .filter(
         (candidate): candidate is { card: Flashcard; state: ExamSrsCardState } =>
           candidate.state !== undefined &&
+          candidate.state.isManuallyLearned !== true &&
           candidate.state.dueAt !== null &&
           Date.parse(candidate.state.dueAt) > input.nowMs,
       );
@@ -175,6 +178,12 @@ export function createExamSrsForecastSelector(input: {
     const card = cardById.get(state.cardId);
     if (card === undefined) return;
     const unseenGroup = unseenGroups.get(unseenGroupKey(card));
+    if (state.isManuallyLearned === true) {
+      // Manual learned is an explicit operational exclusion. Keep it out of
+      // both indexes even if a stale caller supplies ordinary fields.
+      unseenGroup?.delete(state.cardId);
+      return;
+    }
     if (state.learningState === "unseen") {
       unseenGroup?.add(state.cardId);
       return;
@@ -242,7 +251,9 @@ export function createExamSrsForecastSelector(input: {
         const card = cardById.get(cardId);
         if (card === undefined) continue;
         const state = input.scheduler.stateByCardId[card.id];
-        if (state?.learningState !== "unseen") continue;
+        if (state?.learningState !== "unseen" || state.isManuallyLearned === true) {
+          continue;
+        }
         const candidate = {
           card,
           state,
@@ -366,6 +377,7 @@ function peekCurrentDueEntry(
     const state = stateByCardId[entry.cardId];
     if (
       state !== undefined &&
+      state.isManuallyLearned !== true &&
       state.learningState !== "unseen" &&
       state.dueAt !== null &&
       Date.parse(state.dueAt) === entry.dueAtMs &&
@@ -429,6 +441,7 @@ function stateAtSelectionTime(
   state: ExamSrsCardState,
   nowMs: number,
 ): ExamSrsCardState {
+  if (state.isManuallyLearned === true) return state;
   if (!state.isDue && state.dueAt !== null && Date.parse(state.dueAt) <= nowMs) {
     return { ...state, isDue: true };
   }
@@ -451,6 +464,7 @@ export function rankExamSrsCandidatesFromSnapshot(
     .filter(
       (candidate): candidate is { card: Flashcard; state: ExamSrsCardState } =>
         candidate.state !== undefined &&
+        candidate.state.isManuallyLearned !== true &&
         (candidate.state.learningState === "unseen" || candidate.state.isDue),
     )
     .map((candidate) => ({
@@ -735,6 +749,7 @@ function findNextDueAt(
       .filter(
         (state) =>
           (candidateCardIds?.has(state.cardId) ?? true) &&
+          state.isManuallyLearned !== true &&
           state.dueAt !== null &&
           Date.parse(state.dueAt) > nowMs,
       )

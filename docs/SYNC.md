@@ -22,8 +22,8 @@ continues to work as a local-only PWA. Its path is not an origin boundary, so it
 never allowed to persist sync credentials. HTTP is accepted only for explicit
 loopback development (`localhost`, `127.0.0.1`, or `::1`).
 
-The storage migration is DB version 4. Manual portable backups remain
-`ProgressBackupV2` (backup version 2), and the encrypted sync payload/envelope and
+The storage migration is DB version 5. Manual portable backups remain
+`ProgressBackupV3` (backup version 3; V1/V2 imports remain supported), and the encrypted sync payload/envelope and
 Worker API use sync protocol version 1. These formats are deliberately separate:
 manual backups never contain sync credentials.
 
@@ -175,7 +175,7 @@ manual JSON exports are the separate recovery path.
 
 The v1 decoded ciphertext limit is 1 MiB. If a future progress history exceeds it,
 the app reports `Sync data is too large for v1` rather than a cryptographic or
-authentication failure, and the independent ProgressBackupV2 JSON export remains
+authentication failure, and the independent ProgressBackupV3 JSON export remains
 available. There is no chunking or R2 path in v1.
 
 The Worker applies three conservative accountless abuse guards before Durable Object

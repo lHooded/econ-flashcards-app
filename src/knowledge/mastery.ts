@@ -36,11 +36,17 @@ export function deriveConceptStatuses(
   scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
   concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
   guidedCheckStates: GuidedCheckStateMap = {},
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
 ): ConceptStatusMap {
   return new Map(
     concepts.map((concept) => [
       concept.id,
-      deriveStatusForConcept(concept, scheduler.stateByCardId, guidedCheckStates),
+      deriveStatusForConcept(
+        concept,
+        scheduler.stateByCardId,
+        guidedCheckStates,
+        manuallySatisfiedConceptIds,
+      ),
     ]),
   );
 }
@@ -49,9 +55,14 @@ export function deriveCardPrerequisiteReadiness(
   cards: readonly Flashcard[],
   scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
   concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
 ): ReadonlyMap<string, boolean> {
-  return createCardPrerequisiteReadinessTracker(cards, scheduler, concepts)
-    .readinessByCardId;
+  return createCardPrerequisiteReadinessTracker(
+    cards,
+    scheduler,
+    concepts,
+    manuallySatisfiedConceptIds,
+  ).readinessByCardId;
 }
 
 export interface CardPrerequisiteReadinessTracker {
@@ -61,20 +72,22 @@ export interface CardPrerequisiteReadinessTracker {
 
 /**
  * Incremental form of the scheduler's prerequisite guidance. A prerequisite
- * becomes non-blocking as soon as one of its linked cards has review evidence;
- * due/strength labels do not change that particular gate. The ordinary helper
- * above uses the same boundary, while forecast simulation updates it without
- * rescanning the full knowledge graph after every synthetic review.
+ * becomes non-blocking as soon as one of its linked cards has operationally
+ * been introduced, or when the learner has directly marked the concept as
+ * satisfied. The ordinary helper above uses the same boundary, while forecast
+ * simulation updates it without rescanning the full knowledge graph after
+ * every synthetic review.
  */
 export function createCardPrerequisiteReadinessTracker(
   cards: readonly Flashcard[],
   scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
   concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
 ): CardPrerequisiteReadinessTracker {
   const conceptById = new Map(concepts.map((concept) => [concept.id, concept]));
   const seenCardIds = new Set(
     Object.values(scheduler.stateByCardId)
-      .filter((state) => state.reviewCount > 0)
+      .filter((state) => state.reviewCount > 0 || state.isManuallyLearned === true)
       .map((state) => state.cardId),
   );
   const readinessByCardId = new Map<string, boolean>();
@@ -82,7 +95,11 @@ export function createCardPrerequisiteReadinessTracker(
 
   const isPrerequisiteReady = (prerequisiteId: string): boolean => {
     const concept = conceptById.get(prerequisiteId);
-    if (concept === undefined || concept.linkedCardIds.length === 0) {
+    if (
+      manuallySatisfiedConceptIds.has(prerequisiteId) ||
+      concept === undefined ||
+      concept.linkedCardIds.length === 0
+    ) {
       return true;
     }
     return concept.linkedCardIds.some((cardId) => seenCardIds.has(cardId));
@@ -153,9 +170,18 @@ export function isPrerequisiteNonBlockingForScheduler(
 export function isConceptIntroducedEnough(
   conceptId: string,
   reviews: readonly ReviewEvent[],
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
+  manuallyLearnedCardIds: ReadonlySet<string> = new Set(),
 ): boolean {
+  if (manuallySatisfiedConceptIds.has(conceptId)) return true;
   const concept = knowledgeConceptById.get(conceptId);
   if (concept === undefined) return false;
+  if (
+    concept.linkedCardIds.length > 0 &&
+    concept.linkedCardIds.every((cardId) => manuallyLearnedCardIds.has(cardId))
+  ) {
+    return true;
+  }
   const reviewIds =
     concept.linkedCardIds.length > 0
       ? new Set(concept.linkedCardIds)
@@ -220,13 +246,20 @@ function deriveStatusForConcept(
   concept: KnowledgeConcept,
   statesByCardId: Readonly<Record<string, ExamSrsCardState>>,
   guidedCheckStates: GuidedCheckStateMap,
+  manuallySatisfiedConceptIds: ReadonlySet<string>,
 ): KnowledgeConceptStatus {
+  if (manuallySatisfiedConceptIds.has(concept.id)) return "solid";
   if (concept.linkedCardIds.length === 0) {
     const skills = getGuidedCheckSkillsForConcept(concept.id);
     const states = skills
       .map((skill) => guidedCheckStates[skill.id])
       .filter((state): state is ExamSrsCardState => state !== undefined);
-    if (states.length === 0 || states.every((state) => state.reviewCount === 0)) {
+    if (
+      states.length === 0 ||
+      states.every(
+        (state) => state.reviewCount === 0 && state.isManuallyLearned !== true,
+      )
+    ) {
       return "unseen";
     }
     if (
@@ -252,7 +285,10 @@ function deriveStatusForConcept(
     .map((cardId) => statesByCardId[cardId])
     .filter((state): state is ExamSrsCardState => state !== undefined);
   const hasMissingCardEvidence = states.length < concept.linkedCardIds.length;
-  if (states.length === 0 || states.every((state) => state.reviewCount === 0)) {
+  if (
+    states.length === 0 ||
+    states.every((state) => state.reviewCount === 0 && state.isManuallyLearned !== true)
+  ) {
     return "unseen";
   }
   if (
@@ -267,7 +303,11 @@ function deriveStatusForConcept(
   }
   if (
     !hasMissingCardEvidence &&
-    states.every((state) => state.learningState === "learned")
+    states.every(
+      (state) =>
+        state.learningState === "learned" &&
+        (state.reviewCount > 0 || state.isManuallyLearned === true),
+    )
   ) {
     return "solid";
   }

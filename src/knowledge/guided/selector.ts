@@ -1,5 +1,6 @@
 import type { Flashcard } from "../../domain/content";
 import type { AppSettings, ReviewEvent } from "../../domain/progress";
+import type { EffectiveManualLearned } from "../../domain/manualLearned";
 import {
   getExamSrsPriority,
   getExamSrsStatePriority,
@@ -83,6 +84,7 @@ export interface SelectGuidedNextStepInput {
   readonly sessionSeed?: number;
   /** High-Yield Cram only: constrain the new-anchor policy, never urgent reviews. */
   readonly candidateCardIds?: ReadonlySet<string>;
+  readonly manualLearned?: EffectiveManualLearned;
 }
 
 export interface GuidedSelectionContext {
@@ -113,7 +115,12 @@ const RECENT_LIMIT = 3;
  */
 export function selectGuidedNextStep(input: SelectGuidedNextStepInput): GuidedStep {
   const context = deriveGuidedSelectionContext(input);
-  const readiness = deriveCardPrerequisiteReadiness(input.cards, context.scheduler);
+  const readiness = deriveCardPrerequisiteReadiness(
+    input.cards,
+    context.scheduler,
+    undefined,
+    input.manualLearned?.coveredConceptIds,
+  );
   const canonical = selectNextCardFromSnapshot({
     cards: input.cards,
     scheduler: context.scheduler,
@@ -207,6 +214,7 @@ export function deriveGuidedSelectionContext(
       input.reviews,
       input.settings,
       input.nowMs,
+      input.manualLearned?.cardIds,
     ),
     guidedCheckStates: deriveGuidedCheckStates(
       input.reviews,
@@ -230,7 +238,8 @@ function chooseDueCheck(
       ): candidate is { skill: GuidedKnowledgeCheckSkill; state: ExamSrsCardState } =>
         candidate.state !== undefined &&
         candidate.state.reviewCount > 0 &&
-        candidate.state.isDue,
+        candidate.state.isDue &&
+        !input.manualLearned?.coveredConceptIds.has(candidate.skill.conceptId),
     );
   if (candidates.length === 0) return null;
   const nonRecent = candidates.filter((candidate) => !recent.has(candidate.skill.id));
@@ -290,7 +299,15 @@ function prepareUnseenCanonicalCard(
   );
 
   for (const conceptId of path) {
-    if (isConceptIntroducedEnough(conceptId, input.reviews)) continue;
+    if (
+      isConceptIntroducedEnough(
+        conceptId,
+        input.reviews,
+        input.manualLearned?.coveredConceptIds,
+        input.manualLearned?.cardIds,
+      )
+    )
+      continue;
     const concept = knowledgeConceptById.get(conceptId);
     if (concept === undefined) continue;
 
@@ -420,7 +437,15 @@ function findFailedNotDueEvidence(
   input: SelectGuidedNextStepInput,
   context: GuidedSelectionContext,
 ): GuidedAnchorResolution | null {
-  if (isConceptIntroducedEnough(conceptId, input.reviews)) return null;
+  if (
+    isConceptIntroducedEnough(
+      conceptId,
+      input.reviews,
+      input.manualLearned?.coveredConceptIds,
+      input.manualLearned?.cardIds,
+    )
+  )
+    return null;
   const concept = knowledgeConceptById.get(conceptId);
   if (concept === undefined) return null;
   const evidenceIds =

@@ -186,6 +186,13 @@ export function refreshExamSrsCardStateAt(
   settings: AppSettings,
   nowMs: number,
 ): ExamSrsCardState {
+  // Manual learned is an operational exclusion, not a new retrieval event.
+  // In particular, do not let a phase change resurrect historical evidence as
+  // a due card while the learner-authored override is active.
+  if (state.isManuallyLearned === true) {
+    return state;
+  }
+
   if (state.lastOutcome === null || state.lastReviewedAt === null) {
     return state;
   }
@@ -218,7 +225,9 @@ export function deriveCardState(
   reviews: readonly ReviewEvent[],
   settings: AppSettings,
   nowMs: number,
+  manuallyLearnedCardIds?: ReadonlySet<string>,
 ): ExamSrsCardState {
+  const isManuallyLearned = manuallyLearnedCardIds?.has(cardId) === true;
   const chronologicalReviews = [...reviews].sort(compareReviewEventsChronologically);
   let state = createInitialExamSrsCardState(cardId);
 
@@ -240,11 +249,20 @@ export function deriveCardState(
     });
   }
 
-  if (state.lastOutcome === null) {
-    return { ...state, reviewCount: chronologicalReviews.length };
+  const evidenceDerivedState = { ...state, reviewCount: chronologicalReviews.length };
+  if (!isManuallyLearned) {
+    return evidenceDerivedState;
   }
 
-  return { ...state, reviewCount: chronologicalReviews.length };
+  // Preserve every evidence-derived field above; only overlay the operational
+  // exclusion. No synthetic ReviewEvent or strength change is created.
+  return {
+    ...evidenceDerivedState,
+    learningState: "learned",
+    dueAt: null,
+    isDue: false,
+    isManuallyLearned: true,
+  };
 }
 
 export function deriveExamSrsSnapshot(
@@ -252,6 +270,7 @@ export function deriveExamSrsSnapshot(
   reviews: readonly ReviewEvent[],
   settings: AppSettings,
   nowMs: number,
+  manuallyLearnedCardIds?: ReadonlySet<string>,
 ): ExamSrsSnapshot {
   const reviewsByCardId = new Map<string, ReviewEvent[]>();
   for (const review of reviews) {
@@ -261,7 +280,13 @@ export function deriveExamSrsSnapshot(
   }
 
   const states = cards.map((card) =>
-    deriveCardState(card.id, reviewsByCardId.get(card.id) ?? [], settings, nowMs),
+    deriveCardState(
+      card.id,
+      reviewsByCardId.get(card.id) ?? [],
+      settings,
+      nowMs,
+      manuallyLearnedCardIds,
+    ),
   );
 
   return {

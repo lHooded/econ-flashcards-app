@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Flashcard } from "../domain/content";
 import type { NewReviewEvent, ReviewRating } from "../domain/progress";
+import { ManualLearnedAction } from "./ManualLearnedAction";
 import { KnowledgeText } from "./knowledge/KnowledgeText";
 import { MathText } from "./math/MathText";
 
@@ -10,6 +11,7 @@ interface StudyCardProps {
   readonly onSubmitReview: (input: Omit<NewReviewEvent, "cardId">) => Promise<void>;
   readonly onFinish: () => void;
   readonly onPhaseChange?: (phase: StudyCardPhase) => void;
+  readonly onMarkLearnedPermanently?: () => Promise<void>;
 }
 
 type CapturedReviewPayload = Omit<NewReviewEvent, "cardId">;
@@ -26,6 +28,7 @@ export function StudyCard({
   onSubmitReview,
   onFinish,
   onPhaseChange,
+  onMarkLearnedPermanently,
 }: StudyCardProps) {
   const isMcq = card.choices !== undefined && card.correctChoice !== undefined;
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
@@ -306,6 +309,18 @@ export function StudyCard({
               Show answer
             </button>
           )}
+        </div>
+      )}
+
+      {onMarkLearnedPermanently !== undefined && (
+        <div className="manual-learned-action-row">
+          <ManualLearnedAction
+            label="Mark learned permanently"
+            confirmationTitle="Mark this card learned permanently?"
+            confirmationDescription="It will stop appearing in Study and related future practice questions. No review result will be recorded. You can restore it later in Settings."
+            disabled={saving}
+            onConfirm={onMarkLearnedPermanently}
+          />
         </div>
       )}
 

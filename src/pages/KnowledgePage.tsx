@@ -16,13 +16,32 @@ import {
   deriveFoundationCurriculum,
 } from "../knowledge/mastery";
 import type { KnowledgeConceptStatus } from "../knowledge/model";
+import {
+  ManualLearnedAction,
+  ManualLearnedBadge,
+} from "../components/ManualLearnedAction";
+import { getEffectiveManualLearned } from "../study/manualLearned";
 
 export function KnowledgePage({
   initialConceptId,
 }: {
   readonly initialConceptId: string | null;
 }) {
-  const { snapshot } = useProgress();
+  const {
+    snapshot,
+    markLearnedPermanently: markLearnedPermanentlyFromContext,
+    restoreManualLearned: restoreManualLearnedFromContext,
+  } = useProgress();
+  const markLearnedPermanently =
+    markLearnedPermanentlyFromContext ??
+    (async () => {
+      throw new Error("Manual learned settings are unavailable in this view.");
+    });
+  const restoreManualLearned =
+    restoreManualLearnedFromContext ??
+    (async () => {
+      throw new Error("Manual learned settings are unavailable in this view.");
+    });
   const nowMs = useNow(60 * 1000);
   const [query, setQuery] = useState("");
   const [browse, setBrowse] = useState<"all" | "foundation" | "chapter" | "tag">("all");
@@ -32,12 +51,22 @@ export function KnowledgePage({
     initialConceptId !== null && knowledgeConceptById.has(initialConceptId)
       ? initialConceptId
       : null;
+  const manualLearned = useMemo(
+    () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
+    [snapshot?.manualLearnedOverrides],
+  );
   const scheduler = useMemo(
     () =>
       snapshot === null
         ? null
-        : deriveExamSrsSnapshot(cards, snapshot.reviewEvents, snapshot.settings, nowMs),
-    [nowMs, snapshot],
+        : deriveExamSrsSnapshot(
+            cards,
+            snapshot.reviewEvents,
+            snapshot.settings,
+            nowMs,
+            manualLearned.cardIds,
+          ),
+    [manualLearned.cardIds, nowMs, snapshot],
   );
   const statuses = useMemo(
     () =>
@@ -51,8 +80,9 @@ export function KnowledgePage({
               snapshot?.settings ?? { examAt: null, studyBufferHours: 24 },
               nowMs,
             ),
+            manualLearned.coveredConceptIds,
           ),
-    [nowMs, scheduler, snapshot],
+    [manualLearned.coveredConceptIds, nowMs, scheduler, snapshot],
   );
   const searchResults = useMemo(
     () =>
@@ -65,6 +95,12 @@ export function KnowledgePage({
   );
   const selected =
     selectedId === null ? undefined : knowledgeConceptById.get(selectedId);
+  const selectedIsManuallyLearned =
+    selected !== undefined && manualLearned.conceptIds.has(selected.id);
+  const selectedIsCoveredByManualCards =
+    selected !== undefined &&
+    !selectedIsManuallyLearned &&
+    manualLearned.coveredConceptIds.has(selected.id);
   const browseConcepts = useMemo(() => {
     if (query.trim()) return searchResults.map((result) => result.concept);
     return knowledgeConcepts
@@ -230,6 +266,37 @@ export function KnowledgePage({
                   <h2>{selected.name}</h2>
                 </div>
                 <ConceptStatus status={statuses.get(selected.id) ?? "unseen"} />
+              </div>
+              <div className="knowledge-manual-learned">
+                {selectedIsManuallyLearned ? (
+                  <>
+                    <ManualLearnedBadge />
+                    <button
+                      className="secondary-button"
+                      type="button"
+                      onClick={() => void restoreManualLearned("concept", selected.id)}
+                    >
+                      Restore concept
+                    </button>
+                  </>
+                ) : selectedIsCoveredByManualCards ? (
+                  <ManualLearnedBadge label="Covered by manually excluded cards" />
+                ) : (
+                  <ManualLearnedAction
+                    label="Mark concept learned permanently"
+                    confirmationTitle="Mark this concept learned permanently?"
+                    confirmationDescription={
+                      <>
+                        This will mark the concept as manually satisfied. Cards that
+                        also test other concepts remain available until every mapped
+                        concept on those cards is manually satisfied. Future Guided Cram
+                        checks and practice questions are excluded only when their
+                        canonical card is excluded. You can restore it later.
+                      </>
+                    }
+                    onConfirm={() => markLearnedPermanently("concept", selected.id)}
+                  />
+                )}
               </div>
               <ConceptArticle
                 concept={selected}

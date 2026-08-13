@@ -177,8 +177,8 @@ focus with no unseen cards remaining.
 Home's Study Time Forecast is a derived, cram-oriented estimate of how much more
 active review the learner may need to reach several useful study targets. It does not
 add scheduler state to IndexedDB, backups, or sync. Given the same canonical cards,
-ReviewEvents, exam settings, model version, and effective current time, another device
-can recreate the same forecast.
+ReviewEvents, exam settings, effective manual card/concept exclusions, model version,
+and effective current time, another device can recreate the same forecast.
 
 ### Operational targets
 
@@ -196,6 +196,13 @@ The V1 targets are defined together in `src/study/forecast/targets.ts`:
 importance constraint. Its numerical score is not treated as a probability, mark,
 recall estimate, or mastery score. These targets are app-defined study labels, not
 scientifically validated proficiency levels.
+
+An active manual learned card is treated as operationally completed for these targets
+and is excluded from forward simulation, while remaining separate from retrieval
+evidence in the Home provenance summary. The resolver's `coveredConceptIds` are passed
+to prerequisite guidance directly, so a manually satisfied concept can be non-blocking
+even when its linked card has no ReviewEvent. Restoring an override immediately
+reconstructs the ordinary forecast state from the unchanged historical review events.
 
 ### Calibration and simulation
 
@@ -264,7 +271,8 @@ choose the highest such target before the effective deadline, then before the ex
 when buffer use is necessary. They call out spacing when waiting—not active workload—
 is the main constraint.
 
-The model version and ordered ReviewEvent content/settings seed a local deterministic
+The model version, ordered ReviewEvent content/settings, and effective manual
+card/concept sets seed a local deterministic
 PRNG. The current clock is deliberately not part of that random seed: it can change
 which cards are due, but React renders do not randomly jitter the simulated outcomes.
 When an estimate is sufficiently resolved, recommendation ordering is hierarchical:
