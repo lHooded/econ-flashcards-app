@@ -23,6 +23,7 @@ import {
 } from "../study/forecast/calibration";
 import {
   deriveForecastDeadlineInterpretation,
+  censorAwareRangeFromValues,
   deriveStudyTimeForecast,
   makeForecastRecommendation,
 } from "../study/forecast/forecast";
@@ -179,9 +180,19 @@ function targetFixture(
   deadlineStatus: TargetForecast["deadlineStatus"],
   simulationStatus: TargetForecast["simulationStatus"] = "estimated",
 ): TargetForecast {
-  const range = { low: 1, median: 2, high: 3 };
+  const range =
+    simulationStatus === "unresolved"
+      ? { low: null, median: null, high: null }
+      : simulationStatus === "censored"
+        ? { low: 1, median: 2, high: null }
+        : { low: 1, median: 2, high: 3 };
   const simulationRuns = 256;
-  const completedRuns = simulationStatus === "unresolved" ? 100 : simulationRuns;
+  const completedRuns =
+    simulationStatus === "unresolved"
+      ? 100
+      : simulationStatus === "censored"
+        ? 154
+        : simulationRuns;
   return {
     id,
     label: id,
@@ -195,9 +206,9 @@ function targetFixture(
     currentCriticalLearned: 0,
     targetLearned: id === "coverage" ? 0 : 80,
     criticalCardCount: 0,
-    activeMinutes: simulationStatus === "unresolved" ? null : range,
-    additionalReviews: simulationStatus === "unresolved" ? null : range,
-    elapsedMs: simulationStatus === "unresolved" ? null : range,
+    activeMinutes: range,
+    additionalReviews: range,
+    elapsedMs: range,
     deadlineStatus,
     deadlineConstraint: "none",
     simulationStatus,
@@ -294,8 +305,71 @@ describe("Study Time Forecast pace calibration", () => {
       review("c", "c", START + 120_000),
     ];
     const calibration = calibratePace(events);
-    expect(calibration.global.samples).toEqual([60_000, 60_000]);
+    expect(calibration.global.samples).toHaveLength(
+      2 + 3 * FORECAST_PACE_CONSTANTS.fallbackPriorSampleRepeats,
+    );
+    expect(calibration.global.samples).toContain(60_000);
     expect(calibration.reviewsPerHour).toBe(60);
+  });
+
+  it("regularises one fast or slow gap toward fallback timing", () => {
+    const fast = calibratePace([
+      review("fast-a", "a", START),
+      review("fast-b", "b", START + FORECAST_PACE_CONSTANTS.minInterReviewGapMs),
+    ]);
+    const slow = calibratePace([
+      review("slow-a", "a", START),
+      review("slow-b", "b", START + 6 * MINUTE_MS),
+    ]);
+
+    expect(fast.sampleSize).toBe(1);
+    expect(slow.sampleSize).toBe(1);
+    expect(fast.global.samples).toContain(FORECAST_PACE_CONSTANTS.minInterReviewGapMs);
+    expect(slow.global.samples).toContain(6 * MINUTE_MS);
+    expect(fast.global.medianCycleMs).toBe(FORECAST_PACE_CONSTANTS.fallbackCycleMs);
+    expect(slow.global.medianCycleMs).toBe(FORECAST_PACE_CONSTANTS.fallbackCycleMs);
+  });
+
+  it("lets consistent pace history increasingly dominate the fallback prior", () => {
+    const few = calibratePace(
+      Array.from({ length: 4 }, (_, index) =>
+        review(`few-${index}`, `few-card-${index}`, START + index * 20_000),
+      ),
+    );
+    const ten = calibratePace(
+      Array.from({ length: 12 }, (_, index) =>
+        review(`ten-${index}`, `ten-card-${index}`, START + index * 20_000),
+      ),
+    );
+    const many = calibratePace(
+      Array.from({ length: 51 }, (_, index) =>
+        review(`many-${index}`, `many-card-${index}`, START + index * 20_000),
+      ),
+    );
+
+    expect(few.sampleSize).toBe(3);
+    expect(ten.sampleSize).toBe(11);
+    expect(many.sampleSize).toBe(50);
+    expect(ten.global.medianCycleMs).toBe(20_000);
+    expect(Math.abs(many.global.medianCycleMs - 20_000)).toBeLessThan(
+      Math.abs(few.global.medianCycleMs - 20_000),
+    );
+    expect(many.global.medianCycleMs).toBe(20_000);
+  });
+
+  it("regularises response-time fallback samples as secondary pace evidence", () => {
+    const calibration = calibratePace([
+      review("response-only", "a", START, { responseTimeMs: 250 }),
+    ]);
+
+    expect(calibration.sampleSize).toBe(0);
+    expect(calibration.global.source).toBe("response_time");
+    expect(calibration.global.medianCycleMs).toBeGreaterThan(
+      FORECAST_PACE_CONSTANTS.fallbackLowCycleMs,
+    );
+    expect(calibration.global.medianCycleMs).toBeLessThan(
+      FORECAST_PACE_CONSTANTS.fallbackHighCycleMs,
+    );
   });
 
   it("allows plausible fast and slow cycles to reach simulation sampling", () => {
@@ -401,8 +475,166 @@ describe("Study Time Forecast outcome calibration", () => {
 
     expect(improving.outcomeSampleSize).toBe(recentCount);
     expect(deteriorating.outcomeSampleSize).toBe(recentCount);
-    expect(improving.global.failure).toBe(0);
-    expect(deteriorating.global.failure).toBe(1);
+    expect(improving.global.failure).toBeGreaterThan(0);
+    expect(improving.global.failure).toBeLessThan(0.1);
+    expect(deteriorating.global.failure).toBeLessThan(1);
+    expect(deteriorating.global.failure).toBeGreaterThan(0.9);
+  });
+
+  it("keeps sparse global, mode, and bucket estimates anchored to fallback priors", () => {
+    const recallCard = card("sparse-recall");
+    const cold = calibrateOutcomes([recallCard], [], NO_EXAM, START);
+    const fallback = getOutcomeDistribution(cold, "recall_calculation", "unseen");
+    expect(fallback).toEqual({
+      failure: 0.3,
+      weak_success: 0.35,
+      strong_success: 0.35,
+    });
+
+    const oneSuccess = calibrateOutcomes(
+      [recallCard],
+      [review("one-success", recallCard.id, START)],
+      NO_EXAM,
+      START + 1,
+    );
+    const sparse = getOutcomeDistribution(oneSuccess, "recall_calculation", "unseen");
+    expect(sparse.strong_success).toBeGreaterThan(fallback.strong_success);
+    expect(sparse.strong_success).toBeLessThan(0.8);
+    expect(sparse.failure).toBeGreaterThan(0);
+    expect(sparse.weak_success).toBeGreaterThan(0);
+
+    const fewCards = Array.from({ length: 4 }, (_, index) => card(`few-${index}`));
+    const fewSuccesses = fewCards.map((entry, index) =>
+      review(`few-success-${index}`, entry.id, START + (index + 1) * 2_000),
+    );
+    const fewEstimate = getOutcomeDistribution(
+      calibrateOutcomes(fewCards, fewSuccesses, NO_EXAM, START + 1),
+      "recall_calculation",
+      "unseen",
+    );
+    expect(fewEstimate.strong_success).toBeGreaterThan(sparse.strong_success);
+    expect(fewEstimate.strong_success).toBeLessThan(0.9);
+
+    const oneFailure = calibrateOutcomes(
+      [recallCard],
+      [
+        review("one-failure", recallCard.id, START, {
+          correct: false,
+          rating: "forgot",
+        }),
+      ],
+      NO_EXAM,
+      START + 1,
+    );
+    const failureEstimate = getOutcomeDistribution(
+      oneFailure,
+      "recall_calculation",
+      "unseen",
+    );
+    expect(failureEstimate.failure).toBeGreaterThan(fallback.failure);
+    expect(failureEstimate.failure).toBeLessThan(0.8);
+    expect(failureEstimate.strong_success).toBeGreaterThan(0);
+  });
+
+  it("converges toward consistent evidence while preserving mode separation", () => {
+    const recallCards = Array.from({ length: 120 }, (_, index) =>
+      card(`recall-${index}`),
+    );
+    const recallSuccesses = recallCards.map((entry, index) =>
+      review(`recall-success-${index}`, entry.id, START + index * 2_000),
+    );
+    const recallCalibration = calibrateOutcomes(
+      recallCards,
+      recallSuccesses,
+      NO_EXAM,
+      START + 1,
+    );
+    const recallEstimate = getOutcomeDistribution(
+      recallCalibration,
+      "recall_calculation",
+      "unseen",
+    );
+    expect(recallEstimate.strong_success).toBeGreaterThan(0.9);
+
+    const mixedCards = Array.from({ length: 120 }, (_, index) =>
+      card(`mixed-${index}`),
+    );
+    const mixedHistory = mixedCards.map((entry, index) =>
+      index % 3 === 0
+        ? review(`mixed-failure-${index}`, entry.id, START + 400_000 + index * 2_000, {
+            correct: false,
+            rating: "forgot",
+          })
+        : index % 3 === 1
+          ? review(`mixed-weak-${index}`, entry.id, START + 400_000 + index * 2_000, {
+              rating: "struggled",
+            })
+          : review(`mixed-success-${index}`, entry.id, START + 400_000 + index * 2_000),
+    );
+    const mixedEstimate = getOutcomeDistribution(
+      calibrateOutcomes(mixedCards, mixedHistory, NO_EXAM, START + 1),
+      "recall_calculation",
+      "unseen",
+    );
+    expect(mixedEstimate.failure).toBeGreaterThan(0);
+    expect(mixedEstimate.weak_success).toBeGreaterThan(0);
+    expect(mixedEstimate.strong_success).toBeGreaterThan(0);
+
+    const mcq = card("mode-mcq", 1, { choices: ["a", "b"], correctChoice: 0 });
+    const modeCalibration = calibrateOutcomes(
+      [...recallCards, mcq],
+      [
+        ...recallSuccesses,
+        review("mcq-success", mcq.id, START + 300_000, { mode: "mcq" }),
+      ],
+      NO_EXAM,
+      START + 1,
+    );
+    const mcqEstimate = getOutcomeDistribution(modeCalibration, "mcq", "unseen");
+    expect(mcqEstimate.weak_success).toBe(0);
+    expect(mcqEstimate.failure).toBeGreaterThan(0);
+    expect(mcqEstimate.strong_success).toBeLessThan(1);
+    expect(mcqEstimate.strong_success).toBeGreaterThan(
+      getOutcomeDistribution(
+        calibrateOutcomes([mcq], [], NO_EXAM, START),
+        "mcq",
+        "unseen",
+      ).strong_success,
+    );
+  });
+
+  it("retains distinct learned-bucket evidence after hierarchical smoothing", () => {
+    const learnedCards = Array.from({ length: 20 }, (_, index) =>
+      card(`learned-${index}`),
+    );
+    const unseenCards = Array.from({ length: 20 }, (_, index) =>
+      card(`unseen-${index}`),
+    );
+    const learnedHistory = learnedCards.flatMap((entry, index) => [
+      review(`learned-start-${index}`, entry.id, START + index * 4_000),
+      review(`learned-criterion-${index}`, entry.id, START + 100_000 + index * 4_000),
+      review(`learned-follow-up-${index}`, entry.id, START + 200_000 + index * 4_000),
+    ]);
+    const unseenFailures = unseenCards.map((entry, index) =>
+      review(`unseen-failure-${index}`, entry.id, START + 300_000 + index * 4_000, {
+        correct: false,
+        rating: "forgot",
+      }),
+    );
+    const calibration = calibrateOutcomes(
+      [...learnedCards, ...unseenCards],
+      [...learnedHistory, ...unseenFailures],
+      NO_EXAM,
+      START + 1,
+    );
+    const learned = getOutcomeDistribution(
+      calibration,
+      "recall_calculation",
+      "learned",
+    );
+    const unseen = getOutcomeDistribution(calibration, "recall_calculation", "unseen");
+    expect(learned.strong_success).toBeGreaterThan(unseen.strong_success);
+    expect(unseen.failure).toBeGreaterThan(learned.failure);
   });
 
   it("keeps MCQ outcome calibration separate and uses cold-start priors", () => {
@@ -529,15 +761,17 @@ describe("Study Time Forecast simulation and determinism", () => {
     );
     expect(result.targets.every((target) => target.achieved)).toBe(true);
     expect(
-      result.targets.every((target) => target.additionalReviews?.median === 0),
+      result.targets.every((target) => target.additionalReviews.median === 0),
     ).toBe(true);
   });
 
   it("counts due-date waiting as elapsed time but not active study time", () => {
     const result = forecast([review("first", "a", START)], START + 60 * 60 * 1000);
     const working = result.targets.find((target) => target.id === "working")!;
-    expect(working.elapsedMs!.median).toBeGreaterThan(
-      working.activeMinutes!.median * 60 * 1000,
+    expect(working.elapsedMs.median).not.toBeNull();
+    expect(working.activeMinutes.median).not.toBeNull();
+    expect(working.elapsedMs.median!).toBeGreaterThan(
+      working.activeMinutes.median! * 60 * 1000,
     );
   });
 
@@ -792,14 +1026,88 @@ describe("Study Time Forecast simulation and determinism", () => {
   });
 });
 
+describe("Study Time Forecast censor-aware quantiles", () => {
+  it("matches ordinary p20/p50/p80 quantiles when every run completes", () => {
+    const range = censorAwareRangeFromValues(
+      Array.from({ length: 100 }, (_, index) => index + 1),
+      100,
+      false,
+    );
+
+    expect(range.low).toBeCloseTo(20.8);
+    expect(range.median).toBeCloseTo(50.5);
+    expect(range.high).toBeCloseTo(80.2);
+  });
+
+  it("maps unconditional quantiles through a 90 percent completion fraction", () => {
+    const range = censorAwareRangeFromValues(
+      Array.from({ length: 90 }, (_, index) => index + 1),
+      100,
+      false,
+    );
+
+    expect(range.low).toBeCloseTo(20.78, 1);
+    expect(range.median).toBeCloseTo(50.44, 1);
+    expect(range.high).toBeCloseTo(80.11, 1);
+  });
+
+  it("leaves p80 unresolved at an 80 percent censoring boundary", () => {
+    const range = censorAwareRangeFromValues(
+      Array.from({ length: 80 }, (_, index) => index + 1),
+      100,
+      false,
+    );
+
+    expect(range.low).not.toBeNull();
+    expect(range.median).not.toBeNull();
+    expect(range.high).toBeNull();
+  });
+
+  it("keeps p20 and the median identifiable at 60 percent completion", () => {
+    const range = censorAwareRangeFromValues(
+      Array.from({ length: 60 }, (_, index) => index + 1),
+      100,
+      false,
+    );
+
+    expect(range.low).not.toBeNull();
+    expect(range.median).not.toBeNull();
+    expect(range.high).toBeNull();
+  });
+
+  it("does not claim a median when fewer than half the runs complete", () => {
+    const range = censorAwareRangeFromValues(
+      Array.from({ length: 49 }, (_, index) => index + 1),
+      100,
+      false,
+    );
+
+    expect(range.low).not.toBeNull();
+    expect(range.median).toBeNull();
+    expect(range.high).toBeNull();
+  });
+
+  it("differs from the optimistic median among completers", () => {
+    const range = censorAwareRangeFromValues(
+      Array.from({ length: 80 }, (_, index) => index + 1),
+      100,
+      false,
+    );
+    const naiveCompleterMedian = 40.5;
+
+    expect(range.median).toBeCloseTo(50.375);
+    expect(range.median).toBeGreaterThan(naiveCompleterMedian);
+  });
+});
+
 describe("Study Time Forecast deadline interpretation", () => {
   const examAt = new Date(START + 48 * 60 * 60 * 1000).toISOString();
   const settings = { examAt, studyBufferHours: 24 } as const;
 
   function interpret(
-    medianElapsedMs: number,
-    highElapsedMs: number,
-    medianActiveMs = medianElapsedMs,
+    medianElapsedMs: number | null,
+    highElapsedMs: number | null,
+    medianActiveMs: number | null = medianElapsedMs,
   ) {
     return deriveForecastDeadlineInterpretation({
       achieved: false,
@@ -828,6 +1136,10 @@ describe("Study Time Forecast deadline interpretation", () => {
       "comfortable",
     );
     expect(interpret(23 * 60 * 60 * 1000, 26 * 60 * 60 * 1000).status).toBe("tight");
+    expect(interpret(23 * 60 * 60 * 1000, null)).toEqual({
+      status: "tight",
+      constraint: "none",
+    });
     expect(
       interpret(26 * 60 * 60 * 1000, 30 * 60 * 60 * 1000, 2 * 60 * 60 * 1000),
     ).toEqual({ status: "buffer", constraint: "spacing" });
@@ -859,6 +1171,10 @@ describe("Study Time Forecast deadline interpretation", () => {
         nowMs: START,
       }),
     ).toEqual({ status: "unresolved", constraint: "none" });
+    expect(interpret(null, null)).toEqual({
+      status: "unresolved",
+      constraint: "none",
+    });
   });
 });
 
@@ -902,6 +1218,26 @@ describe("Study Time Forecast recommendation", () => {
     expect(recommendation.targetId).toBe("coverage");
     expect(recommendation.explanation).toContain("reliable median forecast");
   });
+
+  it("can recommend a censored target when its unconditional median is identifiable", () => {
+    const settings = {
+      examAt: new Date(START + 48 * 60 * 60 * 1000).toISOString(),
+      studyBufferHours: 24,
+    } as const;
+    const recommendation = makeForecastRecommendation(
+      [
+        targetFixture("coverage", "comfortable", "estimated"),
+        targetFixture("working", "tight", "censored"),
+        targetFixture("exam_ready", "after_exam", "unresolved"),
+        targetFixture("strong", "after_exam", "unresolved"),
+        targetFixture("near_complete", "after_exam", "unresolved"),
+      ],
+      settings,
+    );
+
+    expect(recommendation.targetId).toBe("working");
+    expect(recommendation.explanation).toContain("censored");
+  });
 });
 
 describe("Study Time Forecast worker response boundary", () => {
@@ -918,5 +1254,8 @@ describe("Study Time Forecast worker response boundary", () => {
       status: "ready",
       forecast,
     });
+    expect(reduceForecastWorkerResponse({ type: "complete", forecast }, true)).toBe(
+      null,
+    );
   });
 });

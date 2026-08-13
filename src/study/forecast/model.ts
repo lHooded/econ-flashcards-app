@@ -13,15 +13,17 @@ export type ForecastDeadlineStatus =
 
 export type ForecastDeadlineConstraint = "none" | "active_workload" | "spacing";
 
+/** `censored` means the median is identifiable but one or more upper/lower quantiles may not be. */
 export type ForecastSimulationStatus = "estimated" | "censored" | "unresolved";
 
 export type ForecastCensorReason =
   "review_count_cap" | "elapsed_horizon" | "no_eligible_card";
 
 export interface ForecastRange {
-  readonly low: number;
-  readonly median: number;
-  readonly high: number;
+  /** Null when this unconditional quantile is beyond the censoring horizon. */
+  readonly low: number | null;
+  readonly median: number | null;
+  readonly high: number | null;
 }
 
 export interface StudyTimeForecast {
@@ -58,10 +60,9 @@ export interface TargetForecast {
   readonly currentCriticalLearned: number;
   readonly targetLearned: number;
   readonly criticalCardCount: number;
-  /** Null when fewer than the reliable completion threshold reached the target. */
-  readonly activeMinutes: ForecastRange | null;
-  readonly additionalReviews: ForecastRange | null;
-  readonly elapsedMs: ForecastRange | null;
+  readonly activeMinutes: ForecastRange;
+  readonly additionalReviews: ForecastRange;
+  readonly elapsedMs: ForecastRange;
   readonly deadlineStatus: ForecastDeadlineStatus;
   readonly deadlineConstraint: ForecastDeadlineConstraint;
   readonly simulationStatus: ForecastSimulationStatus;

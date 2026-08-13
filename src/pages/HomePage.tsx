@@ -427,7 +427,8 @@ function useStudyTimeForecast(request: DeriveStudyTimeForecastInput | null): {
         type: "module",
       });
       worker.onmessage = (event: MessageEvent<ForecastWorkerResponse>) => {
-        const result = reduceForecastWorkerResponse(event.data);
+        const result = reduceForecastWorkerResponse(event.data, cancelled);
+        if (result === null) return;
         if (result.status === "ready") {
           setForecast(result.forecast);
         } else {

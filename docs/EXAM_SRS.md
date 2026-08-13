@@ -209,42 +209,60 @@ and navigation belonging to both cards. The simulation therefore uses one global
 pace distribution for all canonical modes. Valid `responseTimeMs` values are only a
 secondary cold-start fallback because they do not include explanation reading and
 navigation. With insufficient history, named conservative fallback cycle values are
-used and calibration confidence remains low.
+also mixed into the sampled pace distribution as pseudo-observations; three repeats
+of the fallback low/median/high values provide strong regularisation for the first
+few real gaps, while 50 recent gaps make the prior relatively small. Calibration
+confidence still reflects real timestamp-gap evidence, not pseudo-samples.
 
 Outcome calibration interprets ReviewEvents through `deriveReviewEvidence`, then
 replays all usable history chronologically to classify each observation by mode family
 and its true previous learning bucket (`unseen`, recovery, `learning`, or `learned`),
 then counts only the most recent 300 observations. This bounded recency window keeps
 old performance from dominating a finite-horizon cram estimate without making the
-first retained observation look artificially unseen. Sparse buckets use transparent
-pseudocount shrinkage toward a broader learner distribution. Cold starts use
-documented conservative priors, and these frequencies describe only simulated next
-review outcomes under this app—not a probability of remembering at the exam.
+first retained observation look artificially unseen. Outcome estimates use explicit
+hierarchical smoothing: fallback prior → global learner distribution → mode family
+distribution → learning-bucket distribution. Each level retains named prior weight,
+so sparse evidence cannot make the next-review outcome effectively 0% or 100%; with
+enough consistent observations, the empirical evidence dominates. MCQ smoothing is
+performed only over failure and strong success, preserving zero `weak_success` for
+canonical MCQ outcomes. These frequencies describe only simulated next-review
+outcomes under this app—not a probability of remembering at the exam.
 
 Each of 256 deterministic simulation runs starts from the current compact Exam-SRS
 snapshot. It asks the ordinary selector for each next candidate, keeps its ordering,
 Chapter 0 gate, high-yield pressure, prerequisite guidance, recent-card avoidance,
 and deadline intervals, samples a calibrated outcome and active review cycle, and
 applies the shared strength/learning-state/due-date transition. Pace samples span the
-full already-filtered empirical distribution; the displayed 20th-to-80th percentile
-range is the separate uncertainty summary across trajectories. When no card is
-currently eligible, the virtual clock advances to the next due time without adding
-active study time.
+full calibrated distribution after break filtering and sparse-history regularisation;
+the displayed 20th-percentile, median,
+and 80th-percentile values are a separate uncertainty summary across trajectories,
+subject to the censoring rules below. When no card is currently eligible, the virtual
+clock advances to the next due time without adding active study time.
 
 A run either reaches a target with a genuine completion record or is censored at the
 defensive review-count/elapsed-time horizon (or because no eligible card remains).
-Censored runs retain their actual progress and reason for diagnostics but never enter
-completion quantiles as fabricated cap values. With at least 80% of runs complete,
-the target may show completed-run quantiles with a censored label. Below that
-completion fraction it is reported as unresolved within the model horizon, without
-active-time, review-count, elapsed-time, or deadline claims.
+Censored runs retain their actual progress and reason for diagnostics; they are not
+assigned fabricated completion values. Completed trajectories provide observed
+completion times, while censored trajectories establish that completion exceeded the
+horizon. For each requested unconditional quantile `q` (20th percentile, median, or
+80th percentile), if the completion fraction is `c` and `q < c`, the reported value
+uses the completed-trajectory quantile `q / c`. If `q >= c`, that quantile is marked
+unresolved. Thus a target at 80% completion can have a corrected numeric median but
+not an ordinary p80; below 50% completion its median is unresolved. The UI shows
+numeric values only where identifiable and never substitutes the largest completed
+trajectory.
 
 Active study time is therefore separate from elapsed time: five hours of active work
 may require more than five hours of wall-clock time when Exam-SRS spacing intervenes.
-Deadline labels compare the median and upper model-range completion times with the
-effective study deadline (`examAt - studyBufferHours`) and exam time. They distinguish
-achieved, comfortable, tight, buffer, after-exam, no-exam, and unresolved cases, and
-call out spacing when waiting—not active workload—is the main constraint.
+Deadline labels compare the corrected median and, only when identifiable, the upper
+model-range completion time with the effective study deadline
+(`examAt - studyBufferHours`) and exam time. They distinguish achieved, comfortable,
+tight, buffer, after-exam, no-exam, and unresolved cases. `comfortable` requires an
+identifiable upper quantile that fits; an identifiable median with an unresolved or
+late upper quantile is `tight`. Recommendations require an identifiable median and
+choose the highest such target before the effective deadline, then before the exam
+when buffer use is necessary. They call out spacing when waiting—not active workload—
+is the main constraint.
 
 The model version and ordered ReviewEvent content/settings seed a local deterministic
 PRNG. The current clock is deliberately not part of that random seed: it can change

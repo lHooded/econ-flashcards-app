@@ -31,16 +31,21 @@ export const FORECAST_PACE_CONSTANTS = Object.freeze({
   fallbackCycleMs: 60 * 1000,
   fallbackLowCycleMs: 35 * 1000,
   fallbackHighCycleMs: 105 * 1000,
+  /** Repeat the three conservative fallback pace values as prior samples. */
+  fallbackPriorSampleRepeats: 3,
 });
 
 export const FORECAST_OUTCOME_CONSTANTS = Object.freeze({
   /** Only this many recent usable outcomes inform the cram forecast. */
   maxRecentOutcomeSamples: 300,
-  /** A bucket estimate keeps this many broader observations as a prior. */
-  shrinkageStrength: 8,
+  /** Every global estimate retains this many fallback-prior observations. */
+  globalPriorStrength: 8,
+  /** Every mode-family estimate retains this many global-prior observations. */
+  modePriorStrength: 8,
+  /** Every learning-bucket estimate retains this many mode-prior observations. */
+  bucketPriorStrength: 8,
   mediumConfidenceSamples: 20,
   highConfidenceSamples: 100,
-  modeSpecificSamples: 8,
 });
 
 export type ForecastModeFamily = "recall_calculation" | "mcq";
@@ -203,23 +208,26 @@ export function calibrateOutcomes(
   }
   const outcomeSampleSize = recentObservations.length;
 
-  const globalDistribution = distributionFromCounts(
+  const globalDistribution = smoothOutcomeDistribution(
     globalCounts,
     fallbackOutcomePrior("recall_calculation"),
+    FORECAST_OUTCOME_CONSTANTS.globalPriorStrength,
   );
   const byModeAndBucket: Record<string, OutcomeDistribution> = {};
   for (const mode of ["recall_calculation", "mcq"] as const) {
     const modeBroad = broaderModeDistribution(
       mode,
       modeCounts.get(mode),
-      outcomeSampleSize,
+      outcomeSampleSize > 0,
       globalDistribution,
     );
     for (const bucket of ["unseen", "recovery", "learning", "learned"] as const) {
       const bucketCounts = countsByKey.get(outcomeBucketKey(mode, bucket));
-      byModeAndBucket[outcomeBucketKey(mode, bucket)] = shrinkOutcomeDistribution(
+      byModeAndBucket[outcomeBucketKey(mode, bucket)] = smoothOutcomeDistribution(
         bucketCounts,
         modeBroad,
+        FORECAST_OUTCOME_CONSTANTS.bucketPriorStrength,
+        mode,
       );
     }
   }
@@ -256,8 +264,8 @@ function makePaceDistribution(
   samples: readonly number[],
   responseFallback: readonly number[] | null,
 ): PaceDistribution {
-  const sourceSamples = samples.length > 0 ? samples : (responseFallback ?? []);
-  if (sourceSamples.length === 0) {
+  const empiricalSamples = samples.length > 0 ? samples : (responseFallback ?? []);
+  if (empiricalSamples.length === 0) {
     return {
       samples: [
         FORECAST_PACE_CONSTANTS.fallbackLowCycleMs,
@@ -272,7 +280,12 @@ function makePaceDistribution(
     };
   }
 
-  const sorted = [...sourceSamples].sort((left, right) => left - right);
+  // A few observed gaps should not overwhelm the conservative cold-start
+  // timing model. These pseudo-samples are deliberately part of the sampled
+  // distribution, while sampleSize remains the count of real timestamp gaps.
+  const sorted = [...fallbackPacePriorSamples(), ...empiricalSamples].sort(
+    (left, right) => left - right,
+  );
   return {
     samples: Object.freeze(sorted),
     lowCycleMs: quantile(sorted, 0.2),
@@ -281,6 +294,17 @@ function makePaceDistribution(
     sampleSize: samples.length,
     source: samples.length > 0 ? "history" : "response_time",
   };
+}
+
+function fallbackPacePriorSamples(): number[] {
+  return Array.from(
+    { length: FORECAST_PACE_CONSTANTS.fallbackPriorSampleRepeats },
+    () => [
+      FORECAST_PACE_CONSTANTS.fallbackLowCycleMs,
+      FORECAST_PACE_CONSTANTS.fallbackCycleMs,
+      FORECAST_PACE_CONSTANTS.fallbackHighCycleMs,
+    ],
+  ).flat();
 }
 
 function responseTimeFallback(
@@ -360,73 +384,81 @@ function incrementCounts(
   countsByMode.set(mode, counts);
 }
 
-function distributionFromCounts(
-  counts: OutcomeCounts,
-  fallback: OutcomeDistribution,
-): OutcomeDistribution {
-  const total = counts.failure + counts.weak_success + counts.strong_success;
-  if (total === 0) return fallback;
-  return {
-    failure: counts.failure / total,
-    weak_success: counts.weak_success / total,
-    strong_success: counts.strong_success / total,
-  };
-}
-
 function broaderModeDistribution(
   mode: ForecastModeFamily,
   counts: OutcomeCounts | undefined,
-  totalOutcomeSamples: number,
+  hasGlobalEvidence: boolean,
   globalDistribution: OutcomeDistribution,
 ): OutcomeDistribution {
-  const modeTotal =
-    counts === undefined
-      ? 0
-      : counts.failure + counts.weak_success + counts.strong_success;
-  if (modeTotal >= FORECAST_OUTCOME_CONSTANTS.modeSpecificSamples) {
-    return distributionFromCounts(counts!, globalDistribution);
-  }
-  if (mode === "mcq") {
-    const broad =
-      totalOutcomeSamples > 0 ? globalDistribution : fallbackOutcomePrior(mode);
-    return normalizeOutcomeDistribution({
-      failure: broad.failure,
-      weak_success: 0,
-      strong_success: broad.strong_success,
-    });
-  }
-  return totalOutcomeSamples > 0 ? globalDistribution : fallbackOutcomePrior(mode);
+  const modePrior = hasGlobalEvidence
+    ? constrainOutcomeDistributionToMode(mode, globalDistribution)
+    : fallbackOutcomePrior(mode);
+  return smoothOutcomeDistribution(
+    counts,
+    modePrior,
+    FORECAST_OUTCOME_CONSTANTS.modePriorStrength,
+    mode,
+  );
 }
 
-function shrinkOutcomeDistribution(
+function smoothOutcomeDistribution(
   bucketCounts: OutcomeCounts | undefined,
-  broader: OutcomeDistribution,
+  priorDistribution: OutcomeDistribution,
+  priorStrength: number,
+  mode?: ForecastModeFamily,
 ): OutcomeDistribution {
   const counts = bucketCounts ?? emptyOutcomeCounts();
-  const sampleSize = counts.failure + counts.weak_success + counts.strong_success;
-  const prior = FORECAST_OUTCOME_CONSTANTS.shrinkageStrength;
-  return normalizeOutcomeDistribution({
-    failure: (counts.failure + prior * broader.failure) / (sampleSize + prior),
-    weak_success:
-      (counts.weak_success + prior * broader.weak_success) / (sampleSize + prior),
-    strong_success:
-      (counts.strong_success + prior * broader.strong_success) / (sampleSize + prior),
-  });
+  const constrainedPrior =
+    mode === undefined
+      ? priorDistribution
+      : constrainOutcomeDistributionToMode(mode, priorDistribution);
+  const empiricalWeakSuccess = mode === "mcq" ? 0 : counts.weak_success;
+  const sampleSize = counts.failure + empiricalWeakSuccess + counts.strong_success;
+  const denominator = sampleSize + priorStrength;
+  return normalizeOutcomeDistribution(
+    {
+      failure:
+        (counts.failure + priorStrength * constrainedPrior.failure) / denominator,
+      weak_success:
+        (empiricalWeakSuccess + priorStrength * constrainedPrior.weak_success) /
+        denominator,
+      strong_success:
+        (counts.strong_success + priorStrength * constrainedPrior.strong_success) /
+        denominator,
+    },
+    mode,
+  );
 }
 
 function normalizeOutcomeDistribution(
   distribution: OutcomeDistribution,
+  mode: ForecastModeFamily = "recall_calculation",
 ): OutcomeDistribution {
   const total =
     distribution.failure + distribution.weak_success + distribution.strong_success;
   if (total <= 0 || !Number.isFinite(total)) {
-    return fallbackOutcomePrior("recall_calculation");
+    return fallbackOutcomePrior(mode);
   }
   return {
     failure: distribution.failure / total,
     weak_success: distribution.weak_success / total,
     strong_success: distribution.strong_success / total,
   };
+}
+
+function constrainOutcomeDistributionToMode(
+  mode: ForecastModeFamily,
+  distribution: OutcomeDistribution,
+): OutcomeDistribution {
+  if (mode !== "mcq") return normalizeOutcomeDistribution(distribution, mode);
+  return normalizeOutcomeDistribution(
+    {
+      failure: distribution.failure,
+      weak_success: 0,
+      strong_success: distribution.strong_success,
+    },
+    mode,
+  );
 }
 
 function fallbackOutcomePrior(mode: ForecastModeFamily): OutcomeDistribution {

@@ -75,8 +75,9 @@ export function StudyTimeForecast({ forecast }: StudyTimeForecastProps) {
           <p>
             The forecast calibrates review-cycle timing from recent event timestamps,
             uses your recent failure / weak-success / strong-success mix, and runs a
-            deterministic model of normal Exam-SRS selection and spacing. The model
-            range is the central 20%–80% of those simulations.
+            deterministic model of normal Exam-SRS selection and spacing. When some runs
+            do not reach a target within the model horizon, its reported quantiles
+            account for those censored runs and are shown only when identifiable.
           </p>
           <p>
             Active study time is the time spent completing reviews. Elapsed time also
@@ -143,16 +144,16 @@ function ForecastTargetRow({ target }: { readonly target: TargetForecast }) {
               <strong>{target.targetLearned} cards</strong>
             </div>
           )}
-          {target.activeMinutes === null ? (
+          {target.activeMinutes.median === null ? (
             <div>
               <span>Model estimate</span>
-              <strong>Not reliably reached within model horizon</strong>
+              <strong>Median not reliably reached within model horizon</strong>
             </div>
           ) : (
             <>
               <div>
                 <span>Additional reviews</span>
-                <strong>{formatRange(target.additionalReviews!, formatReviews)}</strong>
+                <strong>{formatRange(target.additionalReviews, formatReviews)}</strong>
               </div>
               <div>
                 <span>Active study</span>
@@ -160,7 +161,7 @@ function ForecastTargetRow({ target }: { readonly target: TargetForecast }) {
               </div>
               <div>
                 <span>Elapsed with spacing</span>
-                <strong>{formatRangeMs(target.elapsedMs!)}</strong>
+                <strong>{formatRangeMs(target.elapsedMs)}</strong>
               </div>
             </>
           )}
@@ -219,10 +220,13 @@ function formatDeadlineStatus(status: ForecastDeadlineStatus): string {
 }
 
 function formatTargetSummary(target: TargetForecast): string {
-  if (target.simulationStatus === "unresolved" || target.activeMinutes === null) {
+  if (target.activeMinutes.median === null) {
     return "> model horizon";
   }
   const active = formatActiveDuration(target.activeMinutes.median);
+  if (target.activeMinutes.high === null) {
+    return `${active} · upper unresolved`;
+  }
   return target.simulationStatus === "censored" ? `${active} · censored` : active;
 }
 
@@ -253,13 +257,19 @@ function formatRange(
   range: ForecastRange,
   formatter: (value: number) => string,
 ): string {
-  if (range.low === range.high) return formatter(range.median);
-  return `${formatter(range.low)}–${formatter(range.high)}`;
+  if (range.median === null) return "Not reliably reached";
+  if (range.low !== null && range.high !== null) {
+    if (range.low === range.high) return formatter(range.median);
+    return `${formatter(range.low)}–${formatter(range.high)}`;
+  }
+  if (range.high === null) {
+    return `${formatter(range.median)} median · upper beyond model horizon`;
+  }
+  return `lower unresolved · ${formatter(range.median)} median–${formatter(range.high)}`;
 }
 
 function formatRangeMs(range: ForecastRange): string {
-  if (range.low === range.high) return formatElapsed(range.median);
-  return `${formatElapsed(range.low)}–${formatElapsed(range.high)}`;
+  return formatRange(range, formatElapsed);
 }
 
 function formatMinutes(value: number): string {

@@ -10,7 +10,9 @@ export type ForecastWorkerLoadState =
 
 export function reduceForecastWorkerResponse(
   response: ForecastWorkerResponse,
-): ForecastWorkerLoadState {
+  cancelled = false,
+): ForecastWorkerLoadState | null {
+  if (cancelled) return null;
   return response.type === "complete"
     ? { status: "ready", forecast: response.forecast }
     : { status: "error", message: response.message };

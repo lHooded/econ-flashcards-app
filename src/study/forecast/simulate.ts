@@ -40,9 +40,8 @@ export const FORECAST_SIMULATION_CONSTANTS = Object.freeze({
   runCount: 256,
   maxReviewsPerRun: 5000,
   maxElapsedMs: 30 * DAY_MS,
-  /** Completion fractions below this threshold are not shown as ordinary ranges. */
-  minimumReliableCompletionFraction: 0.8,
   lowerQuantile: 0.2,
+  medianQuantile: 0.5,
   upperQuantile: 0.8,
   recentCardLimit: 3,
 });

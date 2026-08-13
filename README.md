@@ -40,22 +40,30 @@ Learned), Exam-ready (90% Learned plus every critical exam-yield card seen), Str
 The forecast calibrates overall review-cycle timing from recent chronological
 review-event timestamps and calibrates failure / weak-success / strong-success
 outcomes from the most recent 300 usable observations, replaying older history first
-so each outcome keeps its true preceding learning bucket. Timestamp gaps are not
-treated as reliable recall-versus-MCQ cycle times; the simulation uses one global
-pace distribution across canonical modes. A deterministic seeded simulation reuses
-normal Exam-SRS selection, transitions, recent-card avoidance, prerequisite guidance,
-and deadline intervals. It samples the full already-filtered pace distribution, then
-reports an empirical 20th–80th model range—not a statistical confidence interval.
-Displayed confidence describes calibration evidence only.
+so each outcome keeps its true preceding learning bucket. Sparse outcome evidence is
+smoothed hierarchically through fallback prior → global learner → mode family →
+learning bucket, so one success or failure cannot collapse the model to 0%/100%.
+Timestamp gaps are not treated as reliable recall-versus-MCQ cycle times; the
+simulation uses one global pace distribution across canonical modes. Sparse pace
+history is regularised with conservative fallback pseudo-samples and becomes
+increasingly empirical as real gaps accumulate. A deterministic seeded simulation
+reuses normal Exam-SRS selection, transitions, recent-card avoidance, prerequisite
+guidance, and deadline intervals. It samples the full calibrated pace distribution
+after break filtering and sparse-history regularisation, then reports empirical
+20th-percentile, median, and 80th-percentile
+model quantiles where censoring makes them identifiable—not a statistical confidence
+interval. Displayed confidence describes calibration evidence only.
 
 Runs that do not reach a target within the defensive review-count or elapsed-time
-horizon are censored, not assigned an invented completion time. If at least 80% of
-runs reach a target, ranges use only genuine completed trajectories and are marked
-censored; below that threshold the target is shown as not reliably reached within the
-model horizon. Recommendations choose the highest target with a reliable median
-completion before the effective study deadline, then the highest reliable target
-before the exam if the buffer is needed. A worker calculation failure is a temporary
-forecast-availability issue; it does not affect saved progress and can be retried.
+horizon are censored, not assigned an invented completion time. Completed trajectories
+provide observed completion times while censored trajectories establish that the
+target took longer than the model horizon. Each requested quantile is shown only when
+mathematically identifiable after accounting for the completion fraction; an
+unresolved median is not used for deadline recommendations. Recommendations choose
+the highest target with an identifiable median before the effective study deadline,
+then the highest such target before the exam if the buffer is needed. A worker
+calculation failure is a temporary forecast-availability issue; it does not affect
+saved progress and can be retried.
 
 Forecast state is never persisted. It is recreated from the canonical cards, review
 events, exam settings, model version, and current time. Active study time excludes

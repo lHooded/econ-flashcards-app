@@ -113,35 +113,32 @@ function createTargetForecast(
   const simulationStatus = achieved ? "estimated" : simulationStatusFor(simulation);
   const activeMinutes = achieved
     ? zeroForecastRange()
-    : simulationStatus === "unresolved"
-      ? null
-      : rangeFromValues(
-          simulation.completions.map((value) => value.activeMs / MINUTE_MS),
-          false,
-        );
+    : censorAwareRangeFromValues(
+        simulation.completions.map((value) => value.activeMs / MINUTE_MS),
+        simulation.simulationRuns,
+        false,
+      );
   const additionalReviews = achieved
     ? zeroForecastRange()
-    : simulationStatus === "unresolved"
-      ? null
-      : rangeFromValues(
-          simulation.completions.map((value) => value.additionalReviews),
-          true,
-        );
+    : censorAwareRangeFromValues(
+        simulation.completions.map((value) => value.additionalReviews),
+        simulation.simulationRuns,
+        true,
+      );
   const elapsedMs = achieved
     ? zeroForecastRange()
-    : simulationStatus === "unresolved"
-      ? null
-      : rangeFromValues(
-          simulation.completions.map((value) => value.elapsedMs),
-          false,
-        );
+    : censorAwareRangeFromValues(
+        simulation.completions.map((value) => value.elapsedMs),
+        simulation.simulationRuns,
+        false,
+      );
   const deadline = deriveForecastDeadlineInterpretation({
     achieved,
     estimateReliable: simulationStatus !== "unresolved",
-    medianElapsedMs: elapsedMs?.median ?? 0,
-    highElapsedMs: elapsedMs?.high ?? 0,
+    medianElapsedMs: elapsedMs.median,
+    highElapsedMs: elapsedMs.high,
     medianActiveMs:
-      activeMinutes?.median === undefined ? 0 : activeMinutes.median * MINUTE_MS,
+      activeMinutes.median === null ? null : activeMinutes.median * MINUTE_MS,
     settings,
     nowMs,
   });
@@ -182,10 +179,7 @@ function simulationStatusFor(
   ) {
     return "estimated";
   }
-  if (
-    simulation.completionFraction >=
-    FORECAST_SIMULATION_CONSTANTS.minimumReliableCompletionFraction
-  ) {
+  if (simulation.completionFraction > FORECAST_SIMULATION_CONSTANTS.medianQuantile) {
     return "censored";
   }
   return "unresolved";
@@ -195,24 +189,54 @@ function zeroForecastRange(): ForecastRange {
   return { low: 0, median: 0, high: 0 };
 }
 
-function rangeFromValues(values: readonly number[], integer: boolean): ForecastRange {
+/**
+ * Convert completed trajectories into unconditional model quantiles. A target
+ * completed by fraction c of runs has a q quantile only when q < c; in that
+ * case the observed completer quantile is q / c. Quantiles at or beyond c are
+ * censored rather than replaced with a completed-run maximum.
+ */
+export function censorAwareRangeFromValues(
+  values: readonly number[],
+  simulationRuns: number,
+  integer: boolean,
+): ForecastRange {
   const sorted = [...values].sort((left, right) => left - right);
-  const range = {
-    low: quantile(sorted, FORECAST_SIMULATION_CONSTANTS.lowerQuantile),
-    median: quantile(sorted, 0.5),
-    high: quantile(sorted, FORECAST_SIMULATION_CONSTANTS.upperQuantile),
+  const completionFraction =
+    simulationRuns > 0 ? Math.min(1, sorted.length / simulationRuns) : 0;
+  return {
+    low: identifiableQuantile(
+      sorted,
+      completionFraction,
+      FORECAST_SIMULATION_CONSTANTS.lowerQuantile,
+      integer,
+    ),
+    median: identifiableQuantile(
+      sorted,
+      completionFraction,
+      FORECAST_SIMULATION_CONSTANTS.medianQuantile,
+      integer,
+    ),
+    high: identifiableQuantile(
+      sorted,
+      completionFraction,
+      FORECAST_SIMULATION_CONSTANTS.upperQuantile,
+      integer,
+    ),
   };
-  return integer
-    ? {
-        low: Math.round(range.low),
-        median: Math.round(range.median),
-        high: Math.round(range.high),
-      }
-    : range;
+}
+
+function identifiableQuantile(
+  sorted: readonly number[],
+  completionFraction: number,
+  unconditionalFraction: number,
+  integer: boolean,
+): number | null {
+  if (sorted.length === 0 || unconditionalFraction >= completionFraction) return null;
+  const value = quantile(sorted, unconditionalFraction / completionFraction);
+  return integer ? Math.round(value) : value;
 }
 
 function quantile(sorted: readonly number[], fraction: number): number {
-  if (sorted.length === 0) return 0;
   const position = (sorted.length - 1) * fraction;
   const lower = Math.floor(position);
   const upper = Math.ceil(position);
@@ -223,16 +247,18 @@ function quantile(sorted: readonly number[], fraction: number): number {
 export function deriveForecastDeadlineInterpretation(input: {
   readonly achieved: boolean;
   readonly estimateReliable: boolean;
-  readonly medianElapsedMs: number;
-  readonly highElapsedMs: number;
-  readonly medianActiveMs: number;
+  readonly medianElapsedMs: number | null;
+  readonly highElapsedMs: number | null;
+  readonly medianActiveMs: number | null;
   readonly settings: AppSettings;
   readonly nowMs: number;
 }): ForecastDeadlineInterpretation {
   const { achieved, medianElapsedMs, highElapsedMs, medianActiveMs, settings, nowMs } =
     input;
   if (achieved) return { status: "achieved", constraint: "none" };
-  if (!input.estimateReliable) return { status: "unresolved", constraint: "none" };
+  if (!input.estimateReliable || medianElapsedMs === null) {
+    return { status: "unresolved", constraint: "none" };
+  }
   const deadlineMs = getStudyDeadlineMs(settings);
   const examAtMs = getExamAtMs(settings);
   if (deadlineMs === null || examAtMs === null) {
@@ -241,9 +267,9 @@ export function deriveForecastDeadlineInterpretation(input: {
 
   const availableToDeadlineMs = Math.max(0, deadlineMs - nowMs);
   const medianCompletionMs = nowMs + medianElapsedMs;
-  const highCompletionMs = nowMs + highElapsedMs;
+  const highCompletionMs = highElapsedMs === null ? null : nowMs + highElapsedMs;
   let status: ForecastDeadlineStatus;
-  if (highCompletionMs <= deadlineMs) {
+  if (highCompletionMs !== null && highCompletionMs <= deadlineMs) {
     status = "comfortable";
   } else if (medianCompletionMs <= deadlineMs) {
     status = "tight";
@@ -256,6 +282,7 @@ export function deriveForecastDeadlineInterpretation(input: {
   if (
     status !== "comfortable" &&
     medianCompletionMs > deadlineMs &&
+    medianActiveMs !== null &&
     medianActiveMs <= availableToDeadlineMs
   ) {
     return { status, constraint: "spacing" };
@@ -337,7 +364,7 @@ export function makeForecastRecommendation(
 }
 
 function hasUsableForecast(target: TargetForecast): boolean {
-  return target.simulationStatus !== "unresolved" && target.elapsedMs !== null;
+  return target.simulationStatus !== "unresolved" && target.elapsedMs.median !== null;
 }
 
 function recommendationExplanation(target: TargetForecast, reason: string): string {

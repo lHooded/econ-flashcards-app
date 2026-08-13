@@ -5,7 +5,7 @@ import {
 } from "../../domain/progress";
 
 /** Stable model identifier included in every forecast seed and output. */
-export const STUDY_TIME_FORECAST_MODEL_VERSION = "study-time-forecast-v1";
+export const STUDY_TIME_FORECAST_MODEL_VERSION = "study-time-forecast-v1.1";
 
 export interface SeededRandom {
   readonly next: () => number;
