@@ -37,12 +37,25 @@ spacing for five transparent, operational targets: Full coverage, Working (80%
 Learned), Exam-ready (90% Learned plus every critical exam-yield card seen), Strong
 (95% Learned plus every critical card Learned), and Near-complete (100% Learned).
 
-The forecast calibrates review-cycle timing from recent chronological review-event
-timestamps and calibrates failure / weak-success / strong-success outcomes from the
-learner's own evidence. A deterministic seeded simulation reuses normal Exam-SRS
-selection, transitions, recent-card avoidance, prerequisite guidance, and deadline
-intervals. Its model range is an empirical simulation range, not a statistical
-confidence interval; displayed confidence describes calibration evidence only.
+The forecast calibrates overall review-cycle timing from recent chronological
+review-event timestamps and calibrates failure / weak-success / strong-success
+outcomes from the most recent 300 usable observations, replaying older history first
+so each outcome keeps its true preceding learning bucket. Timestamp gaps are not
+treated as reliable recall-versus-MCQ cycle times; the simulation uses one global
+pace distribution across canonical modes. A deterministic seeded simulation reuses
+normal Exam-SRS selection, transitions, recent-card avoidance, prerequisite guidance,
+and deadline intervals. It samples the full already-filtered pace distribution, then
+reports an empirical 20th–80th model range—not a statistical confidence interval.
+Displayed confidence describes calibration evidence only.
+
+Runs that do not reach a target within the defensive review-count or elapsed-time
+horizon are censored, not assigned an invented completion time. If at least 80% of
+runs reach a target, ranges use only genuine completed trajectories and are marked
+censored; below that threshold the target is shown as not reliably reached within the
+model horizon. Recommendations choose the highest target with a reliable median
+completion before the effective study deadline, then the highest reliable target
+before the exam if the buffer is needed. A worker calculation failure is a temporary
+forecast-availability issue; it does not affect saved progress and can be retried.
 
 Forecast state is never persisted. It is recreated from the canonical cards, review
 events, exam settings, model version, and current time. Active study time excludes

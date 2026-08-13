@@ -91,7 +91,7 @@ export function deriveStudyTimeForecast(
       confidence: outcomes.confidence,
     },
     targets,
-    recommendation: makeRecommendation(targets, input.settings),
+    recommendation: makeForecastRecommendation(targets, input.settings),
   };
 }
 
@@ -110,26 +110,38 @@ function createTargetForecast(
     STUDY_FORECAST_TARGETS.find((target) => target.id === id)!,
     currentProgress,
   );
-  const values = simulation.completions.map(
-    (completion) => completion ?? simulation.capCompletion,
-  );
-  const activeMinutes = rangeFromValues(
-    values.map((value) => value.activeMs / MINUTE_MS),
-    false,
-  );
-  const additionalReviews = rangeFromValues(
-    values.map((value) => value.additionalReviews),
-    true,
-  );
-  const elapsedMs = rangeFromValues(
-    values.map((value) => value.elapsedMs),
-    false,
-  );
+  const simulationStatus = achieved ? "estimated" : simulationStatusFor(simulation);
+  const activeMinutes = achieved
+    ? zeroForecastRange()
+    : simulationStatus === "unresolved"
+      ? null
+      : rangeFromValues(
+          simulation.completions.map((value) => value.activeMs / MINUTE_MS),
+          false,
+        );
+  const additionalReviews = achieved
+    ? zeroForecastRange()
+    : simulationStatus === "unresolved"
+      ? null
+      : rangeFromValues(
+          simulation.completions.map((value) => value.additionalReviews),
+          true,
+        );
+  const elapsedMs = achieved
+    ? zeroForecastRange()
+    : simulationStatus === "unresolved"
+      ? null
+      : rangeFromValues(
+          simulation.completions.map((value) => value.elapsedMs),
+          false,
+        );
   const deadline = deriveForecastDeadlineInterpretation({
     achieved,
-    medianElapsedMs: elapsedMs.median,
-    highElapsedMs: elapsedMs.high,
-    medianActiveMs: activeMinutes.median * MINUTE_MS,
+    estimateReliable: simulationStatus !== "unresolved",
+    medianElapsedMs: elapsedMs?.median ?? 0,
+    highElapsedMs: elapsedMs?.high ?? 0,
+    medianActiveMs:
+      activeMinutes?.median === undefined ? 0 : activeMinutes.median * MINUTE_MS,
     settings,
     nowMs,
   });
@@ -139,6 +151,8 @@ function createTargetForecast(
     label,
     criterion,
     achieved,
+    totalCards,
+    currentSeen: currentProgress.seen,
     currentCoverage: totalCards === 0 ? 100 : (currentProgress.seen / totalCards) * 100,
     currentLearned: currentProgress.learned,
     currentCriticalSeen: currentProgress.criticalSeen,
@@ -150,11 +164,35 @@ function createTargetForecast(
     elapsedMs,
     deadlineStatus: deadline.status,
     deadlineConstraint: deadline.constraint,
-    simulationStatus:
-      simulation.completedRuns === simulation.simulationRuns ? "estimated" : "capped",
+    simulationStatus,
     completedRuns: simulation.completedRuns,
     simulationRuns: simulation.simulationRuns,
+    completionFraction: simulation.completionFraction,
+    censoredRuns: simulation.censoredRuns,
+    censorReasons: simulation.censorReasons,
   };
+}
+
+function simulationStatusFor(
+  simulation: ReturnType<typeof simulateStudyForecast>["byTarget"][ForecastTargetId],
+): TargetForecast["simulationStatus"] {
+  if (
+    simulation.simulationRuns > 0 &&
+    simulation.completedRuns === simulation.simulationRuns
+  ) {
+    return "estimated";
+  }
+  if (
+    simulation.completionFraction >=
+    FORECAST_SIMULATION_CONSTANTS.minimumReliableCompletionFraction
+  ) {
+    return "censored";
+  }
+  return "unresolved";
+}
+
+function zeroForecastRange(): ForecastRange {
+  return { low: 0, median: 0, high: 0 };
 }
 
 function rangeFromValues(values: readonly number[], integer: boolean): ForecastRange {
@@ -184,6 +222,7 @@ function quantile(sorted: readonly number[], fraction: number): number {
 
 export function deriveForecastDeadlineInterpretation(input: {
   readonly achieved: boolean;
+  readonly estimateReliable: boolean;
   readonly medianElapsedMs: number;
   readonly highElapsedMs: number;
   readonly medianActiveMs: number;
@@ -193,6 +232,7 @@ export function deriveForecastDeadlineInterpretation(input: {
   const { achieved, medianElapsedMs, highElapsedMs, medianActiveMs, settings, nowMs } =
     input;
   if (achieved) return { status: "achieved", constraint: "none" };
+  if (!input.estimateReliable) return { status: "unresolved", constraint: "none" };
   const deadlineMs = getStudyDeadlineMs(settings);
   const examAtMs = getExamAtMs(settings);
   if (deadlineMs === null || examAtMs === null) {
@@ -226,7 +266,7 @@ export function deriveForecastDeadlineInterpretation(input: {
   return { status, constraint: "none" };
 }
 
-function makeRecommendation(
+export function makeForecastRecommendation(
   targets: readonly TargetForecast[],
   settings: AppSettings,
 ): { readonly targetId: ForecastTargetId | null; readonly explanation: string } {
@@ -242,51 +282,44 @@ function makeRecommendation(
   const deadlineMs = getStudyDeadlineMs(settings);
   const examAtMs = getExamAtMs(settings);
   if (deadlineMs === null || examAtMs === null) {
-    const target = outstanding[outstanding.length - 1];
+    const target = [...outstanding].reverse().find(hasUsableForecast) ?? outstanding[0];
     return {
       targetId: target.id,
-      explanation: `With no exam deadline configured, ${target.label} is the highest remaining app-defined target.`,
+      explanation: hasUsableForecast(target)
+        ? `With no exam deadline configured, ${target.label} is the highest remaining app-defined target.`
+        : `With no exam deadline configured, ${target.label} is the next priority, but its model is not reliably resolved within the defensive horizon.`,
     };
   }
 
-  const comfortable = outstanding.filter(
-    (target) => target.deadlineStatus === "comfortable",
+  const beforeDeadline = outstanding.filter(
+    (target) =>
+      hasUsableForecast(target) &&
+      (target.deadlineStatus === "comfortable" || target.deadlineStatus === "tight"),
   );
-  if (comfortable.length > 0) {
-    const target = comfortable[comfortable.length - 1];
-    return {
-      targetId: target.id,
-      explanation: recommendationExplanation(
-        target,
-        "The upper model range fits before your effective study deadline.",
-      ),
-    };
-  }
-
-  const medianDeadline = outstanding.filter(
-    (target) => target.deadlineStatus === "tight",
-  );
-  if (medianDeadline.length > 0) {
-    const target = medianDeadline[medianDeadline.length - 1];
-    return {
-      targetId: target.id,
-      explanation: recommendationExplanation(
-        target,
-        target.deadlineConstraint === "spacing"
+  if (beforeDeadline.length > 0) {
+    const target = beforeDeadline[beforeDeadline.length - 1];
+    const reason =
+      target.deadlineStatus === "comfortable"
+        ? "The upper model range fits before your effective study deadline."
+        : target.deadlineConstraint === "spacing"
           ? "The median fits before the effective study deadline, but spacing makes the model range tight."
-          : "The median fits before the effective study deadline, but the model range is tight.",
-      ),
+          : "The median fits before the effective study deadline, but the model range is tight.";
+    return {
+      targetId: target.id,
+      explanation: recommendationExplanation(target, reason),
     };
   }
 
-  const buffer = outstanding.filter((target) => target.deadlineStatus === "buffer");
-  if (buffer.length > 0) {
-    const target = buffer[buffer.length - 1];
+  const beforeExam = outstanding.filter(
+    (target) => hasUsableForecast(target) && target.deadlineStatus === "buffer",
+  );
+  if (beforeExam.length > 0) {
+    const target = beforeExam[beforeExam.length - 1];
     return {
       targetId: target.id,
       explanation: recommendationExplanation(
         target,
-        "This is likely to require using the deliberate buffer between the study deadline and exam.",
+        "The median fits before the exam, but reaching this target likely requires using the deliberate buffer.",
       ),
     };
   }
@@ -294,18 +327,29 @@ function makeRecommendation(
   const nextTarget = outstanding[0];
   return {
     targetId: nextTarget.id,
-    explanation: recommendationExplanation(
-      nextTarget,
-      `No remaining target has a median completion before the exam at this calibrated pace; start with ${nextTarget.label}.`,
-    ),
+    explanation: hasUsableForecast(nextTarget)
+      ? recommendationExplanation(
+          nextTarget,
+          `No remaining target has a median completion before the exam at this calibrated pace; start with ${nextTarget.label}.`,
+        )
+      : `No remaining target has a reliable median forecast before the exam; prioritise ${nextTarget.label} first and treat the model as unresolved.`,
   };
 }
 
+function hasUsableForecast(target: TargetForecast): boolean {
+  return target.simulationStatus !== "unresolved" && target.elapsedMs !== null;
+}
+
 function recommendationExplanation(target: TargetForecast, reason: string): string {
-  if (target.deadlineConstraint === "spacing") {
-    return `${reason} Spacing, rather than active work alone, is the main constraint.`;
-  }
-  return reason;
+  const constraintNote =
+    target.deadlineConstraint === "spacing"
+      ? " Spacing, rather than active work alone, is the main constraint."
+      : "";
+  const censorNote =
+    target.simulationStatus === "censored"
+      ? ` This estimate is censored: ${Math.round(target.completionFraction * 100)}% of model runs reached it.`
+      : "";
+  return `${reason}${constraintNote}${censorNote}`;
 }
 
 function combineConfidence(

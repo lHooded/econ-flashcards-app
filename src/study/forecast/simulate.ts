@@ -22,7 +22,6 @@ import {
   getForecastLearningBucket,
   getForecastModeFamily,
   getOutcomeDistribution,
-  getPaceDistribution,
   type OutcomeCalibration,
   type PaceCalibration,
 } from "./calibration";
@@ -35,11 +34,14 @@ import {
   type ForecastTargetId,
 } from "./targets";
 import type { ForecastTargetProgress } from "./targets";
+import type { ForecastCensorReason } from "./model";
 
 export const FORECAST_SIMULATION_CONSTANTS = Object.freeze({
   runCount: 256,
   maxReviewsPerRun: 5000,
   maxElapsedMs: 30 * DAY_MS,
+  /** Completion fractions below this threshold are not shown as ordinary ranges. */
+  minimumReliableCompletionFraction: 0.8,
   lowerQuantile: 0.2,
   upperQuantile: 0.8,
   recentCardLimit: 3,
@@ -51,12 +53,24 @@ export interface SimulationCompletion {
   readonly elapsedMs: number;
 }
 
+export interface SimulationCensoring {
+  readonly reason: ForecastCensorReason;
+  /** Actual progress when the trajectory stopped; never an invented completion. */
+  readonly activeMs: number;
+  readonly additionalReviews: number;
+  readonly elapsedMs: number;
+}
+
 export interface SimulationTargetResult {
   readonly id: ForecastTargetId;
-  readonly completions: readonly (SimulationCompletion | null)[];
+  /** Genuine target completions only; censored trajectories are excluded. */
+  readonly completions: readonly SimulationCompletion[];
   readonly completedRuns: number;
   readonly simulationRuns: number;
-  readonly capCompletion: SimulationCompletion;
+  readonly completionFraction: number;
+  readonly censoredRuns: number;
+  readonly censorReasons: readonly ForecastCensorReason[];
+  readonly censoring: readonly SimulationCensoring[];
 }
 
 export interface StudyForecastSimulationResult {
@@ -81,40 +95,54 @@ export function simulateStudyForecast(input: {
   readonly seed: number;
   readonly runCount?: number;
   readonly maxReviewsPerRun?: number;
+  /** Test hook; production uses the named defensive horizon above. */
+  readonly maxElapsedMs?: number;
 }): StudyForecastSimulationResult {
   const runCount = input.runCount ?? FORECAST_SIMULATION_CONSTANTS.runCount;
   const maxReviewsPerRun =
     input.maxReviewsPerRun ?? FORECAST_SIMULATION_CONSTANTS.maxReviewsPerRun;
+  const maxElapsedMs = input.maxElapsedMs ?? FORECAST_SIMULATION_CONSTANTS.maxElapsedMs;
   const criticalCardIds = getCriticalForecastCardIds(input.cards);
   const progress = getForecastTargetProgress(
     input.cards,
     input.scheduler,
     criticalCardIds,
   );
-  const completionsByTarget = new Map<
-    ForecastTargetId,
-    Array<SimulationCompletion | null>
-  >(STUDY_FORECAST_TARGETS.map((target) => [target.id, []]));
+  const completionsByTarget = new Map<ForecastTargetId, SimulationCompletion[]>(
+    STUDY_FORECAST_TARGETS.map((target) => [target.id, []]),
+  );
+  const censoringByTarget = new Map<ForecastTargetId, SimulationCensoring[]>(
+    STUDY_FORECAST_TARGETS.map((target) => [target.id, []]),
+  );
 
   for (let runIndex = 0; runIndex < runCount; runIndex += 1) {
-    const runCompletions = simulateOneRun({
+    const runResult = simulateOneRun({
       ...input,
       criticalCardIds,
       maxReviewsPerRun,
+      maxElapsedMs,
       progress,
       random: createSeededRandom(hashForecastSeed(`${input.seed}:${runIndex}`)),
     });
     for (const target of STUDY_FORECAST_TARGETS) {
-      completionsByTarget.get(target.id)!.push(runCompletions.get(target.id) ?? null);
+      const completion = runResult.completions.get(target.id);
+      if (completion !== undefined) {
+        completionsByTarget.get(target.id)!.push(completion);
+      } else if (runResult.censoring !== null) {
+        censoringByTarget.get(target.id)!.push(runResult.censoring);
+      }
     }
   }
 
   const byTarget = Object.fromEntries(
     STUDY_FORECAST_TARGETS.map((target) => {
       const completions = completionsByTarget.get(target.id)!;
-      const completedRuns = completions.filter(
-        (completion): completion is SimulationCompletion => completion !== null,
-      ).length;
+      const censoring = censoringByTarget.get(target.id)!;
+      const completedRuns = completions.length;
+      const completionFraction = runCount === 0 ? 0 : completedRuns / runCount;
+      const censorReasons = Object.freeze([
+        ...new Set(censoring.map((entry) => entry.reason)),
+      ]);
       return [
         target.id,
         {
@@ -122,11 +150,10 @@ export function simulateStudyForecast(input: {
           completions: Object.freeze(completions),
           completedRuns,
           simulationRuns: runCount,
-          capCompletion: {
-            activeMs: maxReviewsPerRun * input.pace.global.medianCycleMs,
-            additionalReviews: maxReviewsPerRun,
-            elapsedMs: FORECAST_SIMULATION_CONSTANTS.maxElapsedMs,
-          },
+          completionFraction,
+          censoredRuns: censoring.length,
+          censorReasons,
+          censoring: Object.freeze(censoring),
         } satisfies SimulationTargetResult,
       ];
     }),
@@ -144,9 +171,13 @@ function simulateOneRun(input: {
   readonly outcomes: OutcomeCalibration;
   readonly criticalCardIds: ReadonlySet<string>;
   readonly maxReviewsPerRun: number;
+  readonly maxElapsedMs: number;
   readonly progress: ReturnType<typeof getForecastTargetProgress>;
   readonly random: { next: () => number };
-}): Map<ForecastTargetId, SimulationCompletion> {
+}): {
+  readonly completions: Map<ForecastTargetId, SimulationCompletion>;
+  readonly censoring: SimulationCensoring | null;
+} {
   const states = input.scheduler.states.map((state) => ({ ...state }));
   const stateByCardId = Object.fromEntries(
     states.map((state) => [state.cardId, state]),
@@ -179,6 +210,7 @@ function simulateOneRun(input: {
   let reviewCount = 0;
   let recentlyShownCardIds: string[] = [];
   let progress = { ...input.progress };
+  let terminationReason: ForecastCensorReason | null = null;
   const prerequisiteTracker = createCardPrerequisiteReadinessTracker(
     input.cards,
     scheduler,
@@ -186,7 +218,7 @@ function simulateOneRun(input: {
 
   while (
     reviewCount < input.maxReviewsPerRun &&
-    virtualNowMs - input.nowMs <= FORECAST_SIMULATION_CONSTANTS.maxElapsedMs &&
+    virtualNowMs - input.nowMs <= input.maxElapsedMs &&
     completions.size < STUDY_FORECAST_TARGETS.length
   ) {
     const phaseChanged = refreshSimulationScheduler(
@@ -208,9 +240,11 @@ function simulateOneRun(input: {
         !Number.isFinite(nextDueAtMs) ||
         nextDueAtMs <= virtualNowMs
       ) {
+        terminationReason = "no_eligible_card";
         break;
       }
-      if (nextDueAtMs - input.nowMs > FORECAST_SIMULATION_CONSTANTS.maxElapsedMs) {
+      if (nextDueAtMs - input.nowMs > input.maxElapsedMs) {
+        terminationReason = "elapsed_horizon";
         break;
       }
       // Necessary spacing contributes to elapsed time, but not active study time.
@@ -221,6 +255,7 @@ function simulateOneRun(input: {
     const selected = next.selection;
     const previousState = scheduler.stateByCardId[selected.card.id];
     if (previousState === undefined) {
+      terminationReason = "no_eligible_card";
       break;
     }
     const mode = modeForCard(selected.card);
@@ -229,12 +264,10 @@ function simulateOneRun(input: {
       getOutcomeDistribution(input.outcomes, getForecastModeFamily(mode), bucket),
       input.random.next(),
     );
-    const cycleMs = sampleCycleMs(
-      getPaceDistribution(input.pace, getForecastModeFamily(mode)),
-      input.random.next(),
-    );
+    const cycleMs = sampleCycleMs(input.pace.global, input.random.next());
     const completedAtMs = virtualNowMs + cycleMs;
-    if (completedAtMs - input.nowMs > FORECAST_SIMULATION_CONSTANTS.maxElapsedMs) {
+    if (completedAtMs - input.nowMs > input.maxElapsedMs) {
+      terminationReason = "elapsed_horizon";
       break;
     }
 
@@ -280,7 +313,26 @@ function simulateOneRun(input: {
     }
   }
 
-  return completions;
+  if (completions.size === STUDY_FORECAST_TARGETS.length) {
+    return { completions, censoring: null };
+  }
+
+  const reason =
+    terminationReason ??
+    (reviewCount >= input.maxReviewsPerRun
+      ? "review_count_cap"
+      : virtualNowMs - input.nowMs >= input.maxElapsedMs
+        ? "elapsed_horizon"
+        : "no_eligible_card");
+  return {
+    completions,
+    censoring: {
+      reason,
+      activeMs,
+      additionalReviews: reviewCount,
+      elapsedMs: virtualNowMs - input.nowMs,
+    },
+  };
 }
 
 function refreshSimulationScheduler(
@@ -355,14 +407,16 @@ function sampleOutcome(
   return "strong_success";
 }
 
-function sampleCycleMs(
+export function sampleCycleMs(
   distribution: { readonly samples: readonly number[] },
   randomValue: number,
 ): number {
   if (distribution.samples.length === 0) return 60 * 1000;
-  // Sample from the central 60% of the empirical distribution so one allowed
-  // but unusual gap cannot dominate a model range.
-  const position = 0.2 + randomValue * 0.6;
+  // Calibration has already rejected breaks and implausibly short gaps. Use
+  // the full remaining empirical distribution so plausible fast/slow cycles
+  // can influence the simulation; target ranges are narrowed separately by
+  // their reported simulation quantiles.
+  const position = Math.min(1, Math.max(0, randomValue));
   const scaled = (distribution.samples.length - 1) * position;
   const lower = Math.floor(scaled);
   const upper = Math.ceil(scaled);

@@ -16,6 +16,10 @@ import { KnowledgeText } from "../components/knowledge/KnowledgeText";
 import { StudyTimeForecast } from "../components/StudyTimeForecast";
 import type { DeriveStudyTimeForecastInput } from "../study/forecast/forecast";
 import type { StudyTimeForecast as StudyTimeForecastModel } from "../study/forecast/model";
+import {
+  reduceForecastWorkerResponse,
+  type ForecastWorkerResponse,
+} from "../study/forecast/workerProtocol";
 import { MINUTE_MS } from "../study/examSrs/intervals";
 
 const FORECAST_CLOCK_BUCKET_MS = 5 * MINUTE_MS;
@@ -94,7 +98,7 @@ export function HomePage() {
           },
     [forecastInputs, snapshot],
   );
-  const forecast = useStudyTimeForecast(forecastRequest);
+  const forecastState = useStudyTimeForecast(forecastRequest);
 
   if (snapshot === null || scheduler === null || summary === null) {
     return null;
@@ -198,7 +202,23 @@ export function HomePage() {
         />
       </section>
 
-      {forecast === null ? (
+      {forecastState.error !== null ? (
+        <section className="study-time-forecast panel" role="alert">
+          <p className="section-kicker">Study time forecast</p>
+          <h2>Study forecast unavailable right now</h2>
+          <p className="muted-text">
+            Your progress is safe. The estimate could not be calculated in the
+            background, so the rest of Home remains available.
+          </p>
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={forecastState.retry}
+          >
+            Retry forecast
+          </button>
+        </section>
+      ) : forecastState.forecast === null ? (
         <section className="study-time-forecast panel" aria-live="polite">
           <p className="section-kicker">Study time forecast</p>
           <h2>Calibrating your study estimate…</h2>
@@ -208,7 +228,7 @@ export function HomePage() {
           </p>
         </section>
       ) : (
-        <StudyTimeForecast forecast={forecast} />
+        <StudyTimeForecast forecast={forecastState.forecast} />
       )}
 
       <section className="quick-start panel" aria-labelledby="quick-start-title">
@@ -368,49 +388,77 @@ export function HomePage() {
   );
 }
 
-function useStudyTimeForecast(
-  request: DeriveStudyTimeForecastInput | null,
-): StudyTimeForecastModel | null {
+function useStudyTimeForecast(request: DeriveStudyTimeForecastInput | null): {
+  readonly forecast: StudyTimeForecastModel | null;
+  readonly error: string | null;
+  readonly retry: () => void;
+} {
   const [forecast, setForecast] = useState<StudyTimeForecastModel | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (request === null) {
       setForecast(null);
+      setError(null);
       return;
     }
 
     setForecast(null);
+    setError(null);
     let cancelled = false;
+    const fail = (message: string) => {
+      if (!cancelled) setError(message);
+    };
     if (typeof Worker === "undefined") {
-      void import("../study/forecast/forecast").then(({ deriveStudyTimeForecast }) => {
-        if (!cancelled) setForecast(deriveStudyTimeForecast(request));
-      });
+      void import("../study/forecast/forecast")
+        .then(({ deriveStudyTimeForecast }) => {
+          if (!cancelled) setForecast(deriveStudyTimeForecast(request));
+        })
+        .catch(() => fail("The fallback forecast calculation failed."));
       return () => {
         cancelled = true;
       };
     }
 
-    const worker = new Worker(new URL("../study/forecast/worker.ts", import.meta.url), {
-      type: "module",
-    });
-    worker.onmessage = (
-      event: MessageEvent<
-        | { readonly type: "complete"; readonly forecast: StudyTimeForecastModel }
-        | { readonly type: "error"; readonly message: string }
-      >,
-    ) => {
-      if (event.data.type === "complete") {
-        setForecast(event.data.forecast);
-      }
-    };
-    worker.postMessage(request);
+    let worker: Worker | null = null;
+    try {
+      worker = new Worker(new URL("../study/forecast/worker.ts", import.meta.url), {
+        type: "module",
+      });
+      worker.onmessage = (event: MessageEvent<ForecastWorkerResponse>) => {
+        const result = reduceForecastWorkerResponse(event.data);
+        if (result.status === "ready") {
+          setForecast(result.forecast);
+        } else {
+          fail(result.message || "The forecast worker returned an error.");
+        }
+      };
+      worker.onerror = () => {
+        fail("The background forecast worker stopped unexpectedly.");
+      };
+      worker.onmessageerror = () => {
+        fail("The forecast result could not be read.");
+      };
+      worker.postMessage(request);
+    } catch {
+      fail("The background forecast worker could not be started.");
+      worker?.terminate();
+      worker = null;
+    }
     return () => {
       cancelled = true;
-      worker.terminate();
+      worker?.terminate();
     };
-  }, [request]);
+  }, [request, retryCount]);
 
-  return forecast;
+  return {
+    forecast,
+    error,
+    retry: () => {
+      setRetryCount((count) => count + 1);
+    },
+  };
 }
 
 function useStableForecastInputs(

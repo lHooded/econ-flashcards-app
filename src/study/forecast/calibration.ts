@@ -21,8 +21,6 @@ export const FORECAST_PACE_CONSTANTS = Object.freeze({
   minInterReviewGapMs: 1.5 * 1000,
   /** Retain recent behaviour without allowing a large history to dominate. */
   maxUsableSamples: 100,
-  /** Mode-specific timing is used only after this many observations. */
-  minModeSamples: 6,
   /** Timestamp gaps below this evidence threshold remain low-confidence. */
   mediumConfidenceSamples: 10,
   highConfidenceSamples: 50,
@@ -36,6 +34,8 @@ export const FORECAST_PACE_CONSTANTS = Object.freeze({
 });
 
 export const FORECAST_OUTCOME_CONSTANTS = Object.freeze({
+  /** Only this many recent usable outcomes inform the cram forecast. */
+  maxRecentOutcomeSamples: 300,
   /** A bucket estimate keeps this many broader observations as a prior. */
   shrinkageStrength: 8,
   mediumConfidenceSamples: 20,
@@ -57,7 +57,6 @@ export interface PaceDistribution {
 
 export interface PaceCalibration {
   readonly global: PaceDistribution;
-  readonly byMode: Readonly<Record<ForecastModeFamily, PaceDistribution>>;
   readonly reviewsPerHour: number;
   readonly sampleSize: number;
   readonly confidence: ForecastConfidence;
@@ -109,7 +108,7 @@ export function calibratePace(reviewEvents: readonly ReviewEvent[]): PaceCalibra
     .slice()
     .sort(compareReviewEventsChronologically)
     .filter((review) => Number.isFinite(Date.parse(review.reviewedAt)));
-  const usableGaps: Array<{ durationMs: number; mode: ForecastModeFamily }> = [];
+  const usableGaps: number[] = [];
 
   for (let index = 1; index < chronological.length; index += 1) {
     const previous = chronological[index - 1];
@@ -119,36 +118,19 @@ export function calibratePace(reviewEvents: readonly ReviewEvent[]): PaceCalibra
       durationMs >= FORECAST_PACE_CONSTANTS.minInterReviewGapMs &&
       durationMs <= FORECAST_PACE_CONSTANTS.maxInterReviewGapMs
     ) {
-      usableGaps.push({
-        durationMs,
-        mode: getForecastModeFamily(current.mode),
-      });
+      usableGaps.push(durationMs);
     }
   }
 
   const recentGaps = usableGaps.slice(-FORECAST_PACE_CONSTANTS.maxUsableSamples);
   const responseFallback = responseTimeFallback(chronological);
-  const global = makePaceDistribution(
-    recentGaps.map((sample) => sample.durationMs),
-    responseFallback,
-  );
-  const byMode = Object.fromEntries(
-    (["recall_calculation", "mcq"] as const).map((mode) => {
-      const modeSamples = recentGaps
-        .filter((sample) => sample.mode === mode)
-        .map((sample) => sample.durationMs);
-      return [
-        mode,
-        modeSamples.length >= FORECAST_PACE_CONSTANTS.minModeSamples
-          ? makePaceDistribution(modeSamples, null)
-          : global,
-      ];
-    }),
-  ) as Readonly<Record<ForecastModeFamily, PaceDistribution>>;
+  // An inter-event gap can include feedback/navigation from both the previous
+  // and current card, so it is evidence of overall throughput, not a mode-
+  // specific whole-card duration.
+  const global = makePaceDistribution(recentGaps, responseFallback);
 
   return {
     global,
-    byMode,
     reviewsPerHour: HOUR_MS / global.medianCycleMs,
     sampleSize: recentGaps.length,
     confidence: confidenceFromSamples(
@@ -171,7 +153,7 @@ export function calibrateOutcomes(
   const stateByCardId = new Map<string, ExamSrsCardState>(
     cards.map((card) => [card.id, createInitialExamSrsCardState(card.id)]),
   );
-  let outcomeSampleSize = 0;
+  const observations: OutcomeObservation[] = [];
 
   const chronological = reviewEvents
     .slice()
@@ -187,11 +169,7 @@ export function calibrateOutcomes(
       stateByCardId.get(review.cardId) ?? createInitialExamSrsCardState(review.cardId);
     const mode = getForecastModeFamily(review.mode);
     const bucket = getForecastLearningBucket(previousState);
-    const key = outcomeBucketKey(mode, bucket);
-    incrementOutcome(countsByKey, key, evidence.outcome);
-    incrementCounts(modeCounts, mode, evidence.outcome);
-    incrementCount(globalCounts, evidence.outcome);
-    outcomeSampleSize += 1;
+    observations.push({ mode, bucket, outcome: evidence.outcome });
 
     stateByCardId.set(
       review.cardId,
@@ -206,6 +184,24 @@ export function calibrateOutcomes(
       }),
     );
   }
+
+  // Replay all usable history above so each observation keeps its true
+  // preceding learning bucket. Only the resulting observations are bounded;
+  // truncating events before replay would incorrectly turn the first retained
+  // review into an `unseen` review.
+  const recentObservations = observations.slice(
+    -FORECAST_OUTCOME_CONSTANTS.maxRecentOutcomeSamples,
+  );
+  for (const observation of recentObservations) {
+    incrementOutcome(
+      countsByKey,
+      outcomeBucketKey(observation.mode, observation.bucket),
+      observation.outcome,
+    );
+    incrementCounts(modeCounts, observation.mode, observation.outcome);
+    incrementCount(globalCounts, observation.outcome);
+  }
+  const outcomeSampleSize = recentObservations.length;
 
   const globalDistribution = distributionFromCounts(
     globalCounts,
@@ -250,11 +246,10 @@ export function getOutcomeDistribution(
   );
 }
 
-export function getPaceDistribution(
-  calibration: PaceCalibration,
-  mode: ForecastModeFamily,
-): PaceDistribution {
-  return calibration.byMode[mode] ?? calibration.global;
+interface OutcomeObservation {
+  readonly mode: ForecastModeFamily;
+  readonly bucket: ForecastLearningBucket;
+  readonly outcome: SchedulerOutcome;
 }
 
 function makePaceDistribution(

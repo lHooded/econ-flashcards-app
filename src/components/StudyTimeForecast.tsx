@@ -100,11 +100,7 @@ function ForecastTargetRow({ target }: { readonly target: TargetForecast }) {
           <small>{targetLabelDetail(target)}</small>
         </span>
         <span className="forecast-target-time">
-          <strong>
-            {target.achieved
-              ? "Achieved"
-              : formatActiveDuration(target.activeMinutes.median)}
-          </strong>
+          <strong>{target.achieved ? "Achieved" : formatTargetSummary(target)}</strong>
           {!target.achieved && (
             <small>{formatDeadlineStatus(target.deadlineStatus)}</small>
           )}
@@ -118,9 +114,11 @@ function ForecastTargetRow({ target }: { readonly target: TargetForecast }) {
           {!target.achieved && target.deadlineConstraint === "spacing"
             ? " · spacing-constrained"
             : ""}
-          {target.simulationStatus === "capped"
-            ? ` · model cap reached in ${target.simulationRuns - target.completedRuns}/${target.simulationRuns} runs`
-            : ""}
+          {target.simulationStatus === "censored"
+            ? ` · censored: ${formatCompletionFraction(target)} of runs reached it`
+            : target.simulationStatus === "unresolved"
+              ? ` · ${formatCompletionFraction(target)} of runs reached it`
+              : ""}
         </p>
         <p className="muted-text">{target.criterion}</p>
         <div className="forecast-detail-grid">
@@ -131,21 +129,50 @@ function ForecastTargetRow({ target }: { readonly target: TargetForecast }) {
               Learned
             </strong>
           </div>
+          {target.id === "coverage" ? (
+            <div>
+              <span>Coverage target</span>
+              <strong>
+                {target.currentSeen}/{target.totalCards} seen → {target.totalCards}/
+                {target.totalCards} seen
+              </strong>
+            </div>
+          ) : (
+            <div>
+              <span>Learned target</span>
+              <strong>{target.targetLearned} cards</strong>
+            </div>
+          )}
+          {target.activeMinutes === null ? (
+            <div>
+              <span>Model estimate</span>
+              <strong>Not reliably reached within model horizon</strong>
+            </div>
+          ) : (
+            <>
+              <div>
+                <span>Additional reviews</span>
+                <strong>{formatRange(target.additionalReviews!, formatReviews)}</strong>
+              </div>
+              <div>
+                <span>Active study</span>
+                <strong>{formatRange(target.activeMinutes, formatMinutes)}</strong>
+              </div>
+              <div>
+                <span>Elapsed with spacing</span>
+                <strong>{formatRangeMs(target.elapsedMs!)}</strong>
+              </div>
+            </>
+          )}
           <div>
-            <span>Learned target</span>
-            <strong>{target.targetLearned} cards</strong>
-          </div>
-          <div>
-            <span>Additional reviews</span>
-            <strong>{formatRange(target.additionalReviews, formatReviews)}</strong>
-          </div>
-          <div>
-            <span>Active study</span>
-            <strong>{formatRange(target.activeMinutes, formatMinutes)}</strong>
-          </div>
-          <div>
-            <span>Elapsed with spacing</span>
-            <strong>{formatRangeMs(target.elapsedMs)}</strong>
+            <span>Simulation evidence</span>
+            <strong>
+              {target.completedRuns}/{target.simulationRuns} runs reached it (
+              {formatCompletionFraction(target)})
+              {target.censorReasons.length > 0
+                ? ` · ${formatCensorReasons(target)}`
+                : ""}
+            </strong>
           </div>
           {target.criticalCardCount > 0 && (
             <div>
@@ -163,7 +190,9 @@ function ForecastTargetRow({ target }: { readonly target: TargetForecast }) {
 }
 
 function targetLabelDetail(target: TargetForecast): string {
-  if (target.id === "coverage") return "100% coverage";
+  if (target.id === "coverage") {
+    return `${target.currentSeen}/${target.totalCards} seen · 100% coverage target`;
+  }
   const definition = STUDY_FORECAST_TARGETS.find(
     (candidate) => candidate.id === target.id,
   );
@@ -184,7 +213,36 @@ function formatDeadlineStatus(status: ForecastDeadlineStatus): string {
       return "Likely after exam";
     case "no_exam":
       return "No exam deadline set";
+    case "unresolved":
+      return "Not reliably reached within model horizon";
   }
+}
+
+function formatTargetSummary(target: TargetForecast): string {
+  if (target.simulationStatus === "unresolved" || target.activeMinutes === null) {
+    return "> model horizon";
+  }
+  const active = formatActiveDuration(target.activeMinutes.median);
+  return target.simulationStatus === "censored" ? `${active} · censored` : active;
+}
+
+function formatCompletionFraction(target: TargetForecast): string {
+  return `${Math.round(target.completionFraction * 100)}%`;
+}
+
+function formatCensorReasons(target: TargetForecast): string {
+  return target.censorReasons
+    .map((reason) => {
+      switch (reason) {
+        case "review_count_cap":
+          return "review-count horizon";
+        case "elapsed_horizon":
+          return "elapsed-time horizon";
+        case "no_eligible_card":
+          return "no eligible card";
+      }
+    })
+    .join(", ");
 }
 
 function formatActiveDuration(minutes: number): string {

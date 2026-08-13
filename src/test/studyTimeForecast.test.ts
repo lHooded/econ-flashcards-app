@@ -4,8 +4,10 @@ import { createReviewEvent, type ReviewEvent } from "../domain/progress";
 import { cards as realCards } from "../data/deck";
 import {
   advanceExamSrsCardState,
+  deriveExamPhase,
   deriveExamSrsSnapshot,
   deriveReviewEvidence,
+  refreshExamSrsCardStateAt,
 } from "../study/examSrs/deriveState";
 import {
   createExamSrsForecastSelector,
@@ -15,18 +17,23 @@ import {
 import {
   calibrateOutcomes,
   calibratePace,
+  FORECAST_OUTCOME_CONSTANTS,
   FORECAST_PACE_CONSTANTS,
   getOutcomeDistribution,
 } from "../study/forecast/calibration";
 import {
   deriveForecastDeadlineInterpretation,
   deriveStudyTimeForecast,
+  makeForecastRecommendation,
 } from "../study/forecast/forecast";
-import { simulateStudyForecast } from "../study/forecast/simulate";
+import { sampleCycleMs, simulateStudyForecast } from "../study/forecast/simulate";
+import { createSeededRandom } from "../study/forecast/random";
 import {
   getForecastTargetDefinition,
   getForecastTargetProgress,
 } from "../study/forecast/targets";
+import { reduceForecastWorkerResponse } from "../study/forecast/workerProtocol";
+import type { StudyTimeForecast, TargetForecast } from "../study/forecast/model";
 import type { ExamSrsCardState, ExamSrsSnapshot } from "../study/examSrs/model";
 
 const MINUTE_MS = 60 * 1000;
@@ -37,7 +44,9 @@ const NO_EXAM = { examAt: null, studyBufferHours: 24 } as const;
 function card(
   id: string,
   chapter = 1,
-  overrides: Partial<Pick<Flashcard, "choices" | "correctChoice" | "kind">> = {},
+  overrides: Partial<
+    Pick<Flashcard, "choices" | "correctChoice" | "kind" | "tags">
+  > = {},
 ): Flashcard {
   return {
     id,
@@ -127,6 +136,110 @@ function snapshotFor(
   };
 }
 
+interface MutableTestSnapshot {
+  phase: ExamSrsSnapshot["phase"];
+  studyDeadline: string | null;
+  states: ExamSrsCardState[];
+  stateByCardId: Record<string, ExamSrsCardState>;
+}
+
+function mutableSnapshotFor(
+  cards: readonly Flashcard[],
+  states: readonly ExamSrsCardState[],
+): MutableTestSnapshot {
+  return {
+    phase: "no_exam",
+    studyDeadline: null,
+    states: [...states],
+    stateByCardId: Object.fromEntries(
+      cards.map((entry, index) => [entry.id, states[index]]),
+    ),
+  };
+}
+
+function stateAt(
+  cardId: string,
+  learningState: ExamSrsCardState["learningState"],
+  nowMs: number,
+  dueOffsetMs: number | null,
+  reviewCount = 1,
+): ExamSrsCardState {
+  const base = state(cardId, learningState, reviewCount);
+  const dueAt =
+    dueOffsetMs === null ? null : new Date(nowMs + dueOffsetMs).toISOString();
+  return {
+    ...base,
+    dueAt,
+    isDue: dueAt !== null && Date.parse(dueAt) <= nowMs,
+  };
+}
+
+function targetFixture(
+  id: TargetForecast["id"],
+  deadlineStatus: TargetForecast["deadlineStatus"],
+  simulationStatus: TargetForecast["simulationStatus"] = "estimated",
+): TargetForecast {
+  const range = { low: 1, median: 2, high: 3 };
+  const simulationRuns = 256;
+  const completedRuns = simulationStatus === "unresolved" ? 100 : simulationRuns;
+  return {
+    id,
+    label: id,
+    criterion: id,
+    achieved: false,
+    totalCards: 100,
+    currentSeen: 0,
+    currentCoverage: 0,
+    currentLearned: 0,
+    currentCriticalSeen: 0,
+    currentCriticalLearned: 0,
+    targetLearned: id === "coverage" ? 0 : 80,
+    criticalCardCount: 0,
+    activeMinutes: simulationStatus === "unresolved" ? null : range,
+    additionalReviews: simulationStatus === "unresolved" ? null : range,
+    elapsedMs: simulationStatus === "unresolved" ? null : range,
+    deadlineStatus,
+    deadlineConstraint: "none",
+    simulationStatus,
+    completedRuns,
+    simulationRuns,
+    completionFraction: completedRuns / simulationRuns,
+    censoredRuns: simulationRuns - completedRuns,
+    censorReasons: simulationStatus === "unresolved" ? ["review_count_cap"] : [],
+  };
+}
+
+function expectSelectorParity(
+  cards: readonly Flashcard[],
+  scheduler: ExamSrsSnapshot,
+  cached: ReturnType<typeof createExamSrsForecastSelector>,
+  nowMs: number,
+  recentlyShownCardIds: readonly string[],
+  readiness: ReadonlyMap<string, boolean>,
+): void {
+  const expected = selectNextCardFromSnapshot({
+    cards,
+    scheduler,
+    nowMs,
+    recentlyShownCardIds,
+    newCardPrerequisiteReadyByCardId: readiness,
+  });
+  const actual = cached.select({
+    nowMs,
+    recentlyShownCardIds,
+    newCardPrerequisiteReadyByCardId: readiness,
+  });
+  expect({
+    id: actual.selection?.card.id ?? null,
+    reason: actual.selection?.reason ?? null,
+    nextDueAt: actual.nextDueAt,
+  }).toEqual({
+    id: expected.selection?.card.id ?? null,
+    reason: expected.selection?.reason ?? null,
+    nextDueAt: expected.nextDueAt,
+  });
+}
+
 describe("Study Time Forecast pace calibration", () => {
   it("uses conservative fallback timing with no history or a null response time", () => {
     expect(calibratePace([])).toMatchObject({
@@ -174,14 +287,21 @@ describe("Study Time Forecast pace calibration", () => {
     expect(withOutlier.global.medianCycleMs).toBe(60_000);
   });
 
-  it("falls back from sparse mode-specific timing to the global distribution", () => {
+  it("uses one global timing distribution across review modes", () => {
     const events = [
       review("a", "a", START),
       review("b", "b", START + 60_000, { mode: "mcq" }),
       review("c", "c", START + 120_000),
     ];
     const calibration = calibratePace(events);
-    expect(calibration.byMode.mcq).toBe(calibration.global);
+    expect(calibration.global.samples).toEqual([60_000, 60_000]);
+    expect(calibration.reviewsPerHour).toBe(60);
+  });
+
+  it("allows plausible fast and slow cycles to reach simulation sampling", () => {
+    const distribution = { samples: [30_000, 60_000, 180_000] };
+    expect(sampleCycleMs(distribution, 0)).toBe(30_000);
+    expect(sampleCycleMs(distribution, 0.999999)).toBeGreaterThan(179_000);
   });
 });
 
@@ -203,6 +323,86 @@ describe("Study Time Forecast outcome calibration", () => {
       deriveReviewEvidence(review("weak", "b", START, { rating: "struggled" }))
         ?.outcome,
     ).toBe("weak_success");
+  });
+
+  it("bounds outcome counts to recent usable observations without truncating bucket history", () => {
+    const recentCount = FORECAST_OUTCOME_CONSTANTS.maxRecentOutcomeSamples;
+    const history = [
+      review("learned-1", "learned-card", START),
+      review("learned-2", "learned-card", START + 2_000),
+      review("retained-failure", "learned-card", START + 4_000, {
+        correct: false,
+        rating: "forgot",
+      }),
+      ...Array.from({ length: recentCount - 1 }, (_, index) =>
+        review(
+          `retained-success-${index}`,
+          `other-${index}`,
+          START + (index + 3) * 2_000,
+        ),
+      ),
+    ];
+    const calibration = calibrateOutcomes(
+      [card("learned-card")],
+      history,
+      NO_EXAM,
+      START + 1,
+    );
+    const learned = getOutcomeDistribution(
+      calibration,
+      "recall_calculation",
+      "learned",
+    );
+    const unseen = getOutcomeDistribution(calibration, "recall_calculation", "unseen");
+
+    expect(calibration.outcomeSampleSize).toBe(recentCount);
+    // The first retained review followed two true successes, so it belongs to
+    // the learned bucket. A truncated replay would incorrectly put it unseen.
+    expect(learned.failure).toBeGreaterThan(unseen.failure);
+  });
+
+  it("lets recent improvement or deterioration replace sufficiently old outcomes", () => {
+    const recentCount = FORECAST_OUTCOME_CONSTANTS.maxRecentOutcomeSamples;
+    const cards = Array.from({ length: recentCount * 2 }, (_, index) =>
+      card(`outcome-card-${index}`),
+    );
+    const failures = Array.from({ length: recentCount }, (_, index) =>
+      review(`old-failure-${index}`, `outcome-card-${index}`, START + index * 2_000, {
+        correct: false,
+        rating: "forgot",
+      }),
+    );
+    const successes = Array.from({ length: recentCount }, (_, index) =>
+      review(
+        `recent-success-${index}`,
+        `outcome-card-${recentCount + index}`,
+        START + (recentCount + index) * 2_000,
+      ),
+    );
+    const improving = calibrateOutcomes(
+      cards,
+      [...failures, ...successes],
+      NO_EXAM,
+      START + 1,
+    );
+    const deteriorating = calibrateOutcomes(
+      cards,
+      [
+        ...successes,
+        ...failures.map((event, index) => ({
+          ...event,
+          id: `late-failure-${index}`,
+          reviewedAt: new Date(START + (recentCount * 2 + index) * 2_000).toISOString(),
+        })),
+      ],
+      NO_EXAM,
+      START + 1,
+    );
+
+    expect(improving.outcomeSampleSize).toBe(recentCount);
+    expect(deteriorating.outcomeSampleSize).toBe(recentCount);
+    expect(improving.global.failure).toBe(0);
+    expect(deteriorating.global.failure).toBe(1);
   });
 
   it("keeps MCQ outcome calibration separate and uses cold-start priors", () => {
@@ -329,19 +529,19 @@ describe("Study Time Forecast simulation and determinism", () => {
     );
     expect(result.targets.every((target) => target.achieved)).toBe(true);
     expect(
-      result.targets.every((target) => target.additionalReviews.median === 0),
+      result.targets.every((target) => target.additionalReviews?.median === 0),
     ).toBe(true);
   });
 
   it("counts due-date waiting as elapsed time but not active study time", () => {
     const result = forecast([review("first", "a", START)], START + 60 * 60 * 1000);
     const working = result.targets.find((target) => target.id === "working")!;
-    expect(working.elapsedMs.median).toBeGreaterThan(
-      working.activeMinutes.median * 60 * 1000,
+    expect(working.elapsedMs!.median).toBeGreaterThan(
+      working.activeMinutes!.median * 60 * 1000,
     );
   });
 
-  it("has a finite defensive cap for a pathological run", () => {
+  it("censors a run at the review-count cap without inventing a completion", () => {
     const scheduler = snapshotFor(
       cards,
       cards.map((entry) => state(entry.id, "unseen", 0)),
@@ -360,7 +560,30 @@ describe("Study Time Forecast simulation and determinism", () => {
       maxReviewsPerRun: 0,
     });
     expect(result.byTarget.near_complete.completedRuns).toBe(0);
-    expect(result.byTarget.near_complete.capCompletion.additionalReviews).toBe(0);
+    expect(result.byTarget.near_complete.completions).toHaveLength(0);
+    expect(result.byTarget.near_complete.completionFraction).toBe(0);
+    expect(result.byTarget.near_complete.censoring[0]?.reason).toBe("review_count_cap");
+  });
+
+  it("censors a run at the elapsed-time horizon separately", () => {
+    const scheduler = snapshotFor(
+      cards,
+      cards.map((entry) => state(entry.id, "unseen", 0)),
+    );
+    const result = simulateStudyForecast({
+      cards,
+      settings,
+      nowMs: START,
+      scheduler,
+      pace: calibratePace([]),
+      outcomes: calibrateOutcomes(cards, [], settings, START),
+      seed: 8,
+      runCount: 1,
+      maxElapsedMs: 0,
+    });
+    expect(result.byTarget.coverage.completedRuns).toBe(0);
+    expect(result.byTarget.coverage.completions).toHaveLength(0);
+    expect(result.byTarget.coverage.censoring[0]?.reason).toBe("elapsed_horizon");
   });
 
   it("is invariant to imported review-event order", () => {
@@ -399,6 +622,174 @@ describe("Study Time Forecast simulation and determinism", () => {
       expect(actual.nextDueAt).toBe(expected.nextDueAt);
     }
   });
+
+  it("keeps cached selector parity across varied states, updates, and phase crossings", () => {
+    const random = createSeededRandom(0x51ec7e12);
+    const learningStates: readonly ExamSrsCardState["learningState"][] = [
+      "unseen",
+      "relearning",
+      "weak",
+      "learning",
+      "learned",
+    ];
+
+    for (let scenario = 0; scenario < 160; scenario += 1) {
+      const cards = Array.from({ length: 12 }, (_, index) =>
+        card(`scenario-${scenario}-${index}`, index % 6 === 0 ? 0 : (index % 4) + 1, {
+          kind: index % 5 === 0 ? "calculation" : "recall",
+          tags: index % 3 === 0 ? ["high-yield"] : [],
+          ...(index % 4 === 0 ? { choices: ["A", "B"], correctChoice: 0 } : {}),
+        }),
+      );
+      const nowMs = START + scenario * 17 * MINUTE_MS;
+      const states = cards.map((entry, index) => {
+        const learningState =
+          scenario === 0
+            ? index % 5 === 0
+              ? "unseen"
+              : "learned"
+            : learningStates[Math.floor(random.next() * learningStates.length)];
+        const dueOffsetMs =
+          learningState === "unseen"
+            ? null
+            : [-15 * MINUTE_MS, -90 * 1000, 2 * MINUTE_MS, 40 * MINUTE_MS][
+                Math.floor(random.next() * 4)
+              ];
+        return stateAt(
+          entry.id,
+          learningState,
+          nowMs,
+          dueOffsetMs,
+          scenario === 0 ? 1 : Math.floor(random.next() * 6),
+        );
+      });
+      const scheduler = mutableSnapshotFor(cards, states);
+      const cached = createExamSrsForecastSelector({
+        cards,
+        scheduler,
+        coverage: getExamSrsCoverage(cards, states),
+      });
+
+      for (let step = 0; step < 8; step += 1) {
+        const stepNowMs = nowMs + step * 3 * MINUTE_MS;
+        for (let index = 0; index < scheduler.states.length; index += 1) {
+          const current = scheduler.states[index];
+          const isDue =
+            current.dueAt !== null && Date.parse(current.dueAt) <= stepNowMs;
+          if (current.isDue !== isDue) {
+            const refreshed = { ...current, isDue };
+            scheduler.states[index] = refreshed;
+            scheduler.stateByCardId[refreshed.cardId] = refreshed;
+            cached.updateState(refreshed);
+          }
+        }
+        const recentlyShownCardIds = cards
+          .filter((_, index) => (index + step + scenario) % 5 === 0)
+          .slice(0, 3)
+          .map((entry) => entry.id);
+        const readiness = new Map(
+          cards.map((entry, index) => [entry.id, (index + step + scenario) % 2 === 0]),
+        );
+        expectSelectorParity(
+          cards,
+          scheduler,
+          cached,
+          stepNowMs,
+          recentlyShownCardIds,
+          readiness,
+        );
+
+        const expected = selectNextCardFromSnapshot({
+          cards,
+          scheduler,
+          nowMs: stepNowMs,
+          recentlyShownCardIds,
+          newCardPrerequisiteReadyByCardId: readiness,
+        });
+        const selectedId =
+          expected.selection?.card.id ?? cards[(scenario + step) % cards.length].id;
+        const selectedIndex = cards.findIndex((entry) => entry.id === selectedId);
+        const current = scheduler.states[selectedIndex];
+        const nextLearningState =
+          current.learningState === "unseen"
+            ? "learning"
+            : learningStates[(scenario + step + selectedIndex) % learningStates.length];
+        const nextState = stateAt(
+          selectedId,
+          nextLearningState,
+          stepNowMs,
+          nextLearningState === "unseen"
+            ? null
+            : step % 3 === 0
+              ? -MINUTE_MS
+              : 5 * MINUTE_MS,
+          current.reviewCount + 1,
+        );
+        scheduler.states[selectedIndex] = nextState;
+        scheduler.stateByCardId[selectedId] = nextState;
+        cached.updateState(nextState);
+        if (current.learningState === "unseen") {
+          cached.setCoverage(getExamSrsCoverage(cards, scheduler.states));
+        }
+      }
+    }
+
+    const phaseCards = [
+      card("phase-a", 0),
+      card("phase-b", 1, { tags: ["high-yield"] }),
+    ];
+    const phaseSettings = {
+      examAt: new Date(START + 6 * 60 * 60 * 1000).toISOString(),
+      studyBufferHours: 2,
+    } as const;
+    const phaseDerivedScheduler = deriveExamSrsSnapshot(
+      phaseCards,
+      [review("phase-review-a", "phase-a", START - 10 * MINUTE_MS)],
+      phaseSettings,
+      START,
+    );
+    const phaseScheduler: MutableTestSnapshot = {
+      phase: phaseDerivedScheduler.phase,
+      studyDeadline: phaseDerivedScheduler.studyDeadline,
+      states: [...phaseDerivedScheduler.states],
+      stateByCardId: { ...phaseDerivedScheduler.stateByCardId },
+    };
+    const phaseCached = createExamSrsForecastSelector({
+      cards: phaseCards,
+      scheduler: phaseScheduler,
+      coverage: getExamSrsCoverage(phaseCards, phaseScheduler.states),
+    });
+    for (const phaseNowMs of [
+      START,
+      START + 3 * 60 * 60 * 1000,
+      START + 5 * 60 * 60 * 1000,
+      START + 7 * 60 * 60 * 1000,
+    ]) {
+      phaseScheduler.phase = deriveExamPhase(phaseSettings, phaseNowMs);
+      for (let index = 0; index < phaseScheduler.states.length; index += 1) {
+        const refreshed = refreshExamSrsCardStateAt(
+          phaseScheduler.states[index],
+          phaseSettings,
+          phaseNowMs,
+        );
+        phaseScheduler.states[index] = refreshed;
+        phaseScheduler.stateByCardId[refreshed.cardId] = refreshed;
+        phaseCached.updateState(refreshed);
+      }
+      phaseCached.rebuild();
+      expectSelectorParity(
+        phaseCards,
+        phaseScheduler,
+        phaseCached,
+        phaseNowMs,
+        ["phase-a"],
+        new Map([
+          ["phase-a", true],
+          ["phase-b", false],
+        ]),
+      );
+    }
+  });
 });
 
 describe("Study Time Forecast deadline interpretation", () => {
@@ -412,6 +803,7 @@ describe("Study Time Forecast deadline interpretation", () => {
   ) {
     return deriveForecastDeadlineInterpretation({
       achieved: false,
+      estimateReliable: true,
       medianElapsedMs,
       highElapsedMs,
       medianActiveMs,
@@ -424,6 +816,7 @@ describe("Study Time Forecast deadline interpretation", () => {
     expect(
       deriveForecastDeadlineInterpretation({
         achieved: false,
+        estimateReliable: true,
         medianElapsedMs: 1,
         highElapsedMs: 1,
         medianActiveMs: 1,
@@ -447,6 +840,7 @@ describe("Study Time Forecast deadline interpretation", () => {
     expect(
       deriveForecastDeadlineInterpretation({
         achieved: true,
+        estimateReliable: true,
         medianElapsedMs: 0,
         highElapsedMs: 0,
         medianActiveMs: 0,
@@ -454,5 +848,75 @@ describe("Study Time Forecast deadline interpretation", () => {
         nowMs: START,
       }),
     ).toEqual({ status: "achieved", constraint: "none" });
+    expect(
+      deriveForecastDeadlineInterpretation({
+        achieved: false,
+        estimateReliable: false,
+        medianElapsedMs: 1,
+        highElapsedMs: 1,
+        medianActiveMs: 1,
+        settings,
+        nowMs: START,
+      }),
+    ).toEqual({ status: "unresolved", constraint: "none" });
+  });
+});
+
+describe("Study Time Forecast recommendation", () => {
+  it("chooses the highest reliable median target before the deadline", () => {
+    const settings = {
+      examAt: new Date(START + 48 * 60 * 60 * 1000).toISOString(),
+      studyBufferHours: 24,
+    } as const;
+    const recommendation = makeForecastRecommendation(
+      [
+        targetFixture("coverage", "comfortable"),
+        targetFixture("working", "comfortable"),
+        targetFixture("exam_ready", "tight"),
+        targetFixture("strong", "buffer"),
+        targetFixture("near_complete", "after_exam"),
+      ],
+      settings,
+    );
+
+    expect(recommendation.targetId).toBe("exam_ready");
+    expect(recommendation.explanation).toContain("median fits");
+  });
+
+  it("does not recommend an unresolved target as though its median were known", () => {
+    const settings = {
+      examAt: new Date(START + 48 * 60 * 60 * 1000).toISOString(),
+      studyBufferHours: 24,
+    } as const;
+    const recommendation = makeForecastRecommendation(
+      [
+        targetFixture("coverage", "unresolved", "unresolved"),
+        targetFixture("working", "unresolved", "unresolved"),
+        targetFixture("exam_ready", "after_exam", "unresolved"),
+        targetFixture("strong", "after_exam", "unresolved"),
+        targetFixture("near_complete", "after_exam", "unresolved"),
+      ],
+      settings,
+    );
+
+    expect(recommendation.targetId).toBe("coverage");
+    expect(recommendation.explanation).toContain("reliable median forecast");
+  });
+});
+
+describe("Study Time Forecast worker response boundary", () => {
+  it("surfaces worker errors instead of leaving loading state ambiguous", () => {
+    expect(
+      reduceForecastWorkerResponse({
+        type: "error",
+        message: "synthetic worker failure",
+      }),
+    ).toEqual({ status: "error", message: "synthetic worker failure" });
+
+    const forecast = {} as StudyTimeForecast;
+    expect(reduceForecastWorkerResponse({ type: "complete", forecast })).toEqual({
+      status: "ready",
+      forecast,
+    });
   });
 });

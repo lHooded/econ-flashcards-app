@@ -203,16 +203,20 @@ Pace calibration sorts review events with the canonical chronological comparator
 uses gaps between adjacent completed reviews. Gaps shorter than about 1.5 seconds or
 longer than seven minutes are excluded; the latter are treated as session breaks. At
 most the latest 100 usable gaps are retained. Robust 20th-percentile, median, and
-80th-percentile cycle values drive the pace distribution. Valid `responseTimeMs`
-values are only a secondary fallback because they do not include explanation reading
-and navigation. With insufficient history, named conservative fallback cycle values
-are used and calibration confidence remains low. Recall/calculation and MCQ pace
-distributions use their own data only when enough observations exist; otherwise they
-fall back to the global distribution.
+80th-percentile cycle values describe the overall pace distribution. These gaps are
+not assigned to recall/calculation versus MCQ: persistence timing can include feedback
+and navigation belonging to both cards. The simulation therefore uses one global
+pace distribution for all canonical modes. Valid `responseTimeMs` values are only a
+secondary cold-start fallback because they do not include explanation reading and
+navigation. With insufficient history, named conservative fallback cycle values are
+used and calibration confidence remains low.
 
 Outcome calibration interprets ReviewEvents through `deriveReviewEvidence`, then
-counts failure, weak success, and strong success by mode family and previous learning
-bucket (`unseen`, recovery, `learning`, and `learned`). Sparse buckets use transparent
+replays all usable history chronologically to classify each observation by mode family
+and its true previous learning bucket (`unseen`, recovery, `learning`, or `learned`),
+then counts only the most recent 300 observations. This bounded recency window keeps
+old performance from dominating a finite-horizon cram estimate without making the
+first retained observation look artificially unseen. Sparse buckets use transparent
 pseudocount shrinkage toward a broader learner distribution. Cold starts use
 documented conservative priors, and these frequencies describe only simulated next
 review outcomes under this app—not a probability of remembering at the exam.
@@ -221,24 +225,41 @@ Each of 256 deterministic simulation runs starts from the current compact Exam-S
 snapshot. It asks the ordinary selector for each next candidate, keeps its ordering,
 Chapter 0 gate, high-yield pressure, prerequisite guidance, recent-card avoidance,
 and deadline intervals, samples a calibrated outcome and active review cycle, and
-applies the shared strength/learning-state/due-date transition. When no card is
+applies the shared strength/learning-state/due-date transition. Pace samples span the
+full already-filtered empirical distribution; the displayed 20th-to-80th percentile
+range is the separate uncertainty summary across trajectories. When no card is
 currently eligible, the virtual clock advances to the next due time without adding
-active study time. The reported model range is the empirical 20th-to-80th percentile
-across runs. A defensive review and elapsed-time cap marks pathological runs as
-capped instead of claiming an exact completion estimate.
+active study time.
+
+A run either reaches a target with a genuine completion record or is censored at the
+defensive review-count/elapsed-time horizon (or because no eligible card remains).
+Censored runs retain their actual progress and reason for diagnostics but never enter
+completion quantiles as fabricated cap values. With at least 80% of runs complete,
+the target may show completed-run quantiles with a censored label. Below that
+completion fraction it is reported as unresolved within the model horizon, without
+active-time, review-count, elapsed-time, or deadline claims.
 
 Active study time is therefore separate from elapsed time: five hours of active work
 may require more than five hours of wall-clock time when Exam-SRS spacing intervenes.
 Deadline labels compare the median and upper model-range completion times with the
 effective study deadline (`examAt - studyBufferHours`) and exam time. They distinguish
-achieved, comfortable, tight, buffer, after-exam, and no-exam cases, and call out
-spacing when waiting—not active workload—is the main constraint.
+achieved, comfortable, tight, buffer, after-exam, no-exam, and unresolved cases, and
+call out spacing when waiting—not active workload—is the main constraint.
 
 The model version and ordered ReviewEvent content/settings seed a local deterministic
 PRNG. The current clock is deliberately not part of that random seed: it can change
 which cards are due, but React renders do not randomly jitter the simulated outcomes.
+When an estimate is sufficiently resolved, recommendation ordering is hierarchical:
+choose the highest target whose median completion is before the effective study
+deadline; describe it as comfortable when its upper range also fits, otherwise tight.
+If none fit the effective deadline, choose the highest reliable median before the exam
+and identify buffer use. If no reliable target fits before the exam, the next unmet
+target is shown only as a priority fallback.
 Forecast calibration confidence is `low`, `medium`, or `high` according to the amount
-of usable pace and outcome evidence; it is not confidence of passing the exam.
+of usable pace and recent outcome evidence; it is not confidence of passing the exam.
+
+The forecast runs in a worker on Home. A worker/model failure displays a retryable
+availability message and does not affect the learner's saved progress.
 
 The Study Time Forecast is not a predicted exam mark, probability of recall, or
 guarantee of exam performance.
