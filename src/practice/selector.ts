@@ -11,6 +11,8 @@ export interface PracticeQuestionFilters {
   readonly recentQuestionIds?: readonly string[];
   /** Optional concept focus; candidates must belong to this exact question set. */
   readonly questionIds?: ReadonlySet<string>;
+  /** Effective manual exclusions are applied before any practice ranking. */
+  readonly excludedQuestionIds?: ReadonlySet<string>;
 }
 
 export function buildPracticeSet(
@@ -20,6 +22,7 @@ export function buildPracticeSet(
   const candidates = bank.filter(
     (question) =>
       (filters.questionIds?.has(question.id) ?? true) &&
+      !(filters.excludedQuestionIds?.has(question.id) ?? false) &&
       (filters.chapter === null || question.chapter === filters.chapter) &&
       (filters.style === "all" || question.style === filters.style) &&
       (filters.stimulus === "all"

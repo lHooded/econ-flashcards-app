@@ -36,11 +36,17 @@ export function deriveConceptStatuses(
   scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
   concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
   guidedCheckStates: GuidedCheckStateMap = {},
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
 ): ConceptStatusMap {
   return new Map(
     concepts.map((concept) => [
       concept.id,
-      deriveStatusForConcept(concept, scheduler.stateByCardId, guidedCheckStates),
+      deriveStatusForConcept(
+        concept,
+        scheduler.stateByCardId,
+        guidedCheckStates,
+        manuallySatisfiedConceptIds,
+      ),
     ]),
   );
 }
@@ -49,8 +55,14 @@ export function deriveCardPrerequisiteReadiness(
   cards: readonly Flashcard[],
   scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
   concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
 ): ReadonlyMap<string, boolean> {
-  const statuses = deriveConceptStatuses(scheduler, concepts);
+  const statuses = deriveConceptStatuses(
+    scheduler,
+    concepts,
+    {},
+    manuallySatisfiedConceptIds,
+  );
   return new Map(
     cards.map((card) => {
       const conceptIds = cardConceptMap[card.id] ?? [];
@@ -92,9 +104,18 @@ export function isPrerequisiteNonBlockingForScheduler(
 export function isConceptIntroducedEnough(
   conceptId: string,
   reviews: readonly ReviewEvent[],
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
+  manuallyLearnedCardIds: ReadonlySet<string> = new Set(),
 ): boolean {
+  if (manuallySatisfiedConceptIds.has(conceptId)) return true;
   const concept = knowledgeConceptById.get(conceptId);
   if (concept === undefined) return false;
+  if (
+    concept.linkedCardIds.length > 0 &&
+    concept.linkedCardIds.every((cardId) => manuallyLearnedCardIds.has(cardId))
+  ) {
+    return true;
+  }
   const reviewIds =
     concept.linkedCardIds.length > 0
       ? new Set(concept.linkedCardIds)
@@ -159,13 +180,20 @@ function deriveStatusForConcept(
   concept: KnowledgeConcept,
   statesByCardId: Readonly<Record<string, ExamSrsCardState>>,
   guidedCheckStates: GuidedCheckStateMap,
+  manuallySatisfiedConceptIds: ReadonlySet<string>,
 ): KnowledgeConceptStatus {
+  if (manuallySatisfiedConceptIds.has(concept.id)) return "solid";
   if (concept.linkedCardIds.length === 0) {
     const skills = getGuidedCheckSkillsForConcept(concept.id);
     const states = skills
       .map((skill) => guidedCheckStates[skill.id])
       .filter((state): state is ExamSrsCardState => state !== undefined);
-    if (states.length === 0 || states.every((state) => state.reviewCount === 0)) {
+    if (
+      states.length === 0 ||
+      states.every(
+        (state) => state.reviewCount === 0 && state.isManuallyLearned !== true,
+      )
+    ) {
       return "unseen";
     }
     if (
@@ -191,7 +219,10 @@ function deriveStatusForConcept(
     .map((cardId) => statesByCardId[cardId])
     .filter((state): state is ExamSrsCardState => state !== undefined);
   const hasMissingCardEvidence = states.length < concept.linkedCardIds.length;
-  if (states.length === 0 || states.every((state) => state.reviewCount === 0)) {
+  if (
+    states.length === 0 ||
+    states.every((state) => state.reviewCount === 0 && state.isManuallyLearned !== true)
+  ) {
     return "unseen";
   }
   if (
@@ -206,7 +237,11 @@ function deriveStatusForConcept(
   }
   if (
     !hasMissingCardEvidence &&
-    states.every((state) => state.learningState === "learned")
+    states.every(
+      (state) =>
+        state.learningState === "learned" &&
+        (state.reviewCount > 0 || state.isManuallyLearned === true),
+    )
   ) {
     return "solid";
   }

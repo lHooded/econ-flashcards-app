@@ -31,6 +31,8 @@ export interface ProgressSnapshot {
   readonly settings: AppSettings;
   readonly cardStates: Readonly<Record<string, CardState>>;
   readonly reviewEvents: readonly ReviewEvent[];
+  /** Optional for compatibility with snapshots created before manual exclusions. */
+  readonly manualLearnedOverrides?: readonly import("./manualLearned").ManualLearnedOverride[];
   /** Optional for compatibility with pre-mock snapshot fixtures. */
   readonly mockAttempts?: readonly import("../exam/mock/model").MockAttempt[];
   /** Optional for compatibility with snapshots created before Guided lesson persistence. */

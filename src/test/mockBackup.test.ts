@@ -13,7 +13,7 @@ import { MockExamRepository } from "../db/mockExamRepository";
 
 const questionIds = new Set(examQuestions.map((question) => question.id));
 
-describe("progress backup v2", () => {
+describe("progress backup v3", () => {
   const attempt = createMockAttempt({
     ...buildMockExam({ bank: examQuestions, seed: "backup" }),
     id: "backup-attempt",
@@ -31,7 +31,7 @@ describe("progress backup v2", () => {
       },
       "2026-08-11T01:00:00.000Z",
     );
-    expect(backup.version).toBe(2);
+    expect(backup.version).toBe(3);
     const parsed = parseProgressBackupText(
       serializeProgressBackup(
         {
@@ -82,7 +82,7 @@ describe("progress backup v2", () => {
       cardIds,
       questionIds,
     );
-    expect(parsed.version).toBe(2);
+    expect(parsed.version).toBe(3);
     expect(parsed.mockAttempts).toEqual([]);
     expect(parsed.settings).toEqual(fixture.settings);
     expect(parsed.cardStates).toHaveLength(1);

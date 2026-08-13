@@ -28,6 +28,7 @@ export function GeneratedCalculationLab({
   onBack,
   onUseAuthored,
   recordReview,
+  excludedReviewCardIds,
   buildSet: buildSetOverride,
 }: {
   readonly chapter: number | null;
@@ -39,6 +40,7 @@ export function GeneratedCalculationLab({
   readonly onBack: () => void;
   readonly onUseAuthored: () => void;
   readonly recordReview: (input: NewReviewEvent) => Promise<unknown>;
+  readonly excludedReviewCardIds?: ReadonlySet<string>;
   readonly buildSet?: typeof buildGeneratedCalculationSet;
 }) {
   const [index, setIndex] = useState(0);
@@ -51,8 +53,8 @@ export function GeneratedCalculationLab({
   const shownFingerprints = useRef<Record<number, Set<string>>>({});
   const buildSet = buildSetOverride ?? buildGeneratedCalculationSet;
   const options = useMemo<GeneratedCalculationSessionOptions>(
-    () => ({ chapter, size, seed }),
-    [chapter, seed, size],
+    () => ({ chapter, size, seed, excludedReviewCardIds }),
+    [chapter, excludedReviewCardIds, seed, size],
   );
   const baseSetResult = useMemo(() => {
     try {

@@ -24,6 +24,7 @@ import { deriveCardPrerequisiteReadiness } from "../knowledge/mastery";
 import { KnowledgeText } from "../components/knowledge/KnowledgeText";
 import { cardConceptMap } from "../knowledge/contentMap";
 import { knowledgeConceptById } from "../knowledge/data";
+import { getEffectiveManualLearned } from "../study/manualLearned";
 
 const RECENT_CARD_LIMIT = 3;
 const EMPTY_REVIEWS: readonly ReviewEvent[] = [];
@@ -37,7 +38,16 @@ export function StudyPage({
   scope = DEFAULT_STUDY_SCOPE,
   conceptId = null,
 }: StudyPageProps) {
-  const { snapshot, recordReview } = useProgress();
+  const {
+    snapshot,
+    markLearnedPermanently: markLearnedPermanentlyFromContext,
+    recordReview,
+  } = useProgress();
+  const markLearnedPermanently =
+    markLearnedPermanentlyFromContext ??
+    (async () => {
+      throw new Error("Manual learned settings are unavailable in this view.");
+    });
   const nowMs = useNow(30 * 1000);
   const [currentCardId, setCurrentCardId] = useState<string | null>(null);
   const [recentCardIds, setRecentCardIds] = useState<string[]>([]);
@@ -54,6 +64,10 @@ export function StudyPage({
 
   const settings = snapshot?.settings ?? DEFAULT_APP_SETTINGS;
   const persistedReviews = snapshot?.reviewEvents ?? EMPTY_REVIEWS;
+  const manualLearned = useMemo(
+    () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
+    [snapshot?.manualLearnedOverrides],
+  );
   const effectiveReviews = useMemo(() => {
     const persistedIds = new Set(persistedReviews.map((review) => review.id));
     const pending = pendingReviewEvents.filter(
@@ -62,12 +76,25 @@ export function StudyPage({
     return sortReviewEventsChronologically([...persistedReviews, ...pending]);
   }, [pendingReviewEvents, persistedReviews]);
   const scheduler = useMemo(
-    () => deriveExamSrsSnapshot(cards, effectiveReviews, settings, nowMs),
-    [effectiveReviews, nowMs, settings],
+    () =>
+      deriveExamSrsSnapshot(
+        cards,
+        effectiveReviews,
+        settings,
+        nowMs,
+        manualLearned.cardIds,
+      ),
+    [effectiveReviews, manualLearned.cardIds, nowMs, settings],
   );
   const prerequisiteReadiness = useMemo(
-    () => deriveCardPrerequisiteReadiness(cards, scheduler),
-    [scheduler],
+    () =>
+      deriveCardPrerequisiteReadiness(
+        cards,
+        scheduler,
+        undefined,
+        manualLearned.coveredConceptIds,
+      ),
+    [manualLearned.coveredConceptIds, scheduler],
   );
   const scopedNextCard = useMemo(
     () =>
@@ -186,6 +213,13 @@ export function StudyPage({
     setCurrentCardId(null);
   };
 
+  const markCurrentCardLearned = async () => {
+    if (currentCard === undefined) return;
+    await markLearnedPermanently("card", currentCard.id);
+    currentCardPhase.current = "unanswered";
+    setCurrentCardId(null);
+  };
+
   const studyAheadAnyway = () => {
     if (scopedNextCard.nextDueAt === null) {
       return;
@@ -243,6 +277,7 @@ export function StudyPage({
             onSubmitReview={submitReview}
             onFinish={finishCard}
             onPhaseChange={handleCardPhaseChange}
+            onMarkLearnedPermanently={markCurrentCardLearned}
           />
         </>
       ) : showEmptyState ? (

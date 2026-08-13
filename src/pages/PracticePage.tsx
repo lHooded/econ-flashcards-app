@@ -11,6 +11,8 @@ import { KnowledgeText } from "../components/knowledge/KnowledgeText";
 import { MathText } from "../components/math/MathText";
 import { cardConceptMap } from "../knowledge/contentMap";
 import { knowledgeConceptById } from "../knowledge/data";
+import { getEffectiveManualLearned } from "../study/manualLearned";
+import { ManualLearnedAction } from "../components/ManualLearnedAction";
 
 type PracticeMode = "mcq" | "stimulus" | "written" | "calculations";
 type CalculationPracticeSubmode = "generated" | "authored";
@@ -186,7 +188,19 @@ function PracticeSession({
   onNewSet,
   onBack,
 }: PracticeSessionProps) {
-  const { recordReview } = useProgress();
+  const {
+    snapshot,
+    markLearnedPermanently: markLearnedPermanentlyFromContext,
+    recordReview,
+  } = useProgress();
+  const markLearnedPermanently = useMemo(
+    () =>
+      markLearnedPermanentlyFromContext ??
+      (async () => {
+        throw new Error("Manual learned settings are unavailable in this view.");
+      }),
+    [markLearnedPermanentlyFromContext],
+  );
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [mcqPhase, setMcqPhase] = useState<PracticeSavePhase>("answering");
@@ -196,6 +210,10 @@ function PracticeSession({
   const [writtenRevealed, setWrittenRevealed] = useState(false);
   const [writtenPhase, setWrittenPhase] = useState<PracticeSavePhase>("answering");
   const pendingWrittenPayload = useRef<NewReviewEvent | null>(null);
+  const manualLearned = useMemo(
+    () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
+    [snapshot?.manualLearnedOverrides],
+  );
   const isGeneratedCalculations =
     mode === "calculations" && calculationSubmode === "generated";
   const conceptQuestionIds = useMemo(() => {
@@ -218,10 +236,20 @@ function PracticeSession({
         stimulus,
         stimuliOnly: mode === "stimulus",
         questionIds: conceptQuestionIds,
+        excludedQuestionIds: manualLearned.questionIds,
         size,
         seed,
       }),
-    [chapter, conceptQuestionIds, mode, seed, size, stimulus, style],
+    [
+      chapter,
+      conceptQuestionIds,
+      manualLearned.questionIds,
+      mode,
+      seed,
+      size,
+      stimulus,
+      style,
+    ],
   );
   const question = questions[index];
   const writtenCards = useMemo(
@@ -230,9 +258,10 @@ function PracticeSession({
         (card) =>
           card.choices === undefined &&
           (chapter === null || card.chapter === chapter) &&
-          (conceptCardIds?.has(card.id) ?? true),
+          (conceptCardIds?.has(card.id) ?? true) &&
+          !manualLearned.cardIds.has(card.id),
       ),
-    [chapter, conceptCardIds],
+    [chapter, conceptCardIds, manualLearned.cardIds],
   );
   const writtenCard = writtenCards[index % Math.max(1, writtenCards.length)];
 
@@ -291,6 +320,18 @@ function PracticeSession({
     pendingMcqPayload.current = null;
     setSaveError(null);
   }, [mcqPhase, questions.length]);
+  const markQuestionLearned = useCallback(
+    async (questionId: string) => {
+      if (mcqPhase === "pending_save") return;
+      await markLearnedPermanently("question", questionId);
+      setIndex(0);
+      setSelected(null);
+      setMcqPhase("answering");
+      pendingMcqPayload.current = null;
+      setSaveError(null);
+    },
+    [markLearnedPermanently, mcqPhase],
+  );
   const rateWritten = useCallback(
     async (rating: ReviewRating) => {
       if (writtenCard === undefined || writtenPhase !== "revealed") return;
@@ -410,6 +451,7 @@ function PracticeSession({
         onBack={onBack}
         onUseAuthored={() => setCalculationSubmode("authored")}
         recordReview={recordReview}
+        excludedReviewCardIds={manualLearned.cardIds}
       />
     );
   }
@@ -579,6 +621,7 @@ function PracticeSession({
           onSubmit={submitMcq}
           onRetry={() => void retryMcq()}
           onNext={nextMcq}
+          onMarkLearned={() => markQuestionLearned(question.id)}
         />
       )}
     </div>
@@ -607,6 +650,7 @@ export function PracticeMcq({
   onSubmit,
   onRetry,
   onNext,
+  onMarkLearned,
 }: {
   readonly question: ExamQuestion;
   readonly testedConceptIds: readonly string[];
@@ -621,6 +665,7 @@ export function PracticeMcq({
   readonly onSubmit: () => void;
   readonly onRetry: () => void;
   readonly onNext: () => void;
+  readonly onMarkLearned?: () => Promise<void>;
 }) {
   const correct = selected === question.correctChoice;
   return (
@@ -661,6 +706,17 @@ export function PracticeMcq({
           </label>
         ))}
       </fieldset>
+      {onMarkLearned !== undefined && (
+        <div className="manual-learned-action-row">
+          <ManualLearnedAction
+            label="Never show this question again"
+            confirmationTitle="Mark this question learned permanently?"
+            confirmationDescription="Only this authored question will be excluded from future Practice and mock selection. Its card and concept will remain available, and no review result will be recorded. You can restore it later in Settings."
+            disabled={saving || pending}
+            onConfirm={onMarkLearned}
+          />
+        </div>
+      )}
       {!saved ? (
         <button
           className="primary-button"

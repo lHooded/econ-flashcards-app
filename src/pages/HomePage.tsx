@@ -13,6 +13,7 @@ import { useNow } from "../utils/useNow";
 import { buildStudyHash } from "../study/studyScope";
 import { deriveMockClock } from "../exam/mock/timer";
 import { KnowledgeText } from "../components/knowledge/KnowledgeText";
+import { getEffectiveManualLearned } from "../study/manualLearned";
 
 function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): string {
   switch (phase) {
@@ -30,7 +31,24 @@ function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): s
 export function HomePage() {
   const { snapshot } = useProgress();
   const nowMs = useNow();
+  const manualLearned = useMemo(
+    () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
+    [snapshot?.manualLearnedOverrides],
+  );
   const scheduler = useMemo(
+    () =>
+      snapshot === null
+        ? null
+        : deriveExamSrsSnapshot(
+            cards,
+            snapshot.reviewEvents,
+            snapshot.settings,
+            nowMs,
+            manualLearned.cardIds,
+          ),
+    [manualLearned.cardIds, nowMs, snapshot],
+  );
+  const evidenceScheduler = useMemo(
     () =>
       snapshot === null
         ? null
@@ -39,10 +57,15 @@ export function HomePage() {
   );
   const summary = useMemo(
     () =>
-      scheduler === null
+      scheduler === null || evidenceScheduler === null
         ? null
-        : summarizeExamSrs(cards, scheduler, deck.metadata.chapterNames),
-    [scheduler],
+        : summarizeExamSrs(
+            cards,
+            scheduler,
+            deck.metadata.chapterNames,
+            evidenceScheduler,
+          ),
+    [evidenceScheduler, scheduler],
   );
 
   if (snapshot === null || scheduler === null || summary === null) {
@@ -137,7 +160,7 @@ export function HomePage() {
         <StatCard
           label="Learned"
           value={`${summary.learned} / ${summary.total}`}
-          detail="Cards at current criterion"
+          detail={`${summary.evidenceLearned} from retrieval · ${summary.manuallyLearnedOnly} manual-only`}
         />
         <StatCard label="Due now" value={summary.dueNow} detail="Scheduled reviews" />
         <StatCard
@@ -240,6 +263,7 @@ export function HomePage() {
             <span role="columnheader">Chapter</span>
             <span role="columnheader">Seen</span>
             <span role="columnheader">Learned</span>
+            <span role="columnheader">Manual-only</span>
             <span role="columnheader">Due</span>
           </div>
           {summary.chapterSummaries.map((chapter) => (
@@ -256,6 +280,9 @@ export function HomePage() {
               </span>
               <span data-label="Learned" role="cell">
                 {chapter.learned} / {chapter.total}
+              </span>
+              <span data-label="Manual-only" role="cell">
+                {chapter.manuallyLearnedOnly}
               </span>
               <span data-label="Due" role="cell">
                 {chapter.dueNow}

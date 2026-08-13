@@ -251,7 +251,7 @@ All articles, check variants, generators, grading, graph traversal, and
 selection code are bundled in the PWA. No runtime LLM, dictionary, textbook,
 or network service is used. ReviewEvents and derived CardStates remain the only
 learning evidence; the separate `guidedLessonSeen` store records only explicit
-lesson acknowledgement. The database is version 4. `ProgressBackupV2` remains
-version 2 and includes an optional backwards-compatible `lessonSeenConceptIds`
+lesson acknowledgement. The database is version 5. `ProgressBackupV3` is the current
+backup version and includes an optional backwards-compatible `lessonSeenConceptIds`
 array. Sync protocol v1 and the Worker source/configuration are unchanged:
 acknowledgement is currently local-device-only and is not synced across devices.

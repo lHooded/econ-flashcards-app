@@ -30,6 +30,7 @@ export interface SelectNextCardInput {
   readonly studyAhead?: boolean;
   /** Guidance only: used to order otherwise-comparable unseen cards. */
   readonly newCardPrerequisiteReadyByCardId?: ReadonlyMap<string, boolean>;
+  readonly manuallyLearnedCardIds?: ReadonlySet<string>;
 }
 
 export interface RankExamSrsCandidatesInput {
@@ -54,6 +55,7 @@ export function selectNextCard(input: SelectNextCardInput): NextCardSelection {
     input.reviews,
     input.settings,
     input.nowMs,
+    input.manuallyLearnedCardIds,
   );
   return selectNextCardFromSnapshot({
     ...input,

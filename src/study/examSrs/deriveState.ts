@@ -120,7 +120,9 @@ export function deriveCardState(
   reviews: readonly ReviewEvent[],
   settings: AppSettings,
   nowMs: number,
+  manuallyLearnedCardIds?: ReadonlySet<string>,
 ): ExamSrsCardState {
+  const isManuallyLearned = manuallyLearnedCardIds?.has(cardId) === true;
   const chronologicalReviews = [...reviews].sort(compareReviewEventsChronologically);
   let strength = 0;
   let latestEvidence: LatestEvidence | null = null;
@@ -145,13 +147,14 @@ export function deriveCardState(
   if (latestEvidence === null) {
     return {
       cardId,
-      learningState: "unseen",
+      learningState: isManuallyLearned ? "learned" : "unseen",
       strength: 0,
       reviewCount: chronologicalReviews.length,
       lastReviewedAt: null,
       lastOutcome: null,
       dueAt: null,
       isDue: false,
+      ...(isManuallyLearned ? { isManuallyLearned: true } : {}),
     };
   }
 
@@ -159,10 +162,27 @@ export function deriveCardState(
     latestEvidence.outcome,
     latestEvidence.resultingStrength,
   );
+  // Manual exclusion supersedes the operational state without changing the
+  // evidence fields above. Return before due-date derivation so refresh and
+  // simulation code cannot accidentally schedule this card again.
+  if (isManuallyLearned) {
+    return {
+      cardId,
+      learningState: "learned",
+      strength: latestEvidence.resultingStrength,
+      reviewCount: chronologicalReviews.length,
+      lastReviewedAt: latestEvidence.event.reviewedAt,
+      lastOutcome: latestEvidence.outcome,
+      dueAt: null,
+      isDue: false,
+      isManuallyLearned: true,
+    };
+  }
+
   const dueAtMs = deriveDueAtMs(latestEvidence, learningState, settings, nowMs);
   const dueAt = new Date(dueAtMs).toISOString();
 
-  return {
+  const derived: ExamSrsCardState = {
     cardId,
     learningState,
     strength: latestEvidence.resultingStrength,
@@ -172,6 +192,7 @@ export function deriveCardState(
     dueAt,
     isDue: dueAtMs <= nowMs,
   };
+  return derived;
 }
 
 export function deriveExamSrsSnapshot(
@@ -179,6 +200,7 @@ export function deriveExamSrsSnapshot(
   reviews: readonly ReviewEvent[],
   settings: AppSettings,
   nowMs: number,
+  manuallyLearnedCardIds?: ReadonlySet<string>,
 ): ExamSrsSnapshot {
   const reviewsByCardId = new Map<string, ReviewEvent[]>();
   for (const review of reviews) {
@@ -188,7 +210,13 @@ export function deriveExamSrsSnapshot(
   }
 
   const states = cards.map((card) =>
-    deriveCardState(card.id, reviewsByCardId.get(card.id) ?? [], settings, nowMs),
+    deriveCardState(
+      card.id,
+      reviewsByCardId.get(card.id) ?? [],
+      settings,
+      nowMs,
+      manuallyLearnedCardIds,
+    ),
   );
 
   return {

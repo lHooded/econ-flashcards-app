@@ -653,6 +653,50 @@ h3 {
   margin-top: 1.1rem;
 }
 
+.manual-learned-action-row {
+  margin-top: 0.75rem;
+}
+
+.manual-learned-action {
+  min-height: 2.35rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.manual-learned-confirmation {
+  display: grid;
+  gap: 0.55rem;
+  max-width: 42rem;
+  margin-top: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid #e6c56e;
+  border-radius: 0.6rem;
+  background: #fffaf0;
+  color: var(--navy);
+  font-size: 0.86rem;
+}
+
+.manual-learned-confirmation p {
+  margin: 0;
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
+.manual-learned-badge {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #d5b55d;
+  border-radius: 999px;
+  color: #76520a;
+  background: #fff8df;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
 .reveal-panel {
   margin-top: 1.25rem;
   padding-top: 1.15rem;
@@ -891,6 +935,80 @@ h3 {
   gap: 1rem;
 }
 
+.manual-learned-management {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+
+.manual-learned-management .panel-heading {
+  margin-bottom: 0;
+}
+
+.manual-learned-management h3,
+.manual-learned-management h4 {
+  margin: 0.25rem 0 0;
+  color: var(--navy);
+}
+
+.manual-learned-management h3 {
+  font-size: 1rem;
+}
+
+.manual-learned-management h4 {
+  font-size: 0.88rem;
+}
+
+.manual-learned-management > p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.manual-learned-groups,
+.manual-learned-groups > section {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.manual-learned-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.manual-learned-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: #fbfdff;
+}
+
+.manual-learned-row > span {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+}
+
+.manual-learned-row strong,
+.manual-learned-row small {
+  overflow-wrap: anywhere;
+}
+
+.manual-learned-row strong {
+  color: var(--navy);
+  font-size: 0.83rem;
+}
+
+.manual-learned-row small {
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+}
+
 .panel {
   min-width: 0;
   padding: 1.1rem;
@@ -1117,7 +1235,7 @@ h3 {
 
 .chapter-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 5rem 5rem 4rem;
+  grid-template-columns: minmax(0, 1fr) 5rem 5rem 5rem 4rem;
   gap: 0.65rem;
   align-items: center;
   padding: 0.65rem 0.7rem;
@@ -1509,6 +1627,13 @@ h3 {
 .knowledge-detail-heading h2,
 .knowledge-landing h2 {
   margin: 0.2rem 0 0;
+}
+
+.knowledge-manual-learned {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
 }
 
 .knowledge-article {

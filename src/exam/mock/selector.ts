@@ -7,6 +7,10 @@ export interface MockSelectionInput {
   readonly seed: number | string;
   readonly priorAttemptUsage?:
     ReadonlyMap<string, number> | Readonly<Record<string, number>>;
+  /** Effective question exclusions for a newly-created mock only. */
+  readonly excludedQuestionIds?: ReadonlySet<string>;
+  /** Cards excluded by a manual card/concept override. */
+  readonly excludedReviewCardIds?: ReadonlySet<string>;
 }
 
 export class MockSelectionError extends Error {
@@ -19,24 +23,38 @@ export class MockSelectionError extends Error {
 export function buildMockExam(input: MockSelectionInput): MockExamBuild {
   const rng = seededRandom(input.seed);
   const usage = normaliseUsage(input.priorAttemptUsage);
-  if (new Set(input.bank.map((q) => q.id)).size !== input.bank.length)
+  const bank = input.bank.filter(
+    (question) =>
+      !(input.excludedQuestionIds?.has(question.id) ?? false) &&
+      !(input.excludedReviewCardIds?.has(question.reviewCardId) ?? false),
+  );
+  const exclusionNote =
+    (input.excludedQuestionIds?.size ?? 0) > 0 ||
+    (input.excludedReviewCardIds?.size ?? 0) > 0
+      ? " after applying your manual learned exclusions"
+      : "";
+  if (new Set(bank.map((q) => q.id)).size !== bank.length)
     throw new MockSelectionError("question IDs are not unique.");
-  if (new Set(input.bank.map((q) => q.reviewCardId)).size < 60)
+  if (new Set(bank.map((q) => q.reviewCardId)).size < 60)
     throw new MockSelectionError(
-      "the bank has fewer than 60 unique review-card concepts.",
+      `there are fewer than 60 eligible unique review-card concepts${exclusionNote}.`,
     );
   const byChapter = new Map<number, ExamQuestion[]>();
-  for (const question of input.bank) {
+  for (const question of bank) {
     const list = byChapter.get(question.chapter) ?? [];
     list.push(question);
     byChapter.set(question.chapter, list);
   }
   for (let chapter = 1; chapter <= 10; chapter++) {
     if ((byChapter.get(chapter)?.length ?? 0) < 5)
-      throw new MockSelectionError(`chapter ${chapter} has fewer than five questions.`);
+      throw new MockSelectionError(
+        `chapter ${chapter} has fewer than five eligible questions${exclusionNote}.`,
+      );
   }
   if ((byChapter.get(0)?.length ?? 0) < 10)
-    throw new MockSelectionError("Chapter 0 has fewer than ten questions.");
+    throw new MockSelectionError(
+      `Chapter 0 has fewer than ten eligible questions${exclusionNote}.`,
+    );
 
   // The current bank has two graphs per substantive chapter and one table per
   // chapter. One graph per chapter plus tables in five chapters gives the

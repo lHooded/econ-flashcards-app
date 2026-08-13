@@ -6,6 +6,7 @@ import { createMockAttempt } from "../exam/mock/model";
 import { deriveMockClock } from "../exam/mock/timer";
 import { scoreMockAttempt } from "../exam/mock/scoring";
 import { formatLocalDateTime } from "../utils/date";
+import { getEffectiveManualLearned } from "../study/manualLearned";
 
 export function MockPage() {
   const {
@@ -16,6 +17,10 @@ export function MockPage() {
   const attempts = useMemo(
     () => snapshot?.mockAttempts ?? [],
     [snapshot?.mockAttempts],
+  );
+  const manualLearned = useMemo(
+    () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
+    [snapshot?.manualLearnedOverrides],
   );
   const active = attempts.find((attempt) => attempt.status === "active");
   const activeClock =
@@ -57,6 +62,8 @@ export function MockPage() {
         bank: examQuestions,
         seed,
         priorAttemptUsage: questionUsage,
+        excludedQuestionIds: manualLearned.questionIds,
+        excludedReviewCardIds: manualLearned.cardIds,
       });
       const id = `mock-attempt:${seed}`;
       await create(
