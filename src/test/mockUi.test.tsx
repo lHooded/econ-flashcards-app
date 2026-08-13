@@ -452,7 +452,7 @@ describe("mock and Practice Lab interactions", () => {
     await waitFor(() => expect(update).toHaveBeenCalled());
     await user.click(screen.getByRole("button", { name: "Submit mock" }));
     await waitFor(() => expect(finalize).toHaveBeenCalledTimes(1));
-    expect(await screen.findByRole("heading", { name: "0 / 60" })).toBeInTheDocument();
+    expect(await screen.findByText("0 / 60", { selector: "h1" })).toBeInTheDocument();
   });
 
   it("keeps a failed finalisation retryable", async () => {
@@ -477,7 +477,7 @@ describe("mock and Practice Lab interactions", () => {
     expect(finalize).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole("button", { name: "Retry submission" }));
     await waitFor(() => expect(finalize).toHaveBeenCalledTimes(2));
-    expect(await screen.findByRole("heading", { name: "0 / 60" })).toBeInTheDocument();
+    expect(await screen.findByText("0 / 60", { selector: "h1" })).toBeInTheDocument();
   });
 
   it("does not allow duplicate finalisation calls while submission is in flight", async () => {
@@ -498,7 +498,7 @@ describe("mock and Practice Lab interactions", () => {
     fireEvent.click(submit);
     await waitFor(() => expect(finalize).toHaveBeenCalledTimes(1));
     pending.resolve(submittedResult(attempt));
-    expect(await screen.findByRole("heading", { name: "0 / 60" })).toBeInTheDocument();
+    expect(await screen.findByText("0 / 60", { selector: "h1" })).toBeInTheDocument();
   });
 
   it("uses the writing-end timestamp when an expired attempt is finalised after closure", async () => {

@@ -1,5 +1,6 @@
 import type { Flashcard } from "../../domain/content";
 import { isNumericUnit } from "../../calculations/model";
+import { validateFreeMathContent } from "../../math/contentValidation";
 import type { KnowledgeConcept, KnowledgeSource } from "../model";
 import { SOURCE_PAGE_LIMITS } from "../validate";
 import {
@@ -264,6 +265,21 @@ function validateVariant(
   if (variant.prompt.trim() === "") issues.push(`${context} has an empty prompt`);
   if (variant.explanation.trim() === "") {
     issues.push(`${context} has an empty explanation`);
+  }
+
+  const mathFields = [
+    ["prompt", variant.prompt],
+    ...(variant.kind === "mcq"
+      ? variant.choices.map((choice, index) => ["choices[" + index + "]", choice])
+      : []),
+    ["explanation", variant.explanation],
+  ] as const;
+  for (const [field, value] of mathFields) {
+    try {
+      validateFreeMathContent(value, context + "." + field);
+    } catch (error: unknown) {
+      issues.push(errorMessage(error));
+    }
   }
 
   if (!Array.isArray(variant.requiredConceptIds)) {

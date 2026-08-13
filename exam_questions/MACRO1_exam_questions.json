@@ -15,7 +15,7 @@
     "correctChoice": 0,
     "explanation": "The household purchase is consumption expenditure, but the laptop is imported, so the same value is subtracted as M. The net contribution to Australian GDP is zero because the production occurred abroad.",
     "choiceRationales": [
-      "This correctly applies Y = C + I + G + X - M: the imported laptop appears in C and is offset by M.",
+      "This correctly applies \\(Y=C+I+G+X-M\\): the imported laptop appears in C and is offset by M.",
       "Imports can initially appear in C, but omitting M would incorrectly count foreign production in Australian GDP.",
       "Macroeconomic I includes newly produced capital, inventories and new dwellings; a household laptop is consumption here.",
       "Imports are recorded in the expenditure identity precisely so that foreign production embedded in spending is removed."
@@ -174,18 +174,18 @@
     "difficulty": 1,
     "stem": "Which expression correctly calculates the percentage growth rate when real GDP rises from 500 to 525?",
     "choices": [
-      "(525 - 500) / 525 × 100",
-      "25 / 100 × 100",
-      "(500 - 525) / 500 × 100",
-      "(525 - 500) / 500 × 100"
+      "\\(\\frac{525-500}{525}\\times100\\)",
+      "\\(25/100\\times100\\)",
+      "\\(\\frac{500-525}{500}\\times100\\)",
+      "\\(\\frac{525-500}{500}\\times100\\)"
     ],
     "correctChoice": 3,
-    "explanation": "Percentage growth uses the change divided by the earlier value: (525 - 500) / 500 × 100 = 5%.",
+    "explanation": "Percentage growth uses the change divided by the earlier value: \\(\\frac{525-500}{500}\\times100=5\\%\\).",
     "choiceRationales": [
       "The denominator should be the earlier value, 500, not the new value 525.",
       "The denominator 100 is not the previous GDP level, so this does not measure GDP growth.",
       "This reverses the change and would report a negative growth rate for an increase.",
-      "This uses the standard old-value denominator and gives 25/500 × 100 = 5%."
+      "This uses the standard old-value denominator and gives \\(25/500\\times100=5\\%\\)."
     ],
     "reviewCardId": "ch01-024",
     "sourceCardIds": ["ch01-024"],
@@ -252,13 +252,13 @@
     "difficulty": 2,
     "stem": "A country has a working-age population of 2,000, a participation rate of 75%, and an employment-to-population ratio of 68%. What are its labour force, employment, unemployment and unemployment rate?",
     "choices": [
-      "LF=1,500; E=1,360; U=640; u=42.67%",
-      "LF=1,360; E=1,500; U=-140; u=-10.29%",
-      "LF=1,500; E=1,360; U=140; u=9.33%",
-      "LF=2,000; E=1,360; U=640; u=32.00%"
+      "\\(LF=1{,}500;\\ E=1{,}360;\\ U=640;\\ u=42.67\\%\\)",
+      "\\(LF=1{,}360;\\ E=1{,}500;\\ U=-140;\\ u=-10.29\\%\\)",
+      "\\(LF=1{,}500;\\ E=1{,}360;\\ U=140;\\ u=9.33\\%\\)",
+      "\\(LF=2{,}000;\\ E=1{,}360;\\ U=640;\\ u=32.00\\%\\)"
     ],
     "correctChoice": 2,
-    "explanation": "LF = .75(2,000)=1,500. Employment is .68(2,000)=1,360, so U=1,500-1,360=140 and u=140/1,500=9.33%.",
+    "explanation": "\\(LF=.75(2{,}000)=1{,}500\\). Employment is \\(.68(2{,}000)=1{,}360\\), so \\(U=1{,}500-1{,}360=140\\) and \\(u=140/1{,}500=9.33\\%\\).",
     "choiceRationales": [
       "This treats the non-employed working-age population as unemployed and uses the wrong denominator for u.",
       "Employment cannot exceed the labour force here, and unemployment cannot be negative.",
@@ -276,15 +276,15 @@
     "topic": "Natural rate flows",
     "style": "concept",
     "difficulty": 1,
-    "stem": "With a constant labour force, the job-separation rate is s=0.03 and the job-finding rate is f=0.17. What is the steady-state unemployment rate?",
+    "stem": "With a constant labour force, the job-separation rate is \\(s=0.03\\) and the job-finding rate is \\(f=0.17\\). What is the steady-state unemployment rate?",
     "choices": ["3%", "17%", "20%", "15%"],
     "correctChoice": 3,
-    "explanation": "The steady-state rate is u*=s/(s+f)=0.03/(0.03+0.17)=0.03/0.20=0.15, or 15%.",
+    "explanation": "The steady-state rate is \\(u^*=\\frac{s}{s+f}=\\frac{0.03}{0.03+0.17}=\\frac{0.03}{0.20}=0.15\\), or 15%.",
     "choiceRationales": [
       "This reports separations alone and omits the job-finding flow in the steady-state denominator.",
       "This reports the job-finding rate rather than the unemployment stock implied by both flows.",
       "This adds the two rates but does not form the steady-state ratio.",
-      "The correct formula is s/(s+f)=.03/.20=.15, or 15%."
+      "The correct formula is \\(\\frac{s}{s+f}=\\frac{.03}{.20}=.15\\), or 15%"
     ],
     "reviewCardId": "ch02-013",
     "sourceCardIds": ["ch02-013"],
@@ -300,9 +300,9 @@
     "stem": "Actual output is 980 and potential output is 1,000. What is the percentage output gap?",
     "choices": ["-2%", "+2%", "-20%", "+20%"],
     "correctChoice": 0,
-    "explanation": "The output gap is (Y-Y*)/Y* ×100 = (980-1,000)/1,000 ×100 = -2%.",
+    "explanation": "The output gap is \\(\\frac{Y-Y^*}{Y^*}\\times100=\\frac{980-1{,}000}{1{,}000}\\times100=-2\\%\\).",
     "choiceRationales": [
-      "Actual output is $20 below potential, and dividing by potential gives -20/1,000=-2%.",
+      "Actual output is $20 below potential, and dividing by potential gives \\(\\frac{-20}{1{,}000}\\times100=-2\\%\\).",
       "This reverses the sign even though actual output is below potential.",
       "This treats the dollar gap as a percentage without dividing by potential output.",
       "The dollar gap is 20, not 20% of potential, and its direction is negative."
@@ -370,20 +370,20 @@
     "topic": "Firm labour demand",
     "style": "scenario",
     "difficulty": 2,
-    "stem": "A competitive firm faces output price p=$12, MPL=5, and nominal wage W=$54. What is the firm’s marginal hiring decision?",
+    "stem": "A competitive firm faces output price \\(p=\\$12\\), \\(MPL=5\\), and nominal wage \\(W=\\$54\\). What is the firm’s marginal hiring decision?",
     "choices": [
       "Stop hiring because the average product is not given.",
       "Fire a worker because the nominal wage exceeds the output price.",
       "Be indifferent because MPL is below the wage in dollar units.",
-      "Hire the additional worker because VMPL=$60 exceeds W=$54."
+      "Hire the additional worker because \\(VMPL=\\$60\\) exceeds \\(W=\\$54\\)."
     ],
     "correctChoice": 3,
-    "explanation": "The value of marginal product is p×MPL=$12×5=$60. Since it exceeds the $54 nominal wage, the additional worker adds more revenue than cost at the margin.",
+    "explanation": "The value of marginal product is \\(p\\times MPL=\\$12\\times5=\\$60\\). Since it exceeds the $54 nominal wage, the additional worker adds more revenue than cost at the margin.",
     "choiceRationales": [
       "The marginal rule uses VMPL, so average product is not needed for this decision.",
       "Comparing W with p alone ignores the worker’s marginal physical contribution.",
       "VMPL is $60, not below the $54 wage, so the firm is not indifferent.",
-      "VMPL=p×MPL=$12×5=$60>$54, so the marginal hiring condition supports hiring."
+      "\\(VMPL=p\\times MPL=\\$12\\times5=\\$60>\\$54\\), so the marginal hiring condition supports hiring."
     ],
     "reviewCardId": "ch02-022",
     "sourceCardIds": ["ch02-022"],
@@ -404,7 +404,7 @@
       "Labour supply shifts left while labour demand is unchanged."
     ],
     "correctChoice": 0,
-    "explanation": "A lower output price reduces VMPL=p×MPL at each quantity of labour, shifting labour demand inward/left. A wage change would instead create movement along a fixed demand curve.",
+    "explanation": "A lower output price reduces \\(VMPL=p\\times MPL\\) at each quantity of labour, shifting labour demand inward/left. A wage change would instead create movement along a fixed demand curve.",
     "choiceRationales": [
       "The lower p lowers VMPL at every employment level, so desired labour demand shifts left.",
       "A lower product price weakens, rather than expands, the revenue return from hiring.",
@@ -505,13 +505,13 @@
     "topic": "Exact real interest",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "A nominal interest rate is i=8% and realised inflation is π=3%. Using the exact one-period relation, what is the realised real interest rate?",
+    "stem": "A nominal interest rate is \\(i=8\\%\\) and realised inflation is \\(\\pi=3\\%\\). Using the exact one-period relation, what is the realised real interest rate?",
     "choices": ["4.85%", "5.00%", "11.00%", "-5.00%"],
     "correctChoice": 0,
-    "explanation": "The exact real rate is r=(1+i)/(1+π)-1=1.08/1.03-1≈0.0485, or 4.85%.",
+    "explanation": "The exact real rate is \\(r=\\frac{1+i}{1+\\pi}-1=1.08/1.03-1\\approx0.0485\\), or 4.85\\%.",
     "choiceRationales": [
-      "The exact multiplicative calculation gives 1.08/1.03-1≈4.85%.",
-      "5% is the approximation i-π; it is close but not the exact result requested.",
+      "The exact multiplicative calculation gives \\(1.08/1.03-1\\approx4.85\\%\\).",
+      "5% is the approximation \\(i-\\pi\\); it is close but not the exact result requested.",
       "Adding nominal interest and inflation confuses the nominal and price components.",
       "This reverses the real-rate subtraction even though nominal interest exceeds inflation."
     ],
@@ -529,10 +529,10 @@
     "stem": "A deposit pays a 1.75% nominal return, and the saver expects a 1.50% real return. Under the approximate Fisher relation, what expected inflation is implied?",
     "choices": ["0.25%", "3.25%", "-0.25%", "1.50%"],
     "correctChoice": 0,
-    "explanation": "The approximate Fisher relation is i≈r+πᵉ, so expected inflation is πᵉ≈1.75%-1.50%=0.25%.",
+    "explanation": "The approximate Fisher relation is \\(i\\approx r+\\pi^e\\), so expected inflation is \\(\\pi^e\\approx1.75\\%-1.50\\%=0.25\\%\\).",
     "choiceRationales": [
       "Subtracting the expected real return from the nominal return gives 0.25% expected inflation.",
-      "Adding the nominal and real rates does not solve i≈r+πᵉ; inflation is the residual.",
+      "Adding the nominal and real rates does not solve \\(i\\approx r+\\pi^e\\); inflation is the residual.",
       "This reverses the subtraction and assigns the wrong sign to the residual.",
       "This reports the given real return rather than the implied inflation rate."
     ],
@@ -555,11 +555,11 @@
       "It rises from about +1% to about +3%."
     ],
     "correctChoice": 2,
-    "explanation": "Using rᵉ≈i-πᵉ, the expected real rate is 0-1=-1% initially and 0-(-2)=+2% after expected deflation. Deflation therefore tightens real conditions at the lower bound.",
+    "explanation": "Using \\(r^e\\approx i-\\pi^e\\), the expected real rate is \\(0-1=-1\\%\\) initially and \\(0-(-2)=+2\\%\\) after expected deflation. Deflation therefore tightens real conditions at the lower bound.",
     "choiceRationales": [
       "This treats expected inflation as the real rate and reverses the real-rate relation.",
       "A fixed nominal rate does not fix the real rate when expected inflation changes.",
-      "The real rate moves from -1% to +2% because lower expected inflation raises i-πᵉ.",
+      "The real rate moves from -1% to +2% because lower expected inflation raises \\(i-\\pi^e\\).",
       "The initial real rate is negative, not positive, when expected inflation is +1%."
     ],
     "reviewCardId": "ch03-008",
@@ -599,12 +599,12 @@
     "topic": "Capital accumulation",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "A capital stock begins at K₀=500, gross investment is I=80, and the ending stock is K₁=550. Using K₁=K₀+I-δK₀, what depreciation rate is implied?",
+    "stem": "A capital stock begins at \\(K_0=500\\), gross investment is \\(I=80\\), and the ending stock is \\(K_1=550\\). Using \\(K_1=K_0+I-\\delta K_0\\), what depreciation rate is implied?",
     "choices": ["6%", "10%", "16%", "30%"],
     "correctChoice": 0,
-    "explanation": "The stock rose by 50, while gross investment was 80, so depreciation was 30. Thus δ=30/500=6%.",
+    "explanation": "The stock rose by 50, while gross investment was 80, so depreciation was 30. Thus \\(\\delta=\\frac{30}{500}=6\\%\\).",
     "choiceRationales": [
-      "Solving 550=500+80-500δ gives 500δ=30 and δ=6%.",
+      "Solving \\(550=500+80-500\\delta\\) gives \\(500\\delta=30\\) and \\(\\delta=6\\%\\).",
       "10% would imply depreciation of 50 and an ending stock of 530, not 550.",
       "This confuses gross investment or the stock change with depreciation.",
       "$30 is the dollar depreciation amount, not the depreciation rate."
@@ -620,7 +620,7 @@
     "topic": "User cost of capital",
     "style": "concept",
     "difficulty": 3,
-    "stem": "Holding the capital-good price and depreciation rate fixed, what does a higher real interest rate do in the approximate user-cost model UC≈P_K(r+δ)?",
+    "stem": "Holding the capital-good price and depreciation rate fixed, what does a higher real interest rate do in the approximate user-cost model \\(UC\\approx P_K(r+\\delta)\\)?",
     "choices": [
       "It lowers user cost and shifts desired investment upward.",
       "It raises user cost and reduces the number of projects worth undertaking.",
@@ -675,12 +675,12 @@
     "stem": "Tax receipts are $300, transfers are $40, government interest payments are $20, and government purchases G are $180. Using the course notation, what is public saving?",
     "choices": ["$40", "$100", "-$60", "$60"],
     "correctChoice": 3,
-    "explanation": "Net taxes are T=300-40-20=$240. Public saving is T-G=$240-$180=$60.",
+    "explanation": "Net taxes are \\(T=300-40-20=\\$240\\). Public saving is \\(T-G=\\$240-\\$180=\\$60\\).",
     "choiceRationales": [
       "$40 is the transfer amount, not net taxes minus government purchases.",
       "$100 omits the effect of government interest payments or otherwise miscomputes net taxes.",
       "The government has positive rather than negative saving with net taxes of $240 and G of $180.",
-      "Public saving is T-G=(300-40-20)-180=$60 under the course’s net-tax convention."
+      "Public saving is \\(T-G=(300-40-20)=\\$60\\) under the course’s net-tax convention."
     ],
     "reviewCardId": "ch03-026",
     "sourceCardIds": ["ch03-026"],
@@ -701,7 +701,7 @@
       "The real interest rate is fixed by the world market, so only the current account changes."
     ],
     "correctChoice": 0,
-    "explanation": "A fall in desired investment shifts the investment curve left. The closed-economy real rate falls to restore S=I, and the lower rate moves along the saving schedule so equilibrium saving and investment both fall.",
+    "explanation": "A fall in desired investment shifts the investment curve left. The closed-economy real rate falls to restore \\(S=I\\), and the lower rate moves along the saving schedule so equilibrium saving and investment both fall.",
     "choiceRationales": [
       "This correctly shifts investment demand left and applies the lower equilibrating real rate in the closed economy.",
       "The shock is to investment demand, not saving, and lower r does not make desired investment rise after the leftward shift.",
@@ -747,17 +747,17 @@
     "difficulty": 3,
     "stem": "Which statement correctly distinguishes the income-expenditure equilibrium condition from the accounting identity for actual expenditure?",
     "choices": [
-      "Y=AE is always true ex post, while behavioural equilibrium requires Y=PAE.",
-      "Y=PAE is always true ex post, while equilibrium requires Y=AE.",
-      "Both Y=AE and Y=PAE are behavioural conditions that can fail at the same time.",
+      "\\(Y=AE\\) is always true ex post, while behavioural equilibrium requires \\(Y=PAE\\).",
+      "\\(Y=PAE\\) is always true ex post, while equilibrium requires \\(Y=AE\\).",
+      "Both \\(Y=AE\\) and \\(Y=PAE\\) are behavioural conditions that can fail at the same time.",
       "Neither equality is used because inventories are excluded from the income-expenditure model."
     ],
     "correctChoice": 0,
-    "explanation": "Actual inventory investment adjusts so actual expenditure equals output ex post. The equilibrium condition concerns planned expenditure: firms are satisfied only when PAE=Y.",
+    "explanation": "Actual inventory investment adjusts so actual expenditure equals output ex post. The equilibrium condition concerns planned expenditure: firms are satisfied only when \\(PAE=Y\\).",
     "choiceRationales": [
-      "This is the course distinction: actual inventory changes make AE=Y an identity, while PAE=Y is the behavioural equilibrium condition.",
+      "This is the course distinction: actual inventory changes make \\(AE=Y\\) an identity, while \\(PAE=Y\\) is the behavioural equilibrium condition.",
       "It reverses which expenditure concept is the ex-post identity.",
-      "AE=Y is not a behavioural condition that fails; unplanned inventories reconcile it accounting-wise.",
+      "\\(AE=Y\\) is not a behavioural condition that fails; unplanned inventories reconcile it accounting-wise.",
       "Inventories are central to the adjustment mechanism and are not excluded from the model."
     ],
     "reviewCardId": "ch04-002",
@@ -782,7 +782,7 @@
     "explanation": "When Y exceeds PAE, firms produced more than buyers planned to purchase. The resulting $40 unplanned inventory accumulation signals firms to reduce production.",
     "choiceRationales": [
       "The sign is reversed: production exceeds planned sales, so unsold goods accumulate rather than inventories fall.",
-      "Y-PAE=800-760=$40 of unplanned inventory accumulation, which prompts a production cut.",
+      "\\(Y-PAE=800-760=\\$40\\) of unplanned inventory accumulation, which prompts a production cut.",
       "The inventory change is unplanned and does not mean desired investment rose permanently.",
       "Actual expenditure equals output only after unplanned inventory investment is included; the signal still exists."
     ],
@@ -800,12 +800,12 @@
     "stem": "If the MPC is 0.70 and disposable income rises by $50, by how much does consumption rise in the simple consumption function?",
     "choices": ["$7", "$20", "$35", "$50"],
     "correctChoice": 2,
-    "explanation": "The MPC is the change in consumption per dollar of disposable income, so ΔC=0.70×$50=$35.",
+    "explanation": "The MPC is the change in consumption per dollar of disposable income, so \\(\\Delta C=0.70\\times\\$50=\\$35\\).",
     "choiceRationales": [
       "This multiplies the income change by 0.14 rather than the stated MPC.",
       "This does not apply the 0.70 marginal propensity to the $50 income change.",
-      "MPC=.70 means consumption rises by .70×50=$35.",
-      "A $50 increase would be full pass-through, which would require MPC=1."
+      "With \\(MPC=.70\\), consumption rises by \\(.70\\times50=\\$35\\).",
+      "A $50 increase would be full pass-through, which would require \\(MPC=1\\)."
     ],
     "reviewCardId": "ch04-008",
     "sourceCardIds": ["ch04-008"],
@@ -818,15 +818,15 @@
     "topic": "Two-sector equilibrium",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "In a two-sector model, C=120+0.75Y and planned investment is Iᴾ=80. What is equilibrium GDP?",
+    "stem": "In a two-sector model, \\(C=120+0.75Y\\) and planned investment is \\(Iᴾ=80\\). What is equilibrium GDP?",
     "choices": ["$200", "$320", "$600", "$800"],
     "correctChoice": 3,
-    "explanation": "Equilibrium satisfies Y=C+Iᴾ=120+0.75Y+80. Thus 0.25Y=200 and Y=$800.",
+    "explanation": "Equilibrium satisfies \\(Y=C+Iᴾ=120+0.75Y+80\\). Thus \\(0.25Y=200\\) and \\(Y=\\$800\\).",
     "choiceRationales": [
       "$200 is autonomous expenditure before applying the multiplier, not equilibrium GDP.",
-      "$320 does not solve the equilibrium equation with MPC=.75.",
+      "$320 does not solve the equilibrium equation with \\(MPC=.75\\).",
       "This underestimates the multiplier effect of the autonomous $200 expenditure.",
-      "Y=(C₀+I₀)/(1-c)=200/.25=$800."
+      "\\(Y=(C_0+I_0)/(1-c)=200/.25=\\$800\\)."
     ],
     "reviewCardId": "ch04-011",
     "sourceCardIds": ["ch04-011"],
@@ -847,7 +847,7 @@
       "The multiplier becomes negative because households consume more of each extra dollar."
     ],
     "correctChoice": 0,
-    "explanation": "The two-sector multiplier is k=1/(1-c). A higher MPC c reduces the leakage into saving, raises k, and makes equilibrium GDP more responsive to an autonomous spending change.",
+    "explanation": "The two-sector multiplier is \\(k=\\frac{1}{1-c}\\). A higher MPC c reduces the leakage into saving, raises k, and makes equilibrium GDP more responsive to an autonomous spending change.",
     "choiceRationales": [
       "A larger c makes 1-c smaller, so k rises and each autonomous shock has a larger total effect.",
       "The direction is reversed: a higher MPC increases rather than reduces the multiplier.",
@@ -868,7 +868,7 @@
     "stem": "In a simple open economy, induced consumption is 0.65Y and imports are 0.20Y. What is the slope of the PAE curve with respect to Y, holding autonomous terms fixed?",
     "choices": ["0.45", "0.85", "0.65", "-0.45"],
     "correctChoice": 0,
-    "explanation": "Imports are subtracted from PAE, so the induced slope is c-m=0.65-0.20=0.45.",
+    "explanation": "Imports are subtracted from PAE, so the induced slope is \\(c-m=0.65-0.20=0.45\\).",
     "choiceRationales": [
       "PAE includes +cY-M, so the slope is .65-.20=.45.",
       "Adding c and m treats imports as an injection rather than a leakage.",
@@ -886,14 +886,14 @@
     "topic": "Open-economy equilibrium",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "Suppose C=150+0.5Y, planned investment is 100, exports are 50, and M=0.1Y. What is equilibrium GDP?",
+    "stem": "Suppose \\(C=150+0.5Y\\), planned investment is 100, exports are 50, and \\(M=0.1Y\\). What is equilibrium GDP?",
     "choices": ["$300", "$400", "$500", "$750"],
     "correctChoice": 2,
-    "explanation": "PAE=150+0.5Y+100+50-0.1Y=300+0.4Y. Setting Y=PAE gives 0.6Y=300 and Y=$500.",
+    "explanation": "\\(PAE=150+0.5Y+100+50-0.1Y=300+0.4Y\\). Setting \\(Y=PAE\\) gives \\(0.6Y=300\\) and \\(Y=\\$500\\).",
     "choiceRationales": [
       "$300 is autonomous PAE before induced consumption and imports are solved out.",
-      "$400 does not satisfy Y=300+.4Y.",
-      "The open-economy multiplier is 1/(1-.5+.1)=1/.6, so Y=300/.6=$500.",
+      "$400 does not satisfy \\(Y=300+.4Y\\).",
+      "The open-economy multiplier is \\(\\frac{1}{1-.5+.1}=\\frac{1}{.6}\\), so \\(Y=300/.6=\\$500\\).",
       "This applies an incorrect slope or multiplier and overstates equilibrium output."
     ],
     "reviewCardId": "ch04-024",
@@ -933,15 +933,20 @@
     "topic": "Saving function",
     "style": "concept",
     "difficulty": 2,
-    "stem": "If consumption is C=100+0.8Y in a two-sector model, which saving function follows from S=Y-C?",
-    "choices": ["S=-100+0.2Y", "S=100+1.8Y", "S=100-0.8Y", "S=-100+0.8Y"],
+    "stem": "If consumption is \\(C=100+0.8Y\\) in a two-sector model, which saving function follows from \\(S=Y-C\\)?",
+    "choices": [
+      "\\(S=-100+0.2Y\\)",
+      "\\(S=100+1.8Y\\)",
+      "\\(S=100-0.8Y\\)",
+      "\\(S=-100+0.8Y\\)"
+    ],
     "correctChoice": 0,
-    "explanation": "Subtracting consumption from income gives S=Y-(100+0.8Y)=-100+0.2Y.",
+    "explanation": "Subtracting consumption from income gives \\(S=Y-(100+0.8Y)=-100+0.2Y\\).",
     "choiceRationales": [
-      "S=Y-C=Y-100-.8Y=-100+.2Y, so this has both the correct intercept and slope.",
+      "\\(S=Y-C=Y-100-.8Y=-100+.2Y\\), so this has both the correct intercept and slope.",
       "This adds rather than subtracts consumption and uses an incorrect slope.",
       "This reverses the autonomous-consumption intercept and omits the residual saving share.",
-      "The slope of saving is 1-MPC=.2, not the MPC .8."
+      "The slope of saving is \\(1-MPC=.2\\), not the MPC .8."
     ],
     "reviewCardId": "ch04-017",
     "sourceCardIds": ["ch04-017"],
@@ -955,12 +960,17 @@
     "style": "model_discrimination",
     "difficulty": 3,
     "stem": "In the simple open-economy income-expenditure model with no government, which leakage-injection equality is equivalent to equilibrium?",
-    "choices": ["S+Iᴾ=M+X", "S+M=Iᴾ+X", "S+X=Iᴾ+M", "S+M+X=Iᴾ"],
+    "choices": [
+      "\\(S+I^P=M+X\\)",
+      "\\(S+M=I^P+X\\)",
+      "\\(S+X=I^P+M\\)",
+      "\\(S+M+X=I^P\\)"
+    ],
     "correctChoice": 1,
-    "explanation": "Saving and imports are leakages from domestic spending, while planned investment and exports are injections. Equilibrium therefore requires S+M=Iᴾ+X.",
+    "explanation": "Saving and imports are leakages from domestic spending, while planned investment and exports are injections. Equilibrium therefore requires \\(S+M=I^P+X\\).",
     "choiceRationales": [
       "This places planned investment on the leakage side and imports on the injection side.",
-      "The open-economy leakage-injection condition is S+M=Iᴾ+X.",
+      "The open-economy leakage-injection condition is \\(S+M=I^P+X\\).",
       "Exports are an injection and imports a leakage, so these two terms are reversed here.",
       "This omits exports from the injection side and cannot represent the stated model."
     ],
@@ -975,13 +985,13 @@
     "topic": "Tax function",
     "style": "calculation",
     "difficulty": 1,
-    "stem": "With the tax function T=T₀+tY, let T₀=$20, t=0.25, and Y=$400. What are total taxes?",
+    "stem": "With the tax function \\(T=T_0+tY\\), let \\(T_0=\\$20\\), \\(t=0.25\\), and \\(Y=\\$400\\). What are total taxes?",
     "choices": ["$120", "$100", "$80", "$20"],
     "correctChoice": 0,
-    "explanation": "T=20+0.25(400)=20+100=$120.",
+    "explanation": "\\(T=20+0.25(400)=20+100=\\$120\\).",
     "choiceRationales": [
-      "The autonomous $20 plus proportional tax of .25×$400=$100 gives total taxes of $120.",
-      "$100 is only the proportional component and omits T₀.",
+      "The autonomous $20 plus proportional tax of \\(.25\\times\\$400=\\$100\\) gives total taxes of $120.",
+      "$100 is only the proportional component and omits \\(T_0\\).",
       "$80 uses an incorrect marginal rate or subtracts the autonomous component.",
       "$20 is only autonomous taxes and ignores taxes linked to income."
     ],
@@ -996,13 +1006,13 @@
     "topic": "Four-sector PAE",
     "style": "model_discrimination",
     "difficulty": 2,
-    "stem": "In the four-sector model with proportional taxes and imports, let c=0.80, t=0.25 and m=0.10. What is the slope of PAE with respect to Y?",
+    "stem": "In the four-sector model with proportional taxes and imports, let \\(c=0.80\\), \\(t=0.25\\) and \\(m=0.10\\). What is the slope of PAE with respect to Y?",
     "choices": ["0.90", "0.50", "0.70", "-0.50"],
     "correctChoice": 1,
-    "explanation": "The four-sector PAE slope is c(1-t)-m=0.80(0.75)-0.10=0.60-0.10=0.50.",
+    "explanation": "The four-sector PAE slope is \\(c(1-t)-m=0.80(0.75)-0.10=0.60-0.10=0.50\\).",
     "choiceRationales": [
       "This adds the import propensity instead of subtracting it as a leakage and does not apply the proportional-tax reduction.",
-      "The slope is c(1-t)-m=.80(.75)-.10=.50, so this is the correct four-sector coefficient.",
+      "The slope is \\(c(1-t)-m=.80(.75)-.10=.50\\), so this is the correct four-sector coefficient.",
       "This subtracts m from c without first applying the tax leakage, giving .80-.10=.70.",
       "Imports reduce the slope but do not make it negative for the stated parameters."
     ],
@@ -1025,12 +1035,12 @@
       "It makes the multiplier negative because taxes always reduce GDP."
     ],
     "correctChoice": 2,
-    "explanation": "The multiplier is k_G=1/[1-c(1-t)]. A higher t reduces disposable-income feedback into consumption, so the denominator rises and the multiplier falls.",
+    "explanation": "The multiplier is \\(k_G=1/[1-c(1-t)]\\). A higher t reduces disposable-income feedback into consumption, so the denominator rises and the multiplier falls.",
     "choiceRationales": [
       "Tax receipts are a leakage from disposable income; they do not become government purchases automatically in this multiplier formula.",
-      "The tax rate enters the induced-consumption coefficient c(1-t), so MPC alone does not determine k_G here.",
-      "A higher t lowers c(1-t), weakens induced consumption and reduces k_G.",
-      "The multiplier remains positive for standard 0<c<1 and 0≤t≤1; a higher tax rate does not make it negative."
+      "The tax rate enters the induced-consumption coefficient c(1-t), so MPC alone does not determine \\(k_G\\) here.",
+      "A higher t lowers c(1-t), weakens induced consumption and reduces \\(k_G\\).",
+      "The multiplier remains positive for standard \\(0<c<1\\) and \\(0\\le t\\le1\\); a higher tax rate does not make it negative."
     ],
     "reviewCardId": "ch05-013",
     "sourceCardIds": ["ch05-013"],
@@ -1043,15 +1053,15 @@
     "topic": "Autonomous tax multiplier",
     "style": "model_discrimination",
     "difficulty": 2,
-    "stem": "With c=0.75 and t=0.20, what is the multiplier for a one-dollar increase in autonomous taxes?",
+    "stem": "With \\(c=0.75\\) and \\(t=0.20\\), what is the multiplier for a one-dollar increase in autonomous taxes?",
     "choices": ["-0.75", "-0.40", "-2.50", "-1.875"],
     "correctChoice": 3,
-    "explanation": "k_T=-c/[1-c(1-t)]=-.75/[1-.75(.8)]=-.75/.4=-1.875.",
+    "explanation": "\\(k_T=-c/[1-c(1-t)]=-.75/[1-.75(.8)]=-.75/.4=-1.875\\).",
     "choiceRationales": [
       "This omits the subsequent induced-income rounds in the denominator.",
       "This uses the denominator as the multiplier rather than dividing by it.",
       "-2.50 is the negative of the government-spending multiplier, but the tax numerator is c rather than 1.",
-      "The tax multiplier is -0.75/.40=-1.875, including its negative demand effect."
+      "The tax multiplier is \\(-.75/.40=-1.875\\), including its negative demand effect."
     ],
     "reviewCardId": "ch05-008",
     "sourceCardIds": ["ch05-008"],
@@ -1064,12 +1074,12 @@
     "topic": "Balanced-budget multiplier",
     "style": "concept",
     "difficulty": 3,
-    "stem": "With c=0.80 and proportional tax rate t=0.25, what is the balanced-budget multiplier when ΔG₀=ΔT₀?",
+    "stem": "With \\(c=0.80\\) and proportional tax rate \\(t=0.25\\), what is the balanced-budget multiplier when \\(\\Delta G_0=\\Delta T_0\\)?",
     "choices": ["0.50", "1.00", "2.50", "-0.50"],
     "correctChoice": 0,
-    "explanation": "k_BB=(1-c)/[1-c(1-t)]=.20/[1-.80(.75)]=.20/.40=.50. With proportional taxes it need not equal one.",
+    "explanation": "\\(k_BB=(1-c)/[1-c(1-t)]=.20/[1-.80(.75)]=.20/.40=.50\\). With proportional taxes it need not equal one.",
     "choiceRationales": [
-      "The numerator is .20 and the denominator is .40, giving k_BB=.50.",
+      "The numerator is .20 and the denominator is .40, giving \\(k_BB=.50\\).",
       "A balanced-budget multiplier of exactly one is the special no-proportional-tax result, not this case.",
       "This is closer to the government-spending multiplier and ignores the offsetting tax effect.",
       "Equal increases in G and autonomous taxes have a positive, not negative, net effect here."
@@ -1163,7 +1173,7 @@
     "topic": "Debt sustainability",
     "style": "calculation",
     "difficulty": 3,
-    "stem": "Use Δd=[(r-g)/(1+g)]dₜ₋₁-pbb, where pbb is positive for a primary surplus. If dₜ₋₁=0.80, r=4%, g=6%, and pbb=-1%, what happens to the debt-to-GDP ratio?",
+    "stem": "Use \\(\\Delta d=\\frac{r-g}{1+g}d_{t-1}-pbb\\), where pbb is positive for a primary surplus. If \\(d_{t-1}=0.80\\), \\(r=4\\%\\), \\(g=6\\%\\), and pbb=-1%, what happens to the debt-to-GDP ratio?",
     "choices": [
       "It falls by about 0.51 percentage points.",
       "It rises by about 0.51 percentage points.",
@@ -1171,7 +1181,7 @@
       "It is unchanged because r is below g only after rounding."
     ],
     "correctChoice": 0,
-    "explanation": "The growth-interest term is [(.04-.06)/1.06](.80)≈-.01509. Subtracting pbb=-.01 adds .01, giving Δd≈-.00509, a fall of about 0.51 percentage points.",
+    "explanation": "The growth-interest term is [(.04-.06)/1.06](.80)≈-.01509. Subtracting pbb=-.01 adds .01, giving \\(\\Delta d\\approx-.00509\\), a fall of about 0.51 percentage points.",
     "choiceRationales": [
       "The calculated change is -.00509 of GDP, or about -0.51 percentage points.",
       "This reverses the sign of the growth-interest contribution and misses that g>r helps reduce the ratio.",
@@ -1189,15 +1199,15 @@
     "topic": "Four-sector multiplier",
     "style": "model_discrimination",
     "difficulty": 2,
-    "stem": "In the four-sector model, c=0.80, t=0.25 and the marginal propensity to import is m=0.10. What is the multiplier for an autonomous spending change?",
+    "stem": "In the four-sector model, \\(c=0.80\\), \\(t=0.25\\) and the marginal propensity to import is \\(m=0.10\\). What is the multiplier for an autonomous spending change?",
     "choices": ["1.25", "2.00", "2.50", "5.00"],
     "correctChoice": 1,
-    "explanation": "The four-sector multiplier is 1/[1-c(1-t)+m]=1/[1-.8(.75)+.1]=1/.5=2.",
+    "explanation": "The four-sector multiplier is \\(\\frac{1}{1-c(1-t)+m}=\\frac{1}{1-.8(.75)+.1}=\\frac{1}{.5}=2\\).",
     "choiceRationales": [
       "This does not use the induced-consumption and import leakages in the four-sector denominator.",
       "The denominator is 1-.60+.10=.50, so the multiplier equals 2.00.",
       "This omits the import leakage and is too large for the stated open economy.",
-      "This is the no-tax/no-import result for MPC=.80 and ignores both leakages."
+      "This is the no-tax/no-import result for \\(MPC=.80\\) and ignores both leakages."
     ],
     "reviewCardId": "ch05-032",
     "sourceCardIds": ["ch05-032"],
@@ -1213,7 +1223,7 @@
     "stem": "An asset costs $100 today, pays $4 in income, and can be sold for $105 next period. What is its one-period net rate of return?",
     "choices": ["4%", "9%", "5%", "109%"],
     "correctChoice": 1,
-    "explanation": "The net return is (P₁+income-P₀)/P₀=(105+4-100)/100=0.09, or 9%.",
+    "explanation": "The net return is \\(\\frac{P_1+\\text{income}-P_0}{P_0}=\\frac{105+4-100}{100}=0.09\\), or 9\\%.",
     "choiceRationales": [
       "The total dollar return is $5+$4=$9 on a $100 purchase, so the net rate is 9%.",
       "This counts only the income payment and omits the $5 capital gain.",
@@ -1234,7 +1244,7 @@
     "stem": "A one-period zero-coupon bond pays $250 next year. If the market interest rate is 5%, what is its price today?",
     "choices": ["$262.50", "$250.00", "$225.00", "$238.10"],
     "correctChoice": 3,
-    "explanation": "The present value is P=F/(1+i)=250/1.05≈$238.10.",
+    "explanation": "The present value is \\(P=F/(1+i)=250/1.05\\approx\\$238.10\\).",
     "choiceRationales": [
       "Multiplying by 1.05 compounds a present amount forward instead of discounting the future payment.",
       "The future face value is not the current market price when the interest rate is positive.",
@@ -1304,10 +1314,10 @@
     "topic": "Money demand calculation",
     "style": "concept",
     "difficulty": 2,
-    "stem": "Suppose MD/P=0.5Y-1000i, with i in decimal form. If Y=1,600 and i=4%, what real money demand is implied?",
+    "stem": "Suppose \\(MD/P=0.5Y-1000i\\), with i in decimal form. If \\(Y=1{,}600\\) and \\(i=4\\%\\), what real money demand is implied?",
     "choices": ["400", "640", "760", "1,560"],
     "correctChoice": 2,
-    "explanation": "Use i=0.04: MD/P=0.5(1,600)-1,000(0.04)=800-40=760.",
+    "explanation": "Use \\(i=0.04: MD/P=0.5(1{,}600)-1{,}000(0.04)=800-40=760\\).",
     "choiceRationales": [
       "This does not apply the income term and interest-rate term in the stated equation.",
       "This is 0.4Y and does not subtract the interest-opportunity-cost component.",
@@ -1405,7 +1415,7 @@
     "difficulty": 3,
     "stem": "Which statement correctly distinguishes the quantity identity from the simple long-run quantity-theory prediction?",
     "choices": [
-      "MV=PY is a causal theory that requires no assumptions about velocity or output.",
+      "\\(MV=PY\\) is a causal theory that requires no assumptions about velocity or output.",
       "The quantity theory assumes money is fixed while the identity assumes output is fixed.",
       "MV≡PY is an identity; price predictions need stable V and long-run real-output assumptions.",
       "The quantity identity applies only when inflation is zero."
@@ -1439,7 +1449,7 @@
     "correctChoice": 3,
     "explanation": "The quantity equation still holds as an identity, but the short-run decomposition of nominal spending can include changes in velocity and real output, with prices adjusting gradually.",
     "choiceRationales": [
-      "MV=PY remains an accounting identity; the issue is how its components respond, not whether it holds.",
+      "\\(MV=PY\\) remains an accounting identity; the issue is how its components respond, not whether it holds.",
       "There is no general implication that money growth makes velocity zero.",
       "Real output can respond in the short run even if long-run output is tied to real-side factors.",
       "Changing V, changing Y and adjustment lags explain why the long-run proportional price result need not hold immediately."
@@ -1615,11 +1625,11 @@
     "choices": [
       "Cash rate falls → real rates rise → C and I rise → AD falls.",
       "Cash rate rises → expected inflation rises one-for-one → real rates fall → AD rises.",
-      "Cash rate rises → broader and expected real rates rise → interest-sensitive C and I fall → PAE/AD falls.",
+      "\\[\\text{cash rate rises}\\to\\text{broader and expected real rates rise}\\to\\text{interest-sensitive }C\\text{ and }I\\text{ fall}\\to\\text{PAE/AD falls}\\]",
       "Cash rate rises → exports rise mechanically → AD rises, with no spending response."
     ],
     "correctChoice": 2,
-    "explanation": "Tighter policy raises the cash rate and broader borrowing/return rates. For given inflation expectations, expected real rates rise, reducing interest-sensitive consumption and investment and lowering PAE/AD.",
+    "explanation": "Tighter policy raises the cash rate and broader borrowing/return rates. For given inflation expectations, expected real rates rise, reducing interest-sensitive consumption and investment and lowering \\(\\text{PAE/AD}\\).",
     "choiceRationales": [
       "This reverses the policy-rate movement and the spending response.",
       "If expected inflation rose one-for-one, the real rate would not rise; this is not the tightening channel.",
@@ -1658,10 +1668,10 @@
     "topic": "Taylor rule",
     "style": "calculation",
     "difficulty": 3,
-    "stem": "Using i=3+1.5(π-πᵀ)+0.5(output gap), what policy rate follows when π=3%, πᵀ=2%, and the output gap is -2%?",
+    "stem": "Using \\(i=3+1.5(\\pi-\\pi^T)+0.5\\,\\text{output gap}\\), what policy rate follows when \\(\\pi=3\\%\\), \\(\\pi^T=2\\%\\), and the output gap is -2%?",
     "choices": ["3.5%", "4.0%", "1.5%", "6.0%"],
     "correctChoice": 0,
-    "explanation": "The inflation gap is 1 percentage point and the output gap is -2 points: i=3+1.5(1)+0.5(-2)=3+1.5-1=3.5%.",
+    "explanation": "The inflation gap is 1 percentage point and the output gap is -2 points: \\(i=3+1.5(1)+0.5(-2)=3+1.5-1=3.5\\%\\).",
     "choiceRationales": [
       "Substituting the two gaps gives 3+1.5-1=3.5%.",
       "This ignores the negative output-gap term or applies it with the wrong sign.",
@@ -1690,7 +1700,7 @@
     "explanation": "An upward PRF shift raises the policy-selected real rate for each inflation rate, so it is an exogenous contractionary policy change. Higher inflation moving along an unchanged PRF is different.",
     "choiceRationales": [
       "A lower real rate at each inflation rate would be a downward, expansionary PRF shift.",
-      "This correctly interprets an upward exogenous policy shift as higher r at each π.",
+      "This correctly interprets an upward exogenous policy shift as higher r at each \\(\\pi\\).",
       "A change in inflation along the existing rule is a movement, not an exogenous shift.",
       "The PRF maps inflation into the policy real rate; it is not the money-demand curve."
     ],
@@ -1705,10 +1715,10 @@
     "topic": "PAE with real interest",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "If C=180+0.5Y-15r and I=70-5r, with no other sectors, what is planned aggregate expenditure?",
+    "stem": "If \\(C=180+0.5Y-15r\\) and \\(I=70-5r\\), with no other sectors, what is planned aggregate expenditure?",
     "choices": ["250+0.5Y-10r", "180+0.5Y-20r", "250+0.5Y+20r", "250+0.5Y-20r"],
     "correctChoice": 3,
-    "explanation": "Add consumption and investment: PAE=(180+70)+0.5Y-(15+5)r=250+0.5Y-20r.",
+    "explanation": "Add consumption and investment: \\(PAE=(180+70)+0.5Y-(15+5)r=250+0.5Y-20r\\).",
     "choiceRationales": [
       "This omits $10 of the combined interest-rate response.",
       "This omits the $70 autonomous investment term from PAE.",
@@ -1726,15 +1736,20 @@
     "topic": "Output and real rate",
     "style": "model_discrimination",
     "difficulty": 2,
-    "stem": "Using PAE=250+0.5Y-20r and the equilibrium condition Y=PAE, which output relation follows?",
-    "choices": ["Y=250-20r", "Y=500+40r", "Y=250+0.5r", "Y=500-40r"],
+    "stem": "Using \\(PAE=250+0.5Y-20r\\) and the equilibrium condition \\(Y=PAE\\), which output relation follows?",
+    "choices": [
+      "\\(Y=250-20r\\)",
+      "\\(Y=500+40r\\)",
+      "\\(Y=250+0.5r\\)",
+      "\\(Y=500-40r\\)"
+    ],
     "correctChoice": 3,
-    "explanation": "Set Y=250+0.5Y-20r, so 0.5Y=250-20r and Y=500-40r.",
+    "explanation": "Set \\(Y=250+0.5Y-20r\\), so \\(0.5Y=250-20r\\) and \\(Y=500-40r\\).",
     "choiceRationales": [
       "This reads the autonomous PAE terms as output and does not solve out the induced-income term.",
       "The signs of the interest response and the multiplier are reversed.",
       "This does not use the equilibrium equation or the correct units for the income coefficient.",
-      "Solving the equilibrium condition gives Y=(250-20r)/.5=500-40r."
+      "Solving the equilibrium condition gives \\(Y=(250-20r)/.5=500-40r\\)."
     ],
     "reviewCardId": "ch08-004",
     "sourceCardIds": ["ch08-004"],
@@ -1747,15 +1762,20 @@
     "topic": "Derive AD",
     "style": "calculation",
     "difficulty": 3,
-    "stem": "If equilibrium output is Y=500-40r and the policy reaction function is r=2+0.4π, what AD relation follows?",
-    "choices": ["Y=420-16π", "Y=580+16π", "Y=500-40π", "Y=420+16π"],
+    "stem": "If equilibrium output is \\(Y=500-40r\\) and the policy reaction function is \\(r=2+0.4\\pi\\), what AD relation follows?",
+    "choices": [
+      "\\(Y=420-16\\pi\\)",
+      "\\(Y=580+16\\pi\\)",
+      "\\(Y=500-40\\pi\\)",
+      "\\(Y=420+16\\pi\\)"
+    ],
     "correctChoice": 0,
-    "explanation": "Substitute the PRF into output: Y=500-40(2+0.4π)=500-80-16π=420-16π.",
+    "explanation": "Substitute the PRF into output: \\(Y=500-40(2+0.4\\pi)=500-80-16\\pi=420-16\\pi\\).",
     "choiceRationales": [
-      "Substitution gives 420-16π, so higher inflation lowers output through the PRF-induced real-rate increase.",
+      "Substitution gives \\(Y=420-16\\pi\\), so higher inflation lowers output through the PRF-induced real-rate increase.",
       "This reverses both the autonomous-rate subtraction and the AD slope.",
       "This substitutes inflation directly for r and ignores the PRF intercept and response coefficient.",
-      "The inflation coefficient is negative because the PRF raises r when π rises."
+      "The inflation coefficient is negative because the PRF raises r when \\(\\pi\\) rises."
     ],
     "reviewCardId": "ch08-005",
     "sourceCardIds": ["ch08-005"],
@@ -1806,7 +1826,7 @@
     "choiceRationales": [
       "The upward PRF is contractionary, so the direction of the AD shift is left rather than right.",
       "Exogenous policy shifts are one of the determinants that can shift the course AD curve.",
-      "Higher r at each π lowers C and I and shifts AD left.",
+      "Higher r at each \\(\\pi\\) lowers C and I and shifts AD left.",
       "A policy shift changes the whole output relation, not merely the point along the old curve."
     ],
     "reviewCardId": "ch08-009",
@@ -1976,18 +1996,18 @@
     "topic": "Balance of payments",
     "style": "model_discrimination",
     "difficulty": 2,
-    "stem": "Ignoring statistical discrepancy, if the current-account balance is -$25 billion under the course sign convention, what financial-account counterpart is required by CA+KFA=0?",
+    "stem": "Ignoring statistical discrepancy, if the current-account balance is -$25 billion under the course sign convention, what financial-account counterpart is required by \\(CA+KFA=0\\)?",
     "choices": [
-      "KFA=-$25 billion",
-      "KFA=+$25 billion",
-      "KFA=0 because the current account is negative",
-      "KFA=+$50 billion"
+      "\\(KFA=-\\$25\\) billion",
+      "\\(KFA=+\\$25\\) billion",
+      "\\(KFA=0\\) because the current account is negative",
+      "\\(KFA=+\\$50\\) billion"
     ],
     "correctChoice": 1,
-    "explanation": "The balance-of-payments identity requires KFA=-CA. If CA=-25, then KFA=+25 billion under the stated sign convention.",
+    "explanation": "The balance-of-payments identity requires \\(KFA=-CA\\). If \\(CA=-25\\), then \\(KFA=+25\\) billion under the stated sign convention.",
     "choiceRationales": [
       "This gives the same sign as CA, so the two balances would sum to -$50 billion rather than zero.",
-      "KFA=+25 exactly offsets CA=-25 in CA+KFA=0.",
+      "\\(KFA=+25\\) exactly offsets \\(CA=-25\\) in \\(CA+KFA=0\\).",
       "A current-account deficit requires an offsetting financial-account entry; it does not make the counterpart zero.",
       "This overstates the required counterpart and would not make the accounts sum to zero."
     ],
@@ -2039,9 +2059,9 @@
     "explanation": "With r pinned close to the world rate, lower national saving need not equilibrate through a higher domestic rate and lower investment. The gap is reflected in a lower CA and more foreign borrowing.",
     "choiceRationales": [
       "That is the closed-economy crowding-out mechanism, not the small-open-economy closure.",
-      "Lower saving with unchanged investment moves CA=S-I toward deficit, not surplus.",
+      "Lower saving with unchanged investment moves \\(CA=S-I\\) toward deficit, not surplus.",
       "Foreign saving can finance the difference between domestic investment and national saving.",
-      "This applies CA=S-I and the r=r* assumption correctly."
+      "This applies \\(CA=S-I\\) and the \\(r=r^*\\) assumption correctly."
     ],
     "reviewCardId": "ch09-013",
     "sourceCardIds": ["ch09-013"],
@@ -2054,10 +2074,10 @@
     "topic": "Currency conversion",
     "style": "calculation",
     "difficulty": 1,
-    "stem": "Under the course quote e=0.72 USD/AUD, how many US dollars does A$250 buy?",
+    "stem": "Under the course quote \\(e=0.72 USD/AUD\\), how many US dollars does A$250 buy?",
     "choices": ["US$180", "US$347.22", "US$250.72", "US$0.35"],
     "correctChoice": 0,
-    "explanation": "The quote gives USD per AUD, so multiply: 0.72 USD/AUD × 250 AUD = US$180.",
+    "explanation": "The quote gives USD per AUD, so multiply: \\(0.72\\,\\mathrm{USD/AUD}\\times250\\,\\mathrm{AUD}=\\mathrm{US\\$180}\\).",
     "choiceRationales": [
       "The units cancel correctly: .72 USD per AUD times 250 AUD equals US$180.",
       "This divides by .72 when the quote already gives dollars per Australian dollar.",
@@ -2075,10 +2095,10 @@
     "topic": "Cross rate",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "If 1 AUD=0.72 USD and 1 EUR=1.20 USD, approximately how many euros does 1 AUD buy?",
+    "stem": "If 1 \\(AUD=0.72 USD\\) and 1 \\(EUR=1.20 USD\\), approximately how many euros does 1 AUD buy?",
     "choices": ["1.92 EUR", "0.60 EUR", "0.48 EUR", "1.20 EUR"],
     "correctChoice": 1,
-    "explanation": "Convert through the common USD unit: 1 AUD buys 0.72 USD, and each euro costs 1.20 USD, so euros per AUD=0.72/1.20=0.60.",
+    "explanation": "Convert through the common USD unit: 1 AUD buys 0.72 USD, and each euro costs 1.20 USD, so euros per \\(AUD=0.72/1.20=0.60\\).",
     "choiceRationales": [
       "This multiplies the two quotes instead of dividing by the USD price of one euro.",
       "Dividing .72 USD per AUD by 1.20 USD per EUR gives .60 EUR per AUD.",
@@ -2096,14 +2116,14 @@
     "topic": "Real exchange rate",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "With e quoted as foreign currency per Australian dollar, let e=0.72, P_domestic=120 and P_foreign=100. What is q=eP_domestic/P_foreign?",
+    "stem": "With e quoted as foreign currency per Australian dollar, let \\(e=0.72\\), \\(P_{\\text{domestic}}=120\\) and \\(P_{\\text{foreign}}=100\\). What is \\(q=e\\frac{P_{\\text{domestic}}}{P_{\\text{foreign}}}\\)?",
     "choices": ["0.60", "0.72", "0.864", "1.20"],
     "correctChoice": 2,
-    "explanation": "Using the course convention, q=0.72×120/100=0.864.",
+    "explanation": "Using the course convention, \\(q=0.72\\times120/100=0.864\\).",
     "choiceRationales": [
       "This divides by the nominal exchange rate or otherwise omits the domestic-price ratio.",
       "This reports the nominal exchange rate and omits relative prices.",
-      "The stated formula gives .72×1.20=.864.",
+      "The stated formula gives \\(.72\\times1.20=.864\\).",
       "This uses the reciprocal price ratio and reverses the real-exchange-rate formula."
     ],
     "reviewCardId": "ch09-022",
@@ -2120,12 +2140,12 @@
     "stem": "A comparable good costs A$10 in Australia and US$7.50 in the United States. Under the law of one price, what USD/AUD rate would equalise the common-currency prices?",
     "choices": ["1.33 USD/AUD", "17.50 USD/AUD", "2.50 USD/AUD", "0.75 USD/AUD"],
     "correctChoice": 3,
-    "explanation": "To make A$10 equal US$7.50, one Australian dollar must buy 7.50/10=0.75 USD. The correct rate is therefore 0.75 USD/AUD.",
+    "explanation": "To make A$10 equal US$7.50, one Australian dollar must buy \\(7.50/10=0.75\\) USD. The correct rate is therefore 0.75 USD/AUD.",
     "choiceRationales": [
       "This is the reciprocal-style error; the course quote requires foreign currency per AUD.",
       "Adding the two prices does not create an exchange rate.",
       "This uses neither the foreign-price-over-domestic-price calculation nor the stated units.",
-      "The common-currency equality requires US price divided by Australian price, 7.50/10=.75 USD/AUD."
+      "The common-currency equality requires US price divided by Australian price, \\(7.50/10=.75\\) USD/AUD."
     ],
     "reviewCardId": "ch09-025",
     "sourceCardIds": ["ch09-025"],
@@ -2138,7 +2158,7 @@
     "topic": "Relative PPP",
     "style": "concept",
     "difficulty": 3,
-    "stem": "Australian inflation remains above foreign inflation for an extended period. Under relative PPP and the course convention e=foreign currency per AUD, what nominal movement is predicted for the AUD?",
+    "stem": "Australian inflation remains above foreign inflation for an extended period. Under relative PPP and the course convention \\(e\\) = foreign currency per AUD, what nominal movement is predicted for the AUD?",
     "choices": [
       "The AUD depreciates and e tends to fall.",
       "The AUD appreciates and e tends to fall.",
@@ -2219,12 +2239,12 @@
     "stem": "Real output is 100 today and grows at 3% per year for two years. What is its level after two years?",
     "choices": ["103.00", "106.00", "109.00", "106.09"],
     "correctChoice": 3,
-    "explanation": "Compound growth gives Y₂=100(1.03)²=100(1.0609)=106.09.",
+    "explanation": "Compound growth gives \\(Y_2=100(1.03)^{2}=100(1.0609)=106.09\\).",
     "choiceRationales": [
       "103 is the level after one year, not after two compounded years.",
       "This adds two 3-point increases but omits compounding on the first year’s increase.",
       "This treats the 3% rate as a 9% two-year increase rather than compounding it.",
-      "The compound formula 100×1.03² gives 106.09."
+      "The compound formula \\(100\\times1.03^2\\) gives 106.09."
     ],
     "reviewCardId": "ch10-003",
     "sourceCardIds": ["ch10-003"],
@@ -2240,7 +2260,7 @@
     "stem": "At a constant annual real GDP per capita growth rate of 2%, about how long does the rule of 70 predict for doubling?",
     "choices": ["35 years", "70 years", "140 years", "0.028 years"],
     "correctChoice": 0,
-    "explanation": "The rule of 70 gives doubling time ≈70 divided by the annual percentage rate: 70/2≈35 years.",
+    "explanation": "The rule of 70 gives doubling time ≈70 divided by the annual percentage rate: \\(70/2\\approx35\\) years.",
     "choiceRationales": [
       "Using the percentage number 2 in the denominator gives approximately 35 years.",
       "70 is the numerator, not the doubling time when growth is 2%.",
@@ -2258,7 +2278,7 @@
     "topic": "Total factor productivity",
     "style": "model_discrimination",
     "difficulty": 1,
-    "stem": "In Y=AK^αL^(1-α), what does A represent in the course’s growth model?",
+    "stem": "In \\(Y=AK^\\alpha L^{1-\\alpha}\\), what does A represent in the course’s growth model?",
     "choices": [
       "The number of workers employed, measured separately from L",
       "A is total factor productivity—the efficiency of K and L",
@@ -2310,15 +2330,15 @@
     "topic": "Output per worker",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "Under y=A(K/L)^α, if A=2, K/L=4 and α=0.5, what is output per worker y?",
+    "stem": "Under \\(y=A(K/L)^\\alpha\\), if \\(A=2\\), \\(K/L=4\\) and \\(\\alpha=0.5\\), what is output per worker y?",
     "choices": ["2", "3", "8", "4"],
     "correctChoice": 3,
-    "explanation": "y=2×4^0.5=2×2=4.",
+    "explanation": "\\(y=2\\times4^{0.5}=2\\times2=4\\).",
     "choiceRationales": [
       "This uses A alone and ignores capital per worker.",
-      "This does not follow from taking the square root of K/L=4 and multiplying by A=2.",
-      "This multiplies A by K/L without applying the exponent .5.",
-      "The square root of 4 is 2, so y=2×2=4."
+      "This does not follow from taking the square root of \\(K/L=4\\) and multiplying by \\(A=2\\).",
+      "This multiplies \\(A\\) by \\(K/L\\) without applying the exponent 0.5.",
+      "The square root of 4 is 2, so \\(y=2\\times2=4\\)."
     ],
     "reviewCardId": "ch10-014",
     "sourceCardIds": ["ch10-014"],
@@ -2383,11 +2403,11 @@
     "topic": "GDP per capita decomposition",
     "style": "scenario",
     "difficulty": 3,
-    "stem": "If output per worker Y/L is unchanged but the employment-to-population ratio L/Population rises, what happens to real GDP per capita?",
+    "stem": "If output per worker \\(Y/L\\) is unchanged but the employment-to-population ratio \\(L/\\text{Population}\\) rises, what happens to real GDP per capita?",
     "choices": [
       "It falls because output per worker did not rise.",
-      "It is unchanged because only Y/L matters.",
-      "It rises because Y/Population=(Y/L)(L/Population).",
+      "It is unchanged because only \\(Y/L\\) matters.",
+      "It rises because \\(Y/\\text{Population}=(Y/L)(L/\\text{Population})\\).",
       "It becomes equal to the unemployment rate."
     ],
     "correctChoice": 2,
@@ -2395,7 +2415,7 @@
     "choiceRationales": [
       "The employment-intensity factor can raise GDP per capita even without higher productivity.",
       "GDP per capita depends on both output per worker and the employment-to-population ratio.",
-      "The decomposition directly implies a rise when L/Population rises and Y/L is fixed.",
+      "The decomposition directly implies a rise when \\(L/\\text{Population}\\) rises and \\(Y/L\\) is fixed.",
       "The unemployment rate is a different labour-market statistic and is not equal to GDP per capita."
     ],
     "reviewCardId": "ch10-028",
@@ -2537,7 +2557,7 @@
     "stem": "A policy reaction function would recommend a nominal rate of -1% during a deflation episode. The effective lower bound prevents the RBA from setting below 0%, and expected inflation is -2%. Using the Fisher approximation, what real rate actually results?",
     "choices": ["-2%", "0%", "+1%", "+2%"],
     "correctChoice": 3,
-    "explanation": "At the lower bound the nominal rate is 0%. With expected inflation of -2%, the Fisher relation r ≈ i − πᵉ gives r ≈ 0% − (-2%) = +2%. Deflation can therefore leave the real rate positive even when the nominal policy rate cannot fall further.",
+    "explanation": "At the lower bound the nominal rate is 0%. With expected inflation of -2%, the Fisher relation \\(r \\approx i-\\pi^e\\) gives \\(r \\approx 0\\%-(-2\\%)=+2\\%\\). Deflation can therefore leave the real rate positive even when the nominal policy rate cannot fall further.",
     "choiceRationales": [
       "This treats the negative inflation rate as if it were the nominal rate and ignores the lower bound.",
       "Zero is the nominal rate at the bound, not the implied real rate.",

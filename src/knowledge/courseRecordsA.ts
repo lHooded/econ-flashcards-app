@@ -45,7 +45,7 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Expenditure identity",
-        expression: "Y = C + I + G + X − M",
+        expression: String.raw`Y = C + I + G + X - M`,
         variables: [
           { symbol: "Y", meaning: "GDP or aggregate output" },
           { symbol: "C", meaning: "household consumption expenditure" },
@@ -160,11 +160,11 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Firm value added",
-        expression: "sales − intermediate-input cost",
+        expression: String.raw`\text{sales} - \text{intermediate-input cost}`,
         variables: [
-          { symbol: "sales", meaning: "value of the firm’s output" },
+          { symbol: String.raw`\text{sales}`, meaning: "value of the firm’s output" },
           {
-            symbol: "intermediate-input cost",
+            symbol: String.raw`\text{intermediate-input cost}`,
             meaning: "value of inputs bought from other firms",
           },
         ],
@@ -445,7 +445,7 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Net exports",
-        expression: "NX = X − M",
+        expression: String.raw`NX = X - M`,
         variables: [
           { symbol: "X", meaning: "exports of domestic output" },
           { symbol: "M", meaning: "imports of foreign output" },
@@ -511,11 +511,20 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Simplified GDP decomposition",
-        expression: "nominal GDP = price level × real GDP",
+        expression: String.raw`\text{nominal GDP} = \text{price level} \times \text{real GDP}`,
         variables: [
-          { symbol: "nominal GDP", meaning: "current-price dollar value" },
-          { symbol: "price level", meaning: "GDP price index in the model" },
-          { symbol: "real GDP", meaning: "price-adjusted output measure" },
+          {
+            symbol: String.raw`\text{nominal GDP}`,
+            meaning: "current-price dollar value",
+          },
+          {
+            symbol: String.raw`\text{price level}`,
+            meaning: "GDP price index in the model",
+          },
+          {
+            symbol: String.raw`\text{real GDP}`,
+            meaning: "price-adjusted output measure",
+          },
         ],
         interpretation:
           "A nominal increase can be decomposed approximately into price growth and real-output growth.",
@@ -560,10 +569,16 @@ export const courseRecordsA = [
     equations: [
       {
         label: "GDP deflator",
-        expression: "nominal GDP / real GDP",
+        expression: String.raw`\frac{\text{nominal GDP}}{\text{real GDP}}`,
         variables: [
-          { symbol: "nominal GDP", meaning: "current-price output value" },
-          { symbol: "real GDP", meaning: "price-adjusted output value" },
+          {
+            symbol: String.raw`\text{nominal GDP}`,
+            meaning: "current-price output value",
+          },
+          {
+            symbol: String.raw`\text{real GDP}`,
+            meaning: "price-adjusted output value",
+          },
         ],
         interpretation:
           "A change in the deflator signals a change in prices represented in domestic output, not necessarily household living costs.",
@@ -679,11 +694,11 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Inflation from a price index",
-        expression: "πₜ = (Pₜ − Pₜ₋₁) / Pₜ₋₁",
+        expression: String.raw`\pi_t = \frac{P_t-P_{t-1}}{P_{t-1}}`,
         variables: [
-          { symbol: "πₜ", meaning: "inflation rate over the period" },
-          { symbol: "Pₜ", meaning: "current price index" },
-          { symbol: "Pₜ₋₁", meaning: "previous price index" },
+          { symbol: String.raw`\pi_t`, meaning: "inflation rate over the period" },
+          { symbol: String.raw`P_t`, meaning: "current price index" },
+          { symbol: String.raw`P_{t-1}`, meaning: "previous price index" },
         ],
         interpretation:
           "Multiply by 100 for percent; this is a rate of change, not the index level.",
@@ -811,10 +826,13 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Per-capita output",
-        expression: "real GDP / population",
+        expression: String.raw`\frac{\text{real GDP}}{\text{population}}`,
         variables: [
-          { symbol: "real GDP", meaning: "inflation-adjusted domestic output" },
-          { symbol: "population", meaning: "number of people" },
+          {
+            symbol: String.raw`\text{real GDP}`,
+            meaning: "inflation-adjusted domestic output",
+          },
+          { symbol: String.raw`\text{population}`, meaning: "number of people" },
         ],
         interpretation:
           "It is an average, not a claim that every person receives the same output or income.",
@@ -1130,9 +1148,9 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Labour force",
-        expression: "LF = E + U",
+        expression: String.raw`LF = E + U`,
         variables: [
-          { symbol: "LF", meaning: "labour force" },
+          { symbol: String.raw`\mathrm{LF}`, meaning: "labour force" },
           { symbol: "E", meaning: "employed people" },
           { symbol: "U", meaning: "unemployed people" },
         ],
@@ -1172,10 +1190,10 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Unemployment rate",
-        expression: "u = U / LF × 100",
+        expression: String.raw`u = \frac{U}{LF} \times 100`,
         variables: [
           { symbol: "U", meaning: "unemployed people" },
-          { symbol: "LF", meaning: "labour force" },
+          { symbol: String.raw`\mathrm{LF}`, meaning: "labour force" },
         ],
         interpretation:
           "Use the labour force as the denominator; changing the denominator changes the statistic.",
@@ -1215,11 +1233,11 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Participation rate",
-        expression: "LF / working-age population × 100",
+        expression: String.raw`\frac{LF}{\text{working-age population}} \times 100`,
         variables: [
-          { symbol: "LF", meaning: "labour force" },
+          { symbol: String.raw`\mathrm{LF}`, meaning: "labour force" },
           {
-            symbol: "working-age population",
+            symbol: String.raw`\text{working-age population}`,
             meaning: "statistical working-age group",
           },
         ],
@@ -1254,11 +1272,11 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Employment-to-population ratio",
-        expression: "E / working-age population × 100",
+        expression: String.raw`\frac{E}{\text{working-age population}} \times 100`,
         variables: [
           { symbol: "E", meaning: "employed people" },
           {
-            symbol: "working-age population",
+            symbol: String.raw`\text{working-age population}`,
             meaning: "statistical working-age group",
           },
         ],
@@ -1419,10 +1437,10 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Unemployment decomposition",
-        expression: "cyclical unemployment = u − u*",
+        expression: String.raw`\text{cyclical unemployment} = u - u^*`,
         variables: [
           { symbol: "u", meaning: "actual unemployment rate" },
-          { symbol: "u*", meaning: "natural unemployment rate" },
+          { symbol: String.raw`u^*`, meaning: "natural unemployment rate" },
         ],
         interpretation:
           "The sign indicates whether unemployment is above or below its natural benchmark.",
@@ -1491,10 +1509,10 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Simple output gap",
-        expression: "Y − Y*",
+        expression: String.raw`Y - Y^*`,
         variables: [
           { symbol: "Y", meaning: "actual real GDP" },
-          { symbol: "Y*", meaning: "potential output" },
+          { symbol: String.raw`Y^*`, meaning: "potential output" },
         ],
         interpretation:
           "A percentage version divides the gap by potential output; the sign tells you whether output is below or above potential.",
@@ -1531,10 +1549,13 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Course-style relationship",
-        expression: "cyclical unemployment ≈ −β × output gap",
+        expression: String.raw`\text{cyclical unemployment} \approx -\beta \times \text{output gap}`,
         variables: [
-          { symbol: "β", meaning: "positive estimated Okun coefficient" },
-          { symbol: "output gap", meaning: "actual output relative to potential" },
+          { symbol: String.raw`\beta`, meaning: "positive estimated Okun coefficient" },
+          {
+            symbol: String.raw`\text{output gap}`,
+            meaning: "actual output relative to potential",
+          },
         ],
         interpretation:
           "The negative sign captures the inverse relationship; use the exact equation and units provided in the question.",
@@ -1605,11 +1626,14 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Approximate real rate",
-        expression: "r ≈ i − πᵉ",
+        expression: String.raw`r \approx i - \pi^e`,
         variables: [
           { symbol: "r", meaning: "expected real interest rate, percent per period" },
           { symbol: "i", meaning: "nominal interest rate, percent per period" },
-          { symbol: "πᵉ", meaning: "expected inflation rate, percent per period" },
+          {
+            symbol: String.raw`\pi^e`,
+            meaning: "expected inflation rate, percent per period",
+          },
         ],
         interpretation:
           "The approximation is useful for small rates; it subtracts the expected loss of purchasing power from the nominal return.",
@@ -1761,7 +1785,7 @@ export const courseRecordsA = [
     intuition:
       "A lender wants compensation both for waiting in real terms and for the fact that the dollars repaid may buy less in the future.",
     explanation: [
-      "For small rates the course writes i ≈ r + πᵉ, or r ≈ i − πᵉ. The exact relationship is multiplicative: (1+i) = (1+r)(1+πᵉ).",
+      String.raw`For small rates the course writes \(i \approx r + \pi^e\), or \(r \approx i - \pi^e\). The exact relationship is multiplicative: \((1+i) = (1+r)(1+\pi^e)\).`,
       "The equation is a relationship among rates, not a claim that the RBA directly controls the real rate one-for-one.",
     ],
     whyItMatters:
@@ -1786,11 +1810,11 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Approximate Fisher relationship",
-        expression: "i ≈ r + πᵉ",
+        expression: String.raw`i \approx r + \pi^e`,
         variables: [
           { symbol: "i", meaning: "nominal interest rate" },
           { symbol: "r", meaning: "expected real interest rate" },
-          { symbol: "πᵉ", meaning: "expected inflation" },
+          { symbol: String.raw`\pi^e`, meaning: "expected inflation" },
         ],
         interpretation:
           "All rates use the same period and units; the approximation is appropriate for small rates.",
@@ -1888,13 +1912,16 @@ export const courseRecordsA = [
     equations: [
       {
         label: "Net investment",
-        expression: "net investment = gross investment − depreciation",
+        expression: String.raw`\text{net investment} = \text{gross investment} - \text{depreciation}`,
         variables: [
           {
-            symbol: "gross investment",
+            symbol: String.raw`\text{gross investment}`,
             meaning: "new capital purchases during the period",
           },
-          { symbol: "depreciation", meaning: "capital lost during the period" },
+          {
+            symbol: String.raw`\text{depreciation}`,
+            meaning: "capital lost during the period",
+          },
         ],
         interpretation:
           "This is the flow that changes the capital stock in the simple model.",

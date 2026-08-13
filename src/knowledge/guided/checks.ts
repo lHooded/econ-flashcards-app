@@ -66,7 +66,7 @@ function makeMcqVariant(
     fingerprint: `${guidedCheckIdForConcept(conceptId)}:${draft.id}:${draft.prompt}`,
     requiredConceptIds: Object.freeze([...requiredConceptIds]),
     prompt: draft.prompt,
-    choices: Object.freeze(choices),
+    choices: Object.freeze([...choices]),
     correctChoice: (draft.correctChoice + shift) % draft.choices.length,
     explanation: draft.explanation,
   });
@@ -92,8 +92,24 @@ function generated(
     tags: [...current.tags, "guided-check", "calculation"],
     sourceRefs: current.sourceRefs,
     variants: [],
-    generator,
+    generator: (seed) => normalizeGuidedVariant(generator(seed)),
     generatorId,
+  };
+}
+
+function normalizeGuidedVariant(variant: GuidedCheckVariant): GuidedCheckVariant {
+  if (variant.kind === "mcq") {
+    return {
+      ...variant,
+      prompt: variant.prompt,
+      choices: [...variant.choices],
+      explanation: variant.explanation,
+    };
+  }
+  return {
+    ...variant,
+    prompt: variant.prompt,
+    explanation: variant.explanation,
   };
 }
 

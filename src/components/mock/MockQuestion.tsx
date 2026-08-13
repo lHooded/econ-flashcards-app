@@ -1,5 +1,6 @@
 import type { ExamQuestion } from "../../exam/model";
 import { QuestionStimulus } from "../stimulus/QuestionStimulus";
+import { MathText } from "../math/MathText";
 
 interface MockQuestionProps {
   readonly question: ExamQuestion;
@@ -32,7 +33,7 @@ export function MockQuestion({
       </div>
       <QuestionStimulus stimulus={question.stimulus} />
       <h2 id={`mock-question-${question.id}`} className="mock-stem">
-        {question.stem}
+        <MathText text={question.stem} />
       </h2>
       <fieldset className="choice-list mock-choice-list">
         <legend>
@@ -51,7 +52,8 @@ export function MockQuestion({
               onChange={() => onSelect(index as 0 | 1 | 2 | 3)}
             />
             <span>
-              <strong>{String.fromCharCode(65 + index)}.</strong> {choice}
+              <strong>{String.fromCharCode(65 + index)}.</strong>{" "}
+              <MathText text={choice} />
             </span>
           </label>
         ))}

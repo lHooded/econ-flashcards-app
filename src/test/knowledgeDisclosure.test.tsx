@@ -130,9 +130,13 @@ describe("question-aware knowledge disclosure", () => {
         .find((button) => button.textContent === "Rule of 70")!,
     );
     expect(screen.getByRole("dialog")).toHaveTextContent(/doubling time/i);
-    expect(screen.getByRole("dialog")).toHaveTextContent(
-      /70\s*\/\s*annual growth rate/i,
-    );
+    const dialog = screen.getByRole("dialog");
+    expect(
+      dialog.querySelector(".knowledge-equation .katex-mathml"),
+    ).toBeInTheDocument();
+    expect(
+      dialog.querySelector(".knowledge-equation .katex-mathml annotation")?.textContent,
+    ).toMatch(/70.*annual growth rate/i);
   });
 
   it("does not let preview ambiguity navigate to a blocked meaning", () => {

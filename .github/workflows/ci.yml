@@ -47,6 +47,9 @@ jobs:
       - name: Validate High-Yield Cram evidence blueprint
         run: npm run validate:exam-yield
 
+      - name: Validate mathematical content and delimiters
+        run: npm run validate:math-content
+
       - name: Validate production sync configuration fixtures
         env:
           SYNC_APP_URL: https://macro.example.com/

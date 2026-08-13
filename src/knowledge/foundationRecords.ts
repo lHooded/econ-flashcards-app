@@ -25,7 +25,7 @@ export const foundationRecords = [
     examples: [
       {
         title: "A share",
-        text: "If 20 of 80 workers are unemployed, the unemployment rate is 20/80 × 100 = 25%.",
+        text: "If 20 of 80 workers are unemployed, the unemployment rate is \\(\\frac{20}{80}\\times100=25\\%\\).",
         takeaway: "The denominator tells you what the percentage is a percentage of.",
       },
     ],
@@ -62,10 +62,13 @@ export const foundationRecords = [
     equations: [
       {
         label: "Percentage change",
-        expression: "(new − old) / old × 100",
+        expression: String.raw`\frac{\text{new} - \text{old}}{\text{old}} \times 100`,
         variables: [
-          { symbol: "new", meaning: "the later level" },
-          { symbol: "old", meaning: "the earlier level and denominator" },
+          { symbol: String.raw`\text{new}`, meaning: "the later level" },
+          {
+            symbol: String.raw`\text{old}`,
+            meaning: "the earlier level and denominator",
+          },
         ],
         interpretation:
           "The formula measures the change relative to where the quantity started.",
@@ -131,10 +134,13 @@ export const foundationRecords = [
     equations: [
       {
         label: "Generic ratio",
-        expression: "numerator / denominator",
+        expression: String.raw`\frac{\text{numerator}}{\text{denominator}}`,
         variables: [
-          { symbol: "numerator", meaning: "the quantity being compared" },
-          { symbol: "denominator", meaning: "the reference quantity" },
+          {
+            symbol: String.raw`\text{numerator}`,
+            meaning: "the quantity being compared",
+          },
+          { symbol: String.raw`\text{denominator}`, meaning: "the reference quantity" },
         ],
         interpretation:
           "Changing the denominator changes the meaning even when the numerator is unchanged.",
@@ -196,10 +202,10 @@ export const foundationRecords = [
     equations: [
       {
         label: "Growth rate",
-        expression: "(Yₜ − Yₜ₋₁) / Yₜ₋₁",
+        expression: String.raw`\frac{Y_t-Y_{t-1}}{Y_{t-1}}`,
         variables: [
-          { symbol: "Yₜ", meaning: "current level" },
-          { symbol: "Yₜ₋₁", meaning: "previous level" },
+          { symbol: String.raw`Y_t`, meaning: "current level" },
+          { symbol: String.raw`Y_{t-1}`, meaning: "previous level" },
         ],
         interpretation:
           "Multiply by 100 to express the rate in percent; the denominator is the previous level.",
@@ -819,10 +825,13 @@ export const foundationRecords = [
     equations: [
       {
         label: "Simple interest rate",
-        expression: "interest / principal",
+        expression: String.raw`\frac{\text{interest}}{\text{principal}}`,
         variables: [
-          { symbol: "interest", meaning: "interest dollars over the period" },
-          { symbol: "principal", meaning: "amount lent or borrowed" },
+          {
+            symbol: String.raw`\text{interest}`,
+            meaning: "interest dollars over the period",
+          },
+          { symbol: String.raw`\text{principal}`, meaning: "amount lent or borrowed" },
         ],
         interpretation:
           "Multiply by 100 for a percentage and attach the period, such as per year.",
@@ -880,9 +889,9 @@ export const foundationRecords = [
     equations: [
       {
         label: "One future payment",
-        expression: "PV = F / (1 + i)ᵀ",
+        expression: String.raw`PV = \frac{F}{(1+i)^T}`,
         variables: [
-          { symbol: "PV", meaning: "value today, in dollars" },
+          { symbol: String.raw`\mathrm{PV}`, meaning: "value today, in dollars" },
           { symbol: "F", meaning: "future payment, in dollars" },
           { symbol: "i", meaning: "market interest rate per period" },
           { symbol: "T", meaning: "number of periods" },
@@ -1145,8 +1154,7 @@ export const foundationRecords = [
     tags: ["foundation", "math"],
     summary:
       "A linear equation describes a variable as a constant plus a fixed response to another variable.",
-    intuition:
-      "In C = C₀ + cYᴅ, C₀ is the baseline and c tells you how much consumption changes when disposable income changes by one unit.",
+    intuition: String.raw`In \(C = C_0 + cY^D\), \(C_0\) is the baseline and c tells you how much consumption changes when disposable income changes by one unit.`,
     explanation: [
       "The coefficient is a slope or marginal response; the constant is an intercept. Solving a linear equation means isolating the unknown while preserving equality.",
       "Course equations are simplified models. Their coefficients summarise behaviour under stated assumptions; they are not universal physical laws.",

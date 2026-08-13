@@ -58,9 +58,9 @@ describe("historical mock results", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("1 / 60");
-    const chaptersRegion = screen.getByRole("heading", {
-      name: "Chapters",
+    expect(screen.getByText("1 / 60", { selector: "h1" })).toBeInTheDocument();
+    const chaptersRegion = screen.getByText("Chapters", {
+      selector: "h3",
     }).parentElement;
     expect(chaptersRegion).not.toBeNull();
     const chapter8Row = within(chaptersRegion!)
@@ -68,7 +68,11 @@ describe("historical mock results", () => {
       .closest<HTMLElement>(".analytics-row");
     expect(chapter8Row).not.toBeNull();
     expect(within(chapter8Row!).getByText("1 / 6")).toBeInTheDocument();
-    expect(screen.getByText(currentQuestion.stem)).toBeInTheDocument();
+    const reviewPanel = screen
+      .getByText("Inspect every question", { selector: "h2" })
+      .closest("section");
+    expect(reviewPanel).not.toBeNull();
+    expect(reviewPanel?.querySelector("h3 .katex")).toBeInTheDocument();
     expect(screen.getAllByText(/Chapter 8 ·/).length).toBeGreaterThan(0);
     view.rerender(<MockResults attempt={historical} questionsById={new Map()} />);
     expect(
@@ -76,7 +80,7 @@ describe("historical mock results", () => {
         .getAllByText(/Stored result:/)
         .some((element) => element.textContent?.includes("Correct")),
     ).toBe(true);
-    await user.click(screen.getByRole("button", { name: "Incorrect" }));
+    await user.click(screen.getByText("Incorrect", { selector: "button" }));
     expect(screen.queryByText(changedDisplay.stem)).not.toBeInTheDocument();
   });
 });

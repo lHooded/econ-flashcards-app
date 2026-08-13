@@ -89,7 +89,7 @@ export function adaptCanonicalMcqCard(card: Flashcard): ExamQuestion {
     choices: card.choices as FourChoices,
     correctChoice: card.correctChoice as 0 | 1 | 2 | 3,
     explanation: card.explanation,
-    choiceRationales: rationales,
+    choiceRationales: [...rationales] as unknown as typeof rationales,
     reviewCardId: card.id,
     sourceCardIds: [card.id],
     tags: card.tags,

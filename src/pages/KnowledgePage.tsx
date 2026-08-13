@@ -6,6 +6,7 @@ import { useNow } from "../utils/useNow";
 import { ConceptArticle } from "../components/knowledge/KnowledgeSheet";
 import { ConceptStatus } from "../components/knowledge/ConceptStatus";
 import { KnowledgeGraph } from "../components/knowledge/KnowledgeGraph";
+import { MathText } from "../components/math/MathText";
 import { knowledgeConceptById, knowledgeConcepts } from "../knowledge/data";
 import { getKnowledgeTags, searchKnowledge } from "../knowledge/search";
 import { getLearningPath, prerequisiteTopologicalOrder } from "../knowledge/graph";
@@ -273,7 +274,10 @@ export function KnowledgePage({
               {foundationConcept.name}
             </h2>
             <p>
-              <strong>{foundationConcept.summary}</strong> {foundationConcept.intuition}
+              <strong>
+                <MathText text={foundationConcept.summary} />
+              </strong>{" "}
+              <MathText text={foundationConcept.intuition} />
             </p>
             <p className="muted-text">
               This is a deterministic prerequisite-respecting curriculum. Reading is not
@@ -371,7 +375,9 @@ function KnowledgeLanding({
             onClick={() => onSelect(concept.id)}
           >
             <strong>{concept.name}</strong>
-            <span>{concept.summary}</span>
+            <span>
+              <MathText text={concept.summary} />
+            </span>
             <ConceptStatus status={statuses.get(concept.id) ?? "unseen"} />
           </button>
         ))}

@@ -71,10 +71,13 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Value marginal product",
-        expression: "VMPL = P × MPL",
+        expression: String.raw`VMPL = P \times MPL`,
         variables: [
           { symbol: "P", meaning: "price of the firm’s output" },
-          { symbol: "MPL", meaning: "extra output from another unit of labour" },
+          {
+            symbol: String.raw`\mathrm{MPL}`,
+            meaning: "extra output from another unit of labour",
+          },
         ],
         interpretation:
           "In the competitive model the firm compares VMPL with the real wage or its equivalent cost.",
@@ -273,10 +276,16 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Real wage",
-        expression: "nominal wage / price level",
+        expression: String.raw`\frac{\text{nominal wage}}{\text{price level}}`,
         variables: [
-          { symbol: "nominal wage", meaning: "money payment for labour" },
-          { symbol: "price level", meaning: "cost of goods and services" },
+          {
+            symbol: String.raw`\text{nominal wage}`,
+            meaning: "money payment for labour",
+          },
+          {
+            symbol: String.raw`\text{price level}`,
+            meaning: "cost of goods and services",
+          },
         ],
         interpretation:
           "The result is in purchasing-power units; compare rates of change consistently when using approximations.",
@@ -660,12 +669,12 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Illustrative inflation dynamics",
-        expression: "π = πᵉ + λ(output gap) + ε",
+        expression: String.raw`\pi = \pi^e + \lambda(\text{output gap}) + \varepsilon`,
         variables: [
-          { symbol: "π", meaning: "current inflation" },
-          { symbol: "πᵉ", meaning: "expected inflation" },
-          { symbol: "λ", meaning: "output-gap response coefficient" },
-          { symbol: "ε", meaning: "supply/inflation shock" },
+          { symbol: String.raw`\pi`, meaning: "current inflation" },
+          { symbol: String.raw`\pi^e`, meaning: "expected inflation" },
+          { symbol: String.raw`\lambda`, meaning: "output-gap response coefficient" },
+          { symbol: String.raw`\varepsilon`, meaning: "supply/inflation shock" },
         ],
         interpretation:
           "Use the course’s exact lag and shock notation; the equation says the output gap creates pressure around expected inflation.",
@@ -1144,10 +1153,16 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Trade balance",
-        expression: "exports − imports",
+        expression: String.raw`\text{exports} - \text{imports}`,
         variables: [
-          { symbol: "exports", meaning: "goods and services sold abroad" },
-          { symbol: "imports", meaning: "goods and services bought from abroad" },
+          {
+            symbol: String.raw`\text{exports}`,
+            meaning: "goods and services sold abroad",
+          },
+          {
+            symbol: String.raw`\text{imports}`,
+            meaning: "goods and services bought from abroad",
+          },
         ],
         interpretation:
           "Do not add income flows unless the question asks for the current account.",
@@ -1310,14 +1325,14 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Simplified BOP identity",
-        expression: "current account + financial-account balance = 0",
+        expression: String.raw`\text{current account} + \text{financial-account balance} = 0`,
         variables: [
           {
-            symbol: "current account",
+            symbol: String.raw`\text{current account}`,
             meaning: "current goods, services, income, and transfer balance",
           },
           {
-            symbol: "financial-account balance",
+            symbol: String.raw`\text{financial-account balance}`,
             meaning: "matching financial-flow entry under the convention",
           },
         ],
@@ -1402,11 +1417,11 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Open-economy saving identity",
-        expression: "NS − I = NX",
+        expression: String.raw`NS - I = NX`,
         variables: [
-          { symbol: "NS", meaning: "national saving" },
+          { symbol: String.raw`\mathrm{NS}`, meaning: "national saving" },
           { symbol: "I", meaning: "domestic investment" },
-          { symbol: "NX", meaning: "net exports" },
+          { symbol: String.raw`\mathrm{NX}`, meaning: "net exports" },
         ],
         interpretation:
           "With the course’s convention, a saving shortfall relative to investment corresponds to negative net exports.",
@@ -2122,11 +2137,20 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Relative PPP intuition",
-        expression: "Δ% exchange rate ≈ domestic inflation − foreign inflation",
+        expression: String.raw`\text{exchange-rate growth} \approx \text{domestic inflation} - \text{foreign inflation}`,
         variables: [
-          { symbol: "Δ% exchange rate", meaning: "change under the chosen quotation" },
-          { symbol: "domestic inflation", meaning: "home price-index growth" },
-          { symbol: "foreign inflation", meaning: "foreign price-index growth" },
+          {
+            symbol: String.raw`\text{exchange-rate growth}`,
+            meaning: "change under the chosen quotation",
+          },
+          {
+            symbol: String.raw`\text{domestic inflation}`,
+            meaning: "home price-index growth",
+          },
+          {
+            symbol: String.raw`\text{foreign inflation}`,
+            meaning: "foreign price-index growth",
+          },
         ],
         interpretation:
           "The sign must be adapted to whether the quote is foreign currency per AUD or AUD per foreign currency.",
@@ -2221,7 +2245,7 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Compound level",
-        expression: "future level = starting level × (1 + g)ᵀ",
+        expression: String.raw`\text{future level} = \text{starting level} \times (1+g)^T`,
         variables: [
           { symbol: "g", meaning: "growth rate per period as a decimal" },
           { symbol: "T", meaning: "number of periods" },
@@ -2257,11 +2281,11 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Rule of 70",
-        expression: "doubling time ≈ 70 / annual growth rate (%)",
+        expression: String.raw`\text{doubling time} \approx \frac{70}{\text{annual growth rate (\%)}}`,
         variables: [
           { symbol: "70", meaning: "approximation constant" },
           {
-            symbol: "annual growth rate (%)",
+            symbol: String.raw`\text{annual growth rate (\%)}`,
             meaning: "growth stated as a number such as 2, not 0.02",
           },
         ],
@@ -2336,13 +2360,16 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Cobb-Douglas form",
-        expression: "Y = A Kᵅ L¹⁻ᵅ",
+        expression: String.raw`Y = A K^\alpha L^{1-\alpha}`,
         variables: [
           { symbol: "Y", meaning: "real output" },
           { symbol: "A", meaning: "total factor productivity" },
           { symbol: "K", meaning: "capital input" },
           { symbol: "L", meaning: "labour input" },
-          { symbol: "α", meaning: "capital output elasticity or factor share" },
+          {
+            symbol: String.raw`\alpha`,
+            meaning: "capital output elasticity or factor share",
+          },
         ],
         interpretation:
           "Changing A shifts productivity; changing K or L changes inputs. The course’s exponent assumptions determine returns to scale.",
@@ -2443,7 +2470,7 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Output per worker",
-        expression: "y = Y / L",
+        expression: String.raw`y = \frac{Y}{L}`,
         variables: [
           { symbol: "y", meaning: "output per worker" },
           { symbol: "Y", meaning: "real output" },
@@ -2617,13 +2644,16 @@ export const courseRecordsD = [
     equations: [
       {
         label: "Course growth-accounting approximation",
-        expression: "Δ%Y ≈ Δ%A + αΔ%K + (1 − α)Δ%L",
+        expression: String.raw`g_Y \approx g_A + \alpha g_K + (1-\alpha)g_L`,
         variables: [
-          { symbol: "Δ%Y", meaning: "real-output growth" },
-          { symbol: "Δ%A", meaning: "TFP growth" },
-          { symbol: "Δ%K", meaning: "capital-input growth" },
-          { symbol: "Δ%L", meaning: "labour-input growth" },
-          { symbol: "α", meaning: "capital output elasticity or factor share" },
+          { symbol: String.raw`g_Y`, meaning: "real-output growth" },
+          { symbol: String.raw`g_A`, meaning: "TFP growth" },
+          { symbol: String.raw`g_K`, meaning: "capital-input growth" },
+          { symbol: String.raw`g_L`, meaning: "labour-input growth" },
+          {
+            symbol: String.raw`\alpha`,
+            meaning: "capital output elasticity or factor share",
+          },
         ],
         interpretation:
           "Each input-growth contribution is weighted by its production share; all rates must use the same period.",

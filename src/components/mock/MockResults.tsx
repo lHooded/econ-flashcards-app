@@ -5,6 +5,7 @@ import { scoreMockAttempt } from "../../exam/mock/scoring";
 import type { MockAttempt } from "../../exam/mock/model";
 import { QuestionStimulus } from "../stimulus/QuestionStimulus";
 import { KnowledgeText } from "../knowledge/KnowledgeText";
+import { MathText } from "../math/MathText";
 
 type ResultFilter = "all" | "incorrect" | "unanswered" | "flagged" | "stimulus";
 
@@ -177,7 +178,9 @@ export function MockResults({
                           className={`${choiceIndex === manifest.correctChoice ? "correct-choice-row" : ""} ${state.selectedChoice === choiceIndex && choiceIndex !== manifest.correctChoice ? "selected-wrong-row" : ""}`}
                           key={`${manifest.questionId}-${choiceIndex}`}
                         >
-                          <span>{choice}</span>
+                          <span>
+                            <MathText text={choice} />
+                          </span>
                           {choiceIndex === manifest.correctChoice && (
                             <strong>Correct answer</strong>
                           )}
