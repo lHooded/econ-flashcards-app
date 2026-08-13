@@ -1235,7 +1235,7 @@ h3 {
 
 .chapter-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 5rem 5rem 4rem;
+  grid-template-columns: minmax(0, 1fr) 5rem 5rem 5rem 4rem;
   gap: 0.65rem;
   align-items: center;
   padding: 0.65rem 0.7rem;

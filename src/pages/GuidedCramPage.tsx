@@ -109,9 +109,9 @@ export function GuidedCramPage({
             scheduler,
             knowledgeConcepts,
             guidedStates,
-            manualLearned.conceptIds,
+            manualLearned.coveredConceptIds,
           ),
-    [guidedStates, manualLearned.conceptIds, scheduler],
+    [guidedStates, manualLearned.coveredConceptIds, scheduler],
   );
   const nextSelection = useMemo(
     () =>
@@ -239,7 +239,7 @@ export function GuidedCramPage({
     isConceptIntroducedEnough(
       concept.id,
       effectiveReviews,
-      manualLearned.conceptIds,
+      manualLearned.coveredConceptIds,
       manualLearned.cardIds,
     ),
   ).length;
@@ -252,7 +252,7 @@ export function GuidedCramPage({
         scheduler,
         statuses,
         effectiveReviews,
-        manualLearned.conceptIds,
+        manualLearned.coveredConceptIds,
       )
     : null;
 
@@ -497,7 +497,7 @@ function deriveHighYieldProgress(
   scheduler: ReturnType<typeof deriveExamSrsSnapshot>,
   statuses: ReadonlyMap<string, KnowledgeConceptStatus>,
   reviews: readonly ReviewEvent[],
-  manuallyLearnedConceptIds: ReadonlySet<string>,
+  manuallySatisfiedConceptIds: ReadonlySet<string>,
 ) {
   const stateById = scheduler.stateByCardId;
   const introduced = (skill: (typeof examSkillEvidence)[number]) =>
@@ -505,7 +505,7 @@ function deriveHighYieldProgress(
       isConceptIntroducedEnough(
         conceptId,
         reviews,
-        manuallyLearnedConceptIds,
+        manuallySatisfiedConceptIds,
         scheduler.states
           .filter((state) => state.isManuallyLearned === true)
           .map((state) => state.cardId)

@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { ProgressBackupV2 } from "../domain/backup";
+import type { ProgressBackupV3 } from "../domain/backup";
 import type { ManualLearnedKind } from "../domain/manualLearned";
 import type { AppSettings, NewReviewEvent, ProgressSnapshot } from "../domain/progress";
 import type { FinalizedMock } from "../db/mockExamRepository";
@@ -39,7 +39,7 @@ export interface ProgressContextValue {
   ) => Promise<FinalizedMock>;
   readonly refreshProgress?: () => Promise<void>;
   readonly exportProgress: () => string;
-  readonly replaceProgress: (backup: ProgressBackupV2) => Promise<void>;
+  readonly replaceProgress: (backup: ProgressBackupV3) => Promise<void>;
   readonly resetProgress: () => Promise<void>;
 }
 

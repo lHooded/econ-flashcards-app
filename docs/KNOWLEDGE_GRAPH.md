@@ -245,10 +245,10 @@ Practice, or mock state.
 All graph content, indexes, articles, source labels, and traversal code ship in
 the static frontend bundle. Search and lookup perform no runtime network calls.
 Knowledge data is not included in encrypted sync payloads and is not uploaded
-to Cloudflare. Guided lesson acknowledgement uses the v4 `guidedLessonSeen`
-store and remains local-device-only; it is included in manual backup version 2
-but not sync protocol v1. The manual backup format remains `ProgressBackupV2`/
-version 2, and sync protocol remains version 1. The browser’s strict reviewable-ID registry is the union of the 352
+to Cloudflare. Guided lesson acknowledgement uses the v5 `guidedLessonSeen`
+store and remains local-device-only; it is included in manual backup version 3
+but not sync protocol v1. The manual backup format is `ProgressBackupV3` (backup
+version 3), and sync protocol remains version 1. The browser’s strict reviewable-ID registry is the union of the 352
 canonical card IDs and the registered Guided Knowledge Check IDs. This lets
 ordinary ReviewEvent backup/sync machinery carry check evidence without
 loosening validation or changing the protocol. Canonical Study, Practice Lab,

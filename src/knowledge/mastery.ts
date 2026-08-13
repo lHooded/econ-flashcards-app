@@ -36,7 +36,7 @@ export function deriveConceptStatuses(
   scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
   concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
   guidedCheckStates: GuidedCheckStateMap = {},
-  manuallyLearnedConceptIds: ReadonlySet<string> = new Set(),
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
 ): ConceptStatusMap {
   return new Map(
     concepts.map((concept) => [
@@ -45,7 +45,7 @@ export function deriveConceptStatuses(
         concept,
         scheduler.stateByCardId,
         guidedCheckStates,
-        manuallyLearnedConceptIds,
+        manuallySatisfiedConceptIds,
       ),
     ]),
   );
@@ -55,13 +55,13 @@ export function deriveCardPrerequisiteReadiness(
   cards: readonly Flashcard[],
   scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
   concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
-  manuallyLearnedConceptIds: ReadonlySet<string> = new Set(),
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
 ): ReadonlyMap<string, boolean> {
   const statuses = deriveConceptStatuses(
     scheduler,
     concepts,
     {},
-    manuallyLearnedConceptIds,
+    manuallySatisfiedConceptIds,
   );
   return new Map(
     cards.map((card) => {
@@ -104,10 +104,10 @@ export function isPrerequisiteNonBlockingForScheduler(
 export function isConceptIntroducedEnough(
   conceptId: string,
   reviews: readonly ReviewEvent[],
-  manuallyLearnedConceptIds: ReadonlySet<string> = new Set(),
+  manuallySatisfiedConceptIds: ReadonlySet<string> = new Set(),
   manuallyLearnedCardIds: ReadonlySet<string> = new Set(),
 ): boolean {
-  if (manuallyLearnedConceptIds.has(conceptId)) return true;
+  if (manuallySatisfiedConceptIds.has(conceptId)) return true;
   const concept = knowledgeConceptById.get(conceptId);
   if (concept === undefined) return false;
   if (
@@ -180,9 +180,9 @@ function deriveStatusForConcept(
   concept: KnowledgeConcept,
   statesByCardId: Readonly<Record<string, ExamSrsCardState>>,
   guidedCheckStates: GuidedCheckStateMap,
-  manuallyLearnedConceptIds: ReadonlySet<string>,
+  manuallySatisfiedConceptIds: ReadonlySet<string>,
 ): KnowledgeConceptStatus {
-  if (manuallyLearnedConceptIds.has(concept.id)) return "solid";
+  if (manuallySatisfiedConceptIds.has(concept.id)) return "solid";
   if (concept.linkedCardIds.length === 0) {
     const skills = getGuidedCheckSkillsForConcept(concept.id);
     const states = skills

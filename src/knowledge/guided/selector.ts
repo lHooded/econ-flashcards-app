@@ -119,7 +119,7 @@ export function selectGuidedNextStep(input: SelectGuidedNextStepInput): GuidedSt
     input.cards,
     context.scheduler,
     undefined,
-    input.manualLearned?.conceptIds,
+    input.manualLearned?.coveredConceptIds,
   );
   const canonical = selectNextCardFromSnapshot({
     cards: input.cards,
@@ -239,7 +239,7 @@ function chooseDueCheck(
         candidate.state !== undefined &&
         candidate.state.reviewCount > 0 &&
         candidate.state.isDue &&
-        !input.manualLearned?.conceptIds.has(candidate.skill.conceptId),
+        !input.manualLearned?.coveredConceptIds.has(candidate.skill.conceptId),
     );
   if (candidates.length === 0) return null;
   const nonRecent = candidates.filter((candidate) => !recent.has(candidate.skill.id));
@@ -303,7 +303,7 @@ function prepareUnseenCanonicalCard(
       isConceptIntroducedEnough(
         conceptId,
         input.reviews,
-        input.manualLearned?.conceptIds,
+        input.manualLearned?.coveredConceptIds,
         input.manualLearned?.cardIds,
       )
     )
@@ -441,7 +441,7 @@ function findFailedNotDueEvidence(
     isConceptIntroducedEnough(
       conceptId,
       input.reviews,
-      input.manualLearned?.conceptIds,
+      input.manualLearned?.coveredConceptIds,
       input.manualLearned?.cardIds,
     )
   )

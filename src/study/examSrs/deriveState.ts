@@ -162,6 +162,23 @@ export function deriveCardState(
     latestEvidence.outcome,
     latestEvidence.resultingStrength,
   );
+  // Manual exclusion supersedes the operational state without changing the
+  // evidence fields above. Return before due-date derivation so refresh and
+  // simulation code cannot accidentally schedule this card again.
+  if (isManuallyLearned) {
+    return {
+      cardId,
+      learningState: "learned",
+      strength: latestEvidence.resultingStrength,
+      reviewCount: chronologicalReviews.length,
+      lastReviewedAt: latestEvidence.event.reviewedAt,
+      lastOutcome: latestEvidence.outcome,
+      dueAt: null,
+      isDue: false,
+      isManuallyLearned: true,
+    };
+  }
+
   const dueAtMs = deriveDueAtMs(latestEvidence, learningState, settings, nowMs);
   const dueAt = new Date(dueAtMs).toISOString();
 
@@ -175,15 +192,7 @@ export function deriveCardState(
     dueAt,
     isDue: dueAtMs <= nowMs,
   };
-  return isManuallyLearned
-    ? {
-        ...derived,
-        learningState: "learned",
-        dueAt: null,
-        isDue: false,
-        isManuallyLearned: true,
-      }
-    : derived;
+  return derived;
 }
 
 export function deriveExamSrsSnapshot(

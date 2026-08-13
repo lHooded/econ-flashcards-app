@@ -8,7 +8,7 @@ import {
 import { ProgressContext, type ProgressContextValue } from "./progressContext";
 import { SyncProvider } from "./SyncProvider";
 import { cardIds } from "../data/deck";
-import { serializeProgressBackup, type ProgressBackupV2 } from "../domain/backup";
+import { serializeProgressBackup, type ProgressBackupV3 } from "../domain/backup";
 import { manualLearnedKey, type ManualLearnedKind } from "../domain/manualLearned";
 import {
   sortReviewEventsChronologically,
@@ -342,7 +342,7 @@ export function ProgressProvider({ children }: PropsWithChildren) {
   );
 
   const replaceProgress = useCallback(
-    async (backup: ProgressBackupV2) => {
+    async (backup: ProgressBackupV3) => {
       try {
         await repository.replaceAll(backup);
         await refreshProgress();

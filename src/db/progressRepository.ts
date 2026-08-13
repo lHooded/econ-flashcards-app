@@ -9,10 +9,11 @@ import {
   type NewReviewEvent,
   type ReviewEvent,
 } from "../domain/progress";
-import { validateLessonSeenConceptIds, type ProgressBackupV2 } from "../domain/backup";
+import { validateLessonSeenConceptIds, type ProgressBackupV3 } from "../domain/backup";
 import {
   isManualLearnedKind,
   manualLearnedKey,
+  parseStoredManualLearnedOverride,
   validateManualLearnedOverrides,
   type ManualLearnedKind,
   type ManualLearnedOverride,
@@ -106,7 +107,7 @@ export class ProgressRepository {
       .getAll()) as GuidedLessonSeenRecord[];
     const manualLearnedRecords = (await transaction
       .objectStore("manualLearnedOverrides")
-      .getAll()) as ManualLearnedOverrideRecord[];
+      .getAll()) as unknown[];
     await transaction.done;
 
     // IndexedDB returns reviewEvents in primary-key order, but IDs are random.
@@ -118,12 +119,19 @@ export class ProgressRepository {
       cardStates,
       reviews,
       lessonSeenConceptIds: lessonSeenRecords.map((record) => record.conceptId).sort(),
+      // Local IndexedDB is a trust boundary too. Ignore malformed rows rather
+      // than allowing an invalid kind or key to become an effective override;
+      // structurally valid orphan targets remain stored and are ignored only by
+      // the content-aware resolver.
       manualLearnedOverrides: manualLearnedRecords
-        .map((record) => ({
-          kind: record.kind,
-          targetId: record.targetId,
-          createdAt: record.createdAt,
-        }))
+        .flatMap((record) => {
+          if (typeof record !== "object" || record === null || Array.isArray(record)) {
+            return [];
+          }
+          const row = record as { readonly key?: unknown };
+          const parsed = parseStoredManualLearnedOverride(record, row.key);
+          return parsed === null ? [] : [parsed];
+        })
         .sort(compareManualLearnedOverrides),
     };
   }
@@ -154,17 +162,13 @@ export class ProgressRepository {
     const transaction = database.transaction("manualLearnedOverrides", "readwrite");
     const existing = (await transaction.store.get(key)) as
       ManualLearnedOverrideRecord | undefined;
-    if (existing === undefined) {
+    const existingOverride =
+      existing === undefined ? null : parseStoredManualLearnedOverride(existing, key);
+    if (existingOverride === null) {
       transaction.store.put({ ...override, key });
     }
     await transaction.done;
-    return existing === undefined
-      ? override
-      : {
-          kind: existing.kind,
-          targetId: existing.targetId,
-          createdAt: existing.createdAt,
-        };
+    return existingOverride ?? override;
   }
 
   public async restoreManualLearned(
@@ -440,7 +444,7 @@ export class ProgressRepository {
     return { event, cardState };
   }
 
-  public async replaceAll(backup: ProgressBackupV2): Promise<void> {
+  public async replaceAll(backup: ProgressBackupV3): Promise<void> {
     for (const state of backup.cardStates) {
       if (!this.validCardIds.has(state.cardId)) {
         throw new Error(`Cannot import unknown card ID "${state.cardId}".`);

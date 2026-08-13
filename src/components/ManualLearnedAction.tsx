@@ -1,7 +1,11 @@
 import { useState, type ReactNode } from "react";
 
-export function ManualLearnedBadge() {
-  return <span className="manual-learned-badge">Manually learned</span>;
+export function ManualLearnedBadge({
+  label = "Manually learned",
+}: {
+  readonly label?: string;
+}) {
+  return <span className="manual-learned-badge">{label}</span>;
 }
 
 export function ManualLearnedAction({
@@ -41,6 +45,10 @@ export function ManualLearnedAction({
     <div className="manual-learned-confirmation" aria-live="polite">
       <strong>{confirmationTitle}</strong>
       <p>{confirmationDescription}</p>
+      <p className="field-help">
+        Stored on this device and included in backups. Sync v1 does not copy this
+        setting to your other devices.
+      </p>
       <div className="button-row">
         <button
           className="primary-button"

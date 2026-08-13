@@ -131,7 +131,7 @@ export function rankHighYieldUnseenCards(
     input.cards,
     scheduler,
     undefined,
-    input.manualLearned?.conceptIds,
+    input.manualLearned?.coveredConceptIds,
   );
   const ranked = rankExamSrsCandidatesFromSnapshot({
     cards: input.cards,
@@ -155,7 +155,7 @@ export function rankHighYieldUnseenCards(
             !isConceptIntroducedEnough(
               conceptId,
               input.reviews,
-              input.manualLearned?.conceptIds,
+              input.manualLearned?.coveredConceptIds,
               input.manualLearned?.cardIds,
             ),
         );
@@ -221,7 +221,7 @@ function isBranchBlocked(
       isConceptIntroducedEnough(
         conceptId,
         input.reviews,
-        input.manualLearned?.conceptIds,
+        input.manualLearned?.coveredConceptIds,
         input.manualLearned?.cardIds,
       )
     )

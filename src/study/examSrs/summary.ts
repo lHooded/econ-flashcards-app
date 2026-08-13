@@ -7,7 +7,9 @@ export interface ChapterSummary {
   readonly total: number;
   readonly seen: number;
   readonly learned: number;
+  readonly evidenceLearned: number;
   readonly manuallyLearned: number;
+  readonly manuallyLearnedOnly: number;
   readonly dueNow: number;
 }
 
@@ -18,7 +20,9 @@ export interface ExamSrsSummary {
   readonly unseen: number;
   readonly coveragePercent: number;
   readonly learned: number;
+  readonly evidenceLearned: number;
   readonly manuallyLearned: number;
+  readonly manuallyLearnedOnly: number;
   readonly dueNow: number;
   readonly relearning: number;
   readonly weak: number;
@@ -30,8 +34,21 @@ export function summarizeExamSrs(
   cards: readonly Flashcard[],
   scheduler: ExamSrsSnapshot,
   chapterNames: Readonly<Record<string, string>>,
+  evidenceScheduler?: Pick<ExamSrsSnapshot, "stateByCardId">,
 ): ExamSrsSummary {
   const stateById = scheduler.stateByCardId;
+  const evidenceStateById = evidenceScheduler?.stateByCardId;
+  const isEvidenceLearned = (cardId: string): boolean => {
+    const state = stateById[cardId];
+    if (evidenceStateById !== undefined) {
+      return evidenceStateById[cardId]?.learningState === "learned";
+    }
+    return state?.learningState === "learned" && state.isManuallyLearned !== true;
+  };
+  const isManuallyLearned = (cardId: string): boolean =>
+    stateById[cardId]?.isManuallyLearned === true;
+  const isManuallyLearnedOnly = (cardId: string): boolean =>
+    isManuallyLearned(cardId) && !isEvidenceLearned(cardId);
   const seen = scheduler.states.filter(
     (state) => state.learningState !== "unseen",
   ).length;
@@ -47,9 +64,11 @@ export function summarizeExamSrs(
     coveragePercent: cards.length === 0 ? 0 : Math.round((seen / cards.length) * 100),
     learned: scheduler.states.filter((state) => state.learningState === "learned")
       .length,
+    evidenceLearned: cards.filter((card) => isEvidenceLearned(card.id)).length,
     manuallyLearned: scheduler.states.filter(
       (state) => state.isManuallyLearned === true,
     ).length,
+    manuallyLearnedOnly: cards.filter((card) => isManuallyLearnedOnly(card.id)).length,
     dueNow: scheduler.states.filter((state) => state.isDue).length,
     relearning: scheduler.states.filter((state) => state.learningState === "relearning")
       .length,
@@ -68,8 +87,12 @@ export function summarizeExamSrs(
         learned: chapterCards.filter(
           (card) => stateById[card.id]?.learningState === "learned",
         ).length,
-        manuallyLearned: chapterCards.filter(
-          (card) => stateById[card.id]?.isManuallyLearned === true,
+        evidenceLearned: chapterCards.filter((card) => isEvidenceLearned(card.id))
+          .length,
+        manuallyLearned: chapterCards.filter((card) => isManuallyLearned(card.id))
+          .length,
+        manuallyLearnedOnly: chapterCards.filter((card) =>
+          isManuallyLearnedOnly(card.id),
         ).length,
         dueNow: chapterCards.filter((card) => stateById[card.id]?.isDue).length,
       } satisfies ChapterSummary;

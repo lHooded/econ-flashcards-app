@@ -200,7 +200,7 @@ answer is an ordinary canonical or Guided Knowledge Check ReviewEvent. There
 is no `examYieldMastery`, probability, expected-mark field, second scheduler,
 or second mastery database. The dedicated `guidedLessonSeen` IndexedDB store is
 local acknowledgement only: it creates no ReviewEvent or CardState change. The
-database is version 4, while `ProgressBackupV2` remains version 2 with an optional
+database is version 5, while `ProgressBackupV3` is the current backup format with an optional
 `lessonSeenConceptIds` field for portable backups. Sync protocol v1 remains
 unchanged, so lesson acknowledgement is not synced across devices; the sync Worker
 source and configuration do not change.

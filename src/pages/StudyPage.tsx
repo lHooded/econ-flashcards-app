@@ -92,9 +92,9 @@ export function StudyPage({
         cards,
         scheduler,
         undefined,
-        manualLearned.conceptIds,
+        manualLearned.coveredConceptIds,
       ),
-    [manualLearned.conceptIds, scheduler],
+    [manualLearned.coveredConceptIds, scheduler],
   );
   const scopedNextCard = useMemo(
     () =>

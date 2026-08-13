@@ -80,9 +80,9 @@ export function KnowledgePage({
               snapshot?.settings ?? { examAt: null, studyBufferHours: 24 },
               nowMs,
             ),
-            manualLearned.conceptIds,
+            manualLearned.coveredConceptIds,
           ),
-    [manualLearned.conceptIds, nowMs, scheduler, snapshot],
+    [manualLearned.coveredConceptIds, nowMs, scheduler, snapshot],
   );
   const searchResults = useMemo(
     () =>
@@ -97,6 +97,10 @@ export function KnowledgePage({
     selectedId === null ? undefined : knowledgeConceptById.get(selectedId);
   const selectedIsManuallyLearned =
     selected !== undefined && manualLearned.conceptIds.has(selected.id);
+  const selectedIsCoveredByManualCards =
+    selected !== undefined &&
+    !selectedIsManuallyLearned &&
+    manualLearned.coveredConceptIds.has(selected.id);
   const browseConcepts = useMemo(() => {
     if (query.trim()) return searchResults.map((result) => result.concept);
     return knowledgeConcepts
@@ -275,16 +279,19 @@ export function KnowledgePage({
                       Restore concept
                     </button>
                   </>
+                ) : selectedIsCoveredByManualCards ? (
+                  <ManualLearnedBadge label="Covered by manually excluded cards" />
                 ) : (
                   <ManualLearnedAction
                     label="Mark concept learned permanently"
                     confirmationTitle="Mark this concept learned permanently?"
                     confirmationDescription={
                       <>
-                        This will stop {selected.linkedCardIds.length} linked study
-                        cards and {selected.linkedQuestionIds.length} related practice
-                        questions from being selected. Future Guided Cram checks for
-                        this concept will also be skipped. You can restore it later.
+                        This will mark the concept as manually satisfied. Cards that
+                        also test other concepts remain available until every mapped
+                        concept on those cards is manually satisfied. Future Guided Cram
+                        checks and practice questions are excluded only when their
+                        canonical card is excluded. You can restore it later.
                       </>
                     }
                     onConfirm={() => markLearnedPermanently("concept", selected.id)}
