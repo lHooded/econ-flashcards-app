@@ -29,6 +29,27 @@ review events, and exam settings; scheduler state is not persisted.
 - Recall cards retain `Forgot`, `Struggled`, and `Got it` self-ratings. Authored MCQs
   use objective grading and retain the failed-save retry flow and exact retry payload.
 
+### Study Time Forecast
+
+Home includes a derived **Study Time Forecast** for the cram window. It estimates
+additional active review time, review count, and elapsed time including Exam-SRS
+spacing for five transparent, operational targets: Full coverage, Working (80%
+Learned), Exam-ready (90% Learned plus every critical exam-yield card seen), Strong
+(95% Learned plus every critical card Learned), and Near-complete (100% Learned).
+
+The forecast calibrates review-cycle timing from recent chronological review-event
+timestamps and calibrates failure / weak-success / strong-success outcomes from the
+learner's own evidence. A deterministic seeded simulation reuses normal Exam-SRS
+selection, transitions, recent-card avoidance, prerequisite guidance, and deadline
+intervals. Its model range is an empirical simulation range, not a statistical
+confidence interval; displayed confidence describes calibration evidence only.
+
+Forecast state is never persisted. It is recreated from the canonical cards, review
+events, exam settings, model version, and current time. Active study time excludes
+waiting for due intervals, while elapsed time includes that spacing. The Study Time
+Forecast is not a predicted exam mark, probability of recall, or guarantee of exam
+performance.
+
 ### Focused study
 
 The Study page has one small, optional focus scope. **Smart** is the recommended

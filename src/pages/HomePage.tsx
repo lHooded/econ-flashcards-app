@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useProgress } from "../app/progressContext";
 import { StatCard } from "../components/StatCard";
 import { cards, deck } from "../data/deck";
@@ -13,6 +13,12 @@ import { useNow } from "../utils/useNow";
 import { buildStudyHash } from "../study/studyScope";
 import { deriveMockClock } from "../exam/mock/timer";
 import { KnowledgeText } from "../components/knowledge/KnowledgeText";
+import { StudyTimeForecast } from "../components/StudyTimeForecast";
+import type { DeriveStudyTimeForecastInput } from "../study/forecast/forecast";
+import type { StudyTimeForecast as StudyTimeForecastModel } from "../study/forecast/model";
+import { MINUTE_MS } from "../study/examSrs/intervals";
+
+const FORECAST_CLOCK_BUCKET_MS = 5 * MINUTE_MS;
 
 function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): string {
   switch (phase) {
@@ -44,6 +50,51 @@ export function HomePage() {
         : summarizeExamSrs(cards, scheduler, deck.metadata.chapterNames),
     [scheduler],
   );
+  const forecastClockKey = useMemo(
+    () =>
+      scheduler === null
+        ? "loading"
+        : [
+            Math.floor(nowMs / FORECAST_CLOCK_BUCKET_MS),
+            scheduler.phase,
+            scheduler.states
+              .filter((state) => state.isDue)
+              .map((state) => state.cardId)
+              .join(","),
+            snapshot?.reviewEvents
+              .map((review) =>
+                [
+                  review.id,
+                  review.cardId,
+                  review.reviewedAt,
+                  review.mode,
+                  review.correct,
+                  review.rating,
+                  review.responseTimeMs,
+                  review.selectedChoice,
+                ].join(":"),
+              )
+              .join(",") ?? "loading",
+            snapshot?.settings.examAt ?? "no-exam",
+            snapshot?.settings.studyBufferHours ?? "loading",
+          ].join("|"),
+    [nowMs, scheduler, snapshot],
+  );
+  const forecastInputs = useStableForecastInputs(forecastClockKey, scheduler, nowMs);
+  const forecastRequest = useMemo<DeriveStudyTimeForecastInput | null>(
+    () =>
+      snapshot === null || forecastInputs.scheduler === null
+        ? null
+        : {
+            cards,
+            reviewEvents: snapshot.reviewEvents,
+            settings: snapshot.settings,
+            scheduler: forecastInputs.scheduler,
+            nowMs: forecastInputs.nowMs,
+          },
+    [forecastInputs, snapshot],
+  );
+  const forecast = useStudyTimeForecast(forecastRequest);
 
   if (snapshot === null || scheduler === null || summary === null) {
     return null;
@@ -146,6 +197,19 @@ export function HomePage() {
           detail={`${summary.learning} still learning`}
         />
       </section>
+
+      {forecast === null ? (
+        <section className="study-time-forecast panel" aria-live="polite">
+          <p className="section-kicker">Study time forecast</p>
+          <h2>Calibrating your study estimate…</h2>
+          <p className="muted-text">
+            The model is checking your recent pace and Exam-SRS spacing in the
+            background.
+          </p>
+        </section>
+      ) : (
+        <StudyTimeForecast forecast={forecast} />
+      )}
 
       <section className="quick-start panel" aria-labelledby="quick-start-title">
         <div className="panel-heading quick-start-heading">
@@ -302,4 +366,61 @@ export function HomePage() {
       </details>
     </div>
   );
+}
+
+function useStudyTimeForecast(
+  request: DeriveStudyTimeForecastInput | null,
+): StudyTimeForecastModel | null {
+  const [forecast, setForecast] = useState<StudyTimeForecastModel | null>(null);
+
+  useEffect(() => {
+    if (request === null) {
+      setForecast(null);
+      return;
+    }
+
+    setForecast(null);
+    let cancelled = false;
+    if (typeof Worker === "undefined") {
+      void import("../study/forecast/forecast").then(({ deriveStudyTimeForecast }) => {
+        if (!cancelled) setForecast(deriveStudyTimeForecast(request));
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const worker = new Worker(new URL("../study/forecast/worker.ts", import.meta.url), {
+      type: "module",
+    });
+    worker.onmessage = (
+      event: MessageEvent<
+        | { readonly type: "complete"; readonly forecast: StudyTimeForecastModel }
+        | { readonly type: "error"; readonly message: string }
+      >,
+    ) => {
+      if (event.data.type === "complete") {
+        setForecast(event.data.forecast);
+      }
+    };
+    worker.postMessage(request);
+    return () => {
+      cancelled = true;
+      worker.terminate();
+    };
+  }, [request]);
+
+  return forecast;
+}
+
+function useStableForecastInputs(
+  clockKey: string,
+  scheduler: ReturnType<typeof deriveExamSrsSnapshot> | null,
+  nowMs: number,
+) {
+  const inputs = useRef({ clockKey: "", scheduler, nowMs });
+  if (inputs.current.clockKey !== clockKey) {
+    inputs.current = { clockKey, scheduler, nowMs };
+  }
+  return inputs.current;
 }

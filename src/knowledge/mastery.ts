@@ -50,21 +50,82 @@ export function deriveCardPrerequisiteReadiness(
   scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
   concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
 ): ReadonlyMap<string, boolean> {
-  const statuses = deriveConceptStatuses(scheduler, concepts);
-  return new Map(
-    cards.map((card) => {
-      const conceptIds = cardConceptMap[card.id] ?? [];
-      const ready = conceptIds.every((conceptId) => {
-        const concept = knowledgeConceptById.get(conceptId);
-        return (
-          concept?.prerequisites.every((prerequisiteId) =>
-            isPrerequisiteNonBlockingForScheduler(prerequisiteId, statuses),
-          ) ?? true
-        );
-      });
-      return [card.id, ready];
-    }),
+  return createCardPrerequisiteReadinessTracker(cards, scheduler, concepts)
+    .readinessByCardId;
+}
+
+export interface CardPrerequisiteReadinessTracker {
+  readonly readinessByCardId: ReadonlyMap<string, boolean>;
+  readonly markCardSeen: (cardId: string) => void;
+}
+
+/**
+ * Incremental form of the scheduler's prerequisite guidance. A prerequisite
+ * becomes non-blocking as soon as one of its linked cards has review evidence;
+ * due/strength labels do not change that particular gate. The ordinary helper
+ * above uses the same boundary, while forecast simulation updates it without
+ * rescanning the full knowledge graph after every synthetic review.
+ */
+export function createCardPrerequisiteReadinessTracker(
+  cards: readonly Flashcard[],
+  scheduler: Pick<ExamSrsSnapshot, "stateByCardId">,
+  concepts: readonly KnowledgeConcept[] = knowledgeConcepts,
+): CardPrerequisiteReadinessTracker {
+  const conceptById = new Map(concepts.map((concept) => [concept.id, concept]));
+  const seenCardIds = new Set(
+    Object.values(scheduler.stateByCardId)
+      .filter((state) => state.reviewCount > 0)
+      .map((state) => state.cardId),
   );
+  const readinessByCardId = new Map<string, boolean>();
+  const dependentCardsByPrerequisiteCardId = new Map<string, Set<string>>();
+
+  const isPrerequisiteReady = (prerequisiteId: string): boolean => {
+    const concept = conceptById.get(prerequisiteId);
+    if (concept === undefined || concept.linkedCardIds.length === 0) {
+      return true;
+    }
+    return concept.linkedCardIds.some((cardId) => seenCardIds.has(cardId));
+  };
+
+  const updateCardReadiness = (card: Flashcard): void => {
+    const conceptIds = cardConceptMap[card.id] ?? [];
+    const ready = conceptIds.every((conceptId) => {
+      const concept = conceptById.get(conceptId);
+      return concept?.prerequisites.every(isPrerequisiteReady) ?? true;
+    });
+    readinessByCardId.set(card.id, ready);
+  };
+
+  for (const card of cards) {
+    const conceptIds = cardConceptMap[card.id] ?? [];
+    for (const conceptId of conceptIds) {
+      const concept = conceptById.get(conceptId);
+      for (const prerequisiteId of concept?.prerequisites ?? []) {
+        const prerequisite = conceptById.get(prerequisiteId);
+        for (const linkedCardId of prerequisite?.linkedCardIds ?? []) {
+          const dependents =
+            dependentCardsByPrerequisiteCardId.get(linkedCardId) ?? new Set<string>();
+          dependents.add(card.id);
+          dependentCardsByPrerequisiteCardId.set(linkedCardId, dependents);
+        }
+      }
+    }
+    updateCardReadiness(card);
+  }
+
+  return {
+    readinessByCardId,
+    markCardSeen: (cardId) => {
+      if (seenCardIds.has(cardId)) return;
+      seenCardIds.add(cardId);
+      for (const dependentCardId of dependentCardsByPrerequisiteCardId.get(cardId) ??
+        []) {
+        const dependent = cards.find((card) => card.id === dependentCardId);
+        if (dependent !== undefined) updateCardReadiness(dependent);
+      }
+    },
+  };
 }
 
 /**

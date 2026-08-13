@@ -172,6 +172,77 @@ automatic Chapter 0 gate. A scoped result distinguishes an eligible card, a matc
 pool that is caught up with its next due time, an empty canonical focus, and a New
 focus with no unseen cards remaining.
 
+## Study Time Forecast
+
+Home's Study Time Forecast is a derived, cram-oriented estimate of how much more
+active review the learner may need to reach several useful study targets. It does not
+add scheduler state to IndexedDB, backups, or sync. Given the same canonical cards,
+ReviewEvents, exam settings, model version, and effective current time, another device
+can recreate the same forecast.
+
+### Operational targets
+
+The V1 targets are defined together in `src/study/forecast/targets.ts`:
+
+| Target        | Operational criterion                                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Full coverage | Every canonical card has usable review evidence; no card is `unseen`.                                                |
+| Working       | Full coverage and at least 80% of canonical cards are `learned`.                                                     |
+| Exam-ready    | Full coverage, at least 90% are `learned`, and every card whose current exam-yield tier is `critical` has been seen. |
+| Strong        | Full coverage, at least 95% are `learned`, and every current `critical` card is `learned`.                           |
+| Near-complete | 100% of canonical cards are `learned`.                                                                               |
+
+`critical` is read through the existing exam-yield API only as a transparent
+importance constraint. Its numerical score is not treated as a probability, mark,
+recall estimate, or mastery score. These targets are app-defined study labels, not
+scientifically validated proficiency levels.
+
+### Calibration and simulation
+
+Pace calibration sorts review events with the canonical chronological comparator and
+uses gaps between adjacent completed reviews. Gaps shorter than about 1.5 seconds or
+longer than seven minutes are excluded; the latter are treated as session breaks. At
+most the latest 100 usable gaps are retained. Robust 20th-percentile, median, and
+80th-percentile cycle values drive the pace distribution. Valid `responseTimeMs`
+values are only a secondary fallback because they do not include explanation reading
+and navigation. With insufficient history, named conservative fallback cycle values
+are used and calibration confidence remains low. Recall/calculation and MCQ pace
+distributions use their own data only when enough observations exist; otherwise they
+fall back to the global distribution.
+
+Outcome calibration interprets ReviewEvents through `deriveReviewEvidence`, then
+counts failure, weak success, and strong success by mode family and previous learning
+bucket (`unseen`, recovery, `learning`, and `learned`). Sparse buckets use transparent
+pseudocount shrinkage toward a broader learner distribution. Cold starts use
+documented conservative priors, and these frequencies describe only simulated next
+review outcomes under this app—not a probability of remembering at the exam.
+
+Each of 256 deterministic simulation runs starts from the current compact Exam-SRS
+snapshot. It asks the ordinary selector for each next candidate, keeps its ordering,
+Chapter 0 gate, high-yield pressure, prerequisite guidance, recent-card avoidance,
+and deadline intervals, samples a calibrated outcome and active review cycle, and
+applies the shared strength/learning-state/due-date transition. When no card is
+currently eligible, the virtual clock advances to the next due time without adding
+active study time. The reported model range is the empirical 20th-to-80th percentile
+across runs. A defensive review and elapsed-time cap marks pathological runs as
+capped instead of claiming an exact completion estimate.
+
+Active study time is therefore separate from elapsed time: five hours of active work
+may require more than five hours of wall-clock time when Exam-SRS spacing intervenes.
+Deadline labels compare the median and upper model-range completion times with the
+effective study deadline (`examAt - studyBufferHours`) and exam time. They distinguish
+achieved, comfortable, tight, buffer, after-exam, and no-exam cases, and call out
+spacing when waiting—not active workload—is the main constraint.
+
+The model version and ordered ReviewEvent content/settings seed a local deterministic
+PRNG. The current clock is deliberately not part of that random seed: it can change
+which cards are due, but React renders do not randomly jitter the simulated outcomes.
+Forecast calibration confidence is `low`, `medium`, or `high` according to the amount
+of usable pace and outcome evidence; it is not confidence of passing the exam.
+
+The Study Time Forecast is not a predicted exam mark, probability of recall, or
+guarantee of exam performance.
+
 ## Limitations
 
 Exam-SRS optimises for the current product goal: complete coverage, fast correction,
