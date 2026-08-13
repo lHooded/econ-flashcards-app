@@ -80,6 +80,7 @@ export function selectHighYieldNextStep(
     input.reviews,
     input.settings,
     input.nowMs,
+    input.manualLearned?.cardIds,
   );
   const guidedCheckStates = deriveGuidedCheckStates(
     input.reviews,
@@ -124,8 +125,14 @@ export function rankHighYieldUnseenCards(
     input.reviews,
     input.settings,
     input.nowMs,
+    input.manualLearned?.cardIds,
   );
-  const readiness = deriveCardPrerequisiteReadiness(input.cards, scheduler);
+  const readiness = deriveCardPrerequisiteReadiness(
+    input.cards,
+    scheduler,
+    undefined,
+    input.manualLearned?.conceptIds,
+  );
   const ranked = rankExamSrsCandidatesFromSnapshot({
     cards: input.cards,
     scheduler,
@@ -145,7 +152,12 @@ export function rankHighYieldUnseenCards(
         const unmet = path.filter(
           (conceptId) =>
             !lessonSeen.has(conceptId) &&
-            !isConceptIntroducedEnough(conceptId, input.reviews),
+            !isConceptIntroducedEnough(
+              conceptId,
+              input.reviews,
+              input.manualLearned?.conceptIds,
+              input.manualLearned?.cardIds,
+            ),
         );
         const noCardCheckCount = unmet.filter(
           (conceptId) =>
@@ -205,7 +217,15 @@ function isBranchBlocked(
   guidedCheckStates: Readonly<Record<string, ExamSrsCardState>>,
 ): boolean {
   for (const conceptId of learningPathByCardId.get(card.id) ?? []) {
-    if (isConceptIntroducedEnough(conceptId, input.reviews)) continue;
+    if (
+      isConceptIntroducedEnough(
+        conceptId,
+        input.reviews,
+        input.manualLearned?.conceptIds,
+        input.manualLearned?.cardIds,
+      )
+    )
+      continue;
     const concept = knowledgeConceptById.get(conceptId);
     if (concept === undefined) continue;
     const evidenceIds =
@@ -248,7 +268,7 @@ function calculateCoverage(
   let seenTotal = 0;
   for (const card of cards) {
     totals.set(card.chapter, (totals.get(card.chapter) ?? 0) + 1);
-    const isSeen = stateById.get(card.id)?.reviewCount !== 0;
+    const isSeen = stateById.get(card.id)?.learningState !== "unseen";
     if (isSeen) seen.set(card.chapter, (seen.get(card.chapter) ?? 0) + 1);
     if (card.chapter >= 1 && card.chapter <= 10) {
       total += 1;

@@ -13,6 +13,7 @@ export interface GeneratedCalculationSessionOptions {
   readonly size: 5 | 10 | 20;
   readonly seed: string | number;
   readonly recentReviewCardIds?: readonly string[];
+  readonly excludedReviewCardIds?: ReadonlySet<string>;
 }
 
 export function buildGeneratedCalculationSet(
@@ -22,6 +23,7 @@ export function buildGeneratedCalculationSet(
   const eligible = templates.filter(
     (template) =>
       (options.chapter === null || template.chapter === options.chapter) &&
+      !(options.excludedReviewCardIds?.has(template.reviewCardId) ?? false) &&
       (options.difficulty === undefined ||
         options.difficulty === "all" ||
         template.difficulty === options.difficulty),

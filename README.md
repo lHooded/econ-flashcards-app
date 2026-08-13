@@ -137,7 +137,7 @@ source. The application validates its metadata and every card at module startup 
 before a production build; the real deck is bundled rather than copied into source
 code by hand.
 
-Mutable user data lives in IndexedDB database `econ-flashcards`, version 4:
+Mutable user data lives in IndexedDB database `econ-flashcards`, version 5:
 
 - `cardStates`: existing review counters and transactionally maintained card summaries;
 - `reviewEvents`: append-only chronological review history;
@@ -149,17 +149,24 @@ Mutable user data lives in IndexedDB database `econ-flashcards`, version 4:
 - `guidedLessonSeen`: local-device acknowledgement records keyed by knowledge
   `conceptId`; these are written only after the learner explicitly continues past a
   Guided/High-Yield lesson and are not ReviewEvents or mastery evidence.
+- `manualLearnedOverrides`: explicit learner-authored card, concept, and question
+  exclusions. They are not ReviewEvents and are reversible from Settings / Data.
 
 Exam-SRS does not add persisted due dates, strength, ease, stability, readiness, or
 phase. Export/import remains the current device-sync mechanism: export a validated JSON
 backup from Settings / Data, then import it on another device. Backup format version 1
 is retained, and importing review history plus settings recreates the derived scheduler
 state without scheduler fields. New exports use backup format version 2 and include
-mock attempts; version-1 backups migrate in memory with an empty mock history. Optional
+mock attempts, lesson acknowledgements, and manual learned overrides; version-1 backups
+migrate in memory with empty mock history and overrides. Optional
 cross-device sync uses a separate encrypted SyncPayloadV1 format, never embeds `syncId`,
 `authToken`, or `encryptionKey` in a backup, and merges review history rather than
-deleting it. Lesson acknowledgement is included in backup version 2 but remains
-local-device-only and is intentionally absent from sync protocol v1.
+deleting it. Lesson acknowledgement and manual learned overrides are included in
+backup version 2 but remain local-device-only and are intentionally absent from sync
+protocol v1.
+
+See [docs/MANUAL_LEARNED.md](docs/MANUAL_LEARNED.md) for the exclusion semantics,
+restoration rules, mock behavior, and history guarantees.
 
 ## Architecture
 

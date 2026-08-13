@@ -33,6 +33,7 @@ import { cardConceptMap } from "../knowledge/contentMap";
 import { StudyCard } from "../components/StudyCard";
 import { examSkillEvidence } from "../examYield/skills";
 import { getExamSkillsForCard, getExamYieldReasons } from "../examYield/score";
+import { getEffectiveManualLearned } from "../study/manualLearned";
 
 const EMPTY_REVIEWS: readonly ReviewEvent[] = [];
 const RECENT_LIMIT = 3;
@@ -45,7 +46,17 @@ export function GuidedCramPage({
   readonly mode?: "guided" | "high-yield";
 }) {
   const isHighYieldMode = mode === "high-yield";
-  const { snapshot, markLessonSeen, recordReview } = useProgress();
+  const {
+    snapshot,
+    markLessonSeen,
+    markLearnedPermanently: markLearnedPermanentlyFromContext,
+    recordReview,
+  } = useProgress();
+  const markLearnedPermanently =
+    markLearnedPermanentlyFromContext ??
+    (async () => {
+      throw new Error("Manual learned settings are unavailable in this view.");
+    });
   const nowMs = useNow(30 * 1000);
   const [activeStep, setActiveStep] = useState<GuidedStep | null>(null);
   const [recentIds, setRecentIds] = useState<string[]>([]);
@@ -56,6 +67,10 @@ export function GuidedCramPage({
   const lessonSeen = useMemo(
     () => new Set(snapshot?.lessonSeenConceptIds ?? []),
     [snapshot?.lessonSeenConceptIds],
+  );
+  const manualLearned = useMemo(
+    () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
+    [snapshot?.manualLearnedOverrides],
   );
   const persistedReviews = snapshot?.reviewEvents ?? EMPTY_REVIEWS;
   const effectiveReviews = useMemo(() => {
@@ -70,8 +85,14 @@ export function GuidedCramPage({
     () =>
       settings === undefined
         ? null
-        : deriveExamSrsSnapshot(cards, effectiveReviews, settings, nowMs),
-    [effectiveReviews, nowMs, settings],
+        : deriveExamSrsSnapshot(
+            cards,
+            effectiveReviews,
+            settings,
+            nowMs,
+            manualLearned.cardIds,
+          ),
+    [effectiveReviews, manualLearned.cardIds, nowMs, settings],
   );
   const guidedStates = useMemo(
     () =>
@@ -84,8 +105,13 @@ export function GuidedCramPage({
     () =>
       scheduler === null
         ? new Map<string, KnowledgeConceptStatus>()
-        : deriveConceptStatuses(scheduler, knowledgeConcepts, guidedStates),
-    [guidedStates, scheduler],
+        : deriveConceptStatuses(
+            scheduler,
+            knowledgeConcepts,
+            guidedStates,
+            manualLearned.conceptIds,
+          ),
+    [guidedStates, manualLearned.conceptIds, scheduler],
   );
   const nextSelection = useMemo(
     () =>
@@ -99,6 +125,7 @@ export function GuidedCramPage({
             lessonSeenConceptIds: lessonSeen,
             recentlyShownIds: recentIds,
             sessionSeed,
+            manualLearned,
           }),
     [
       effectiveReviews,
@@ -108,6 +135,7 @@ export function GuidedCramPage({
       recentIds,
       sessionSeed,
       settings,
+      manualLearned,
     ],
   );
   const highYieldCandidates = useMemo(
@@ -121,6 +149,7 @@ export function GuidedCramPage({
             lessonSeenConceptIds: lessonSeen,
             recentlyShownIds: recentIds,
             sessionSeed,
+            manualLearned,
           }).slice(0, 3)
         : [],
     [
@@ -131,6 +160,7 @@ export function GuidedCramPage({
       recentIds,
       sessionSeed,
       settings,
+      manualLearned,
     ],
   );
 
@@ -206,14 +236,24 @@ export function GuidedCramPage({
           ? "Maintenance"
           : "No exam target";
   const introduced = knowledgeConcepts.filter((concept) =>
-    isConceptIntroducedEnough(concept.id, effectiveReviews),
+    isConceptIntroducedEnough(
+      concept.id,
+      effectiveReviews,
+      manualLearned.conceptIds,
+      manualLearned.cardIds,
+    ),
   ).length;
   const solid = [...statuses.values()].filter((status) => status === "solid").length;
   const due =
     scheduler.states.filter((state) => state.isDue).length +
     Object.values(guidedStates).filter((state) => state.isDue).length;
   const highYieldProgress = isHighYieldMode
-    ? deriveHighYieldProgress(scheduler, statuses, effectiveReviews)
+    ? deriveHighYieldProgress(
+        scheduler,
+        statuses,
+        effectiveReviews,
+        manualLearned.conceptIds,
+      )
     : null;
 
   return (
@@ -375,6 +415,10 @@ export function GuidedCramPage({
               submitReview({ ...input, cardId: displayStep.card.id })
             }
             onFinish={() => finishStep(displayStep.card.id)}
+            onMarkLearnedPermanently={async () => {
+              await markLearnedPermanently("card", displayStep.card.id);
+              finishStep(displayStep.card.id);
+            }}
           />
         </>
       ) : (
@@ -446,18 +490,27 @@ function GuidedIdleStep({ step }: { readonly step: GuidedStep | null }) {
 }
 
 function canonicalSeen(scheduler: ReturnType<typeof deriveExamSrsSnapshot>): number {
-  return scheduler.states.filter((state) => state.reviewCount > 0).length;
+  return scheduler.states.filter((state) => state.learningState !== "unseen").length;
 }
 
 function deriveHighYieldProgress(
   scheduler: ReturnType<typeof deriveExamSrsSnapshot>,
   statuses: ReadonlyMap<string, KnowledgeConceptStatus>,
   reviews: readonly ReviewEvent[],
+  manuallyLearnedConceptIds: ReadonlySet<string>,
 ) {
   const stateById = scheduler.stateByCardId;
   const introduced = (skill: (typeof examSkillEvidence)[number]) =>
     skill.targetConceptIds.some((conceptId) =>
-      isConceptIntroducedEnough(conceptId, reviews),
+      isConceptIntroducedEnough(
+        conceptId,
+        reviews,
+        manuallyLearnedConceptIds,
+        scheduler.states
+          .filter((state) => state.isManuallyLearned === true)
+          .map((state) => state.cardId)
+          .reduce((ids, cardId) => ids.add(cardId), new Set<string>()),
+      ),
     );
   const solid = (skill: (typeof examSkillEvidence)[number]) =>
     skill.targetConceptIds.length > 0 &&
@@ -479,7 +532,11 @@ function deriveHighYieldProgress(
     ).length,
     highYieldCardsSeen: new Set(
       examSkillEvidence.flatMap((skill) =>
-        skill.cardIds.filter((cardId) => stateById[cardId]?.reviewCount > 0),
+        skill.cardIds.filter(
+          (cardId) =>
+            stateById[cardId] !== undefined &&
+            stateById[cardId].learningState !== "unseen",
+        ),
       ),
     ).size,
     highYieldSkillsDue: examSkillEvidence.filter(due).length,

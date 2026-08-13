@@ -16,6 +16,8 @@ export interface ExamSrsCardState {
   readonly dueAt: string | null;
   /** True only for a scheduled review due now; unseen cards are eligible separately. */
   readonly isDue: boolean;
+  /** Present and true only when a learner-authored permanent exclusion is active. */
+  readonly isManuallyLearned?: boolean;
 }
 
 export interface ExamSrsSnapshot {

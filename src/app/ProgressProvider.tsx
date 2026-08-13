@@ -9,6 +9,7 @@ import { ProgressContext, type ProgressContextValue } from "./progressContext";
 import { SyncProvider } from "./SyncProvider";
 import { cardIds } from "../data/deck";
 import { serializeProgressBackup, type ProgressBackupV2 } from "../domain/backup";
+import { manualLearnedKey, type ManualLearnedKind } from "../domain/manualLearned";
 import {
   sortReviewEventsChronologically,
   type AppSettings,
@@ -36,6 +37,7 @@ function toSnapshot(
     reviewEvents: data.reviews,
     mockAttempts,
     lessonSeenConceptIds: data.lessonSeenConceptIds,
+    manualLearnedOverrides: data.manualLearnedOverrides,
   };
 }
 
@@ -46,7 +48,13 @@ function errorMessage(error: unknown): string {
 }
 
 export function ProgressProvider({ children }: PropsWithChildren) {
-  const repository = useMemo(() => new ProgressRepository(reviewableProgressIds), []);
+  const repository = useMemo(
+    () =>
+      new ProgressRepository(reviewableProgressIds, undefined, {
+        cardIds: new Set(cardIds),
+      }),
+    [],
+  );
   const mockRepository = useMemo(
     () =>
       new MockExamRepository(
@@ -190,6 +198,66 @@ export function ProgressProvider({ children }: PropsWithChildren) {
     [repository],
   );
 
+  const markLearnedPermanently = useCallback(
+    async (kind: ManualLearnedKind, targetId: string) => {
+      try {
+        const override = await repository.markLearnedPermanently(kind, targetId);
+        setSnapshot((current) => {
+          if (current === null) return current;
+          const overrides = current.manualLearnedOverrides ?? [];
+          const key = manualLearnedKey(kind, targetId);
+          if (
+            overrides.some(
+              (candidate) =>
+                manualLearnedKey(candidate.kind, candidate.targetId) === key,
+            )
+          ) {
+            return current;
+          }
+          return {
+            ...current,
+            manualLearnedOverrides: [...overrides, override].sort(
+              (left, right) =>
+                left.kind.localeCompare(right.kind) ||
+                left.targetId.localeCompare(right.targetId),
+            ),
+          };
+        });
+        setError(null);
+      } catch (manualError: unknown) {
+        const message = errorMessage(manualError);
+        setError(message);
+        throw new Error(message);
+      }
+    },
+    [repository],
+  );
+
+  const restoreManualLearned = useCallback(
+    async (kind: ManualLearnedKind, targetId: string) => {
+      try {
+        await repository.restoreManualLearned(kind, targetId);
+        setSnapshot((current) => {
+          if (current === null) return current;
+          return {
+            ...current,
+            manualLearnedOverrides: (current.manualLearnedOverrides ?? []).filter(
+              (override) =>
+                manualLearnedKey(override.kind, override.targetId) !==
+                manualLearnedKey(kind, targetId),
+            ),
+          };
+        });
+        setError(null);
+      } catch (manualError: unknown) {
+        const message = errorMessage(manualError);
+        setError(message);
+        throw new Error(message);
+      }
+    },
+    [repository],
+  );
+
   const exportProgress = useCallback(() => {
     if (snapshot === null) {
       throw new Error("Local study data is still loading.");
@@ -310,6 +378,8 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       clearError,
       saveSettings,
       markLessonSeen,
+      markLearnedPermanently,
+      restoreManualLearned,
       recordReview,
       createMockAttempt,
       updateMockAttemptProgress,
@@ -327,10 +397,12 @@ export function ProgressProvider({ children }: PropsWithChildren) {
       exportProgress,
       isLoading,
       markLessonSeen,
+      markLearnedPermanently,
       recordReview,
       refreshProgress,
       replaceProgress,
       resetProgress,
+      restoreManualLearned,
       saveSettings,
       snapshot,
       updateMockAttemptProgress,

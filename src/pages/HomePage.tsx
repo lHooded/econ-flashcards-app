@@ -13,6 +13,7 @@ import { useNow } from "../utils/useNow";
 import { buildStudyHash } from "../study/studyScope";
 import { deriveMockClock } from "../exam/mock/timer";
 import { KnowledgeText } from "../components/knowledge/KnowledgeText";
+import { getEffectiveManualLearned } from "../study/manualLearned";
 
 function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): string {
   switch (phase) {
@@ -30,12 +31,22 @@ function phaseLabel(phase: ReturnType<typeof deriveExamSrsSnapshot>["phase"]): s
 export function HomePage() {
   const { snapshot } = useProgress();
   const nowMs = useNow();
+  const manualLearned = useMemo(
+    () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
+    [snapshot?.manualLearnedOverrides],
+  );
   const scheduler = useMemo(
     () =>
       snapshot === null
         ? null
-        : deriveExamSrsSnapshot(cards, snapshot.reviewEvents, snapshot.settings, nowMs),
-    [nowMs, snapshot],
+        : deriveExamSrsSnapshot(
+            cards,
+            snapshot.reviewEvents,
+            snapshot.settings,
+            nowMs,
+            manualLearned.cardIds,
+          ),
+    [manualLearned.cardIds, nowMs, snapshot],
   );
   const summary = useMemo(
     () =>

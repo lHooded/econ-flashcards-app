@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import type { ProgressBackupV2 } from "../domain/backup";
+import type { ManualLearnedKind } from "../domain/manualLearned";
 import type { AppSettings, NewReviewEvent, ProgressSnapshot } from "../domain/progress";
 import type { FinalizedMock } from "../db/mockExamRepository";
 import type { RecordedReview } from "../db/progressRepository";
@@ -12,6 +13,14 @@ export interface ProgressContextValue {
   readonly clearError: () => void;
   readonly saveSettings: (settings: AppSettings) => Promise<void>;
   readonly markLessonSeen: (conceptId: string) => Promise<void>;
+  readonly markLearnedPermanently?: (
+    kind: ManualLearnedKind,
+    targetId: string,
+  ) => Promise<void>;
+  readonly restoreManualLearned?: (
+    kind: ManualLearnedKind,
+    targetId: string,
+  ) => Promise<void>;
   readonly recordReview: (input: NewReviewEvent) => Promise<RecordedReview>;
   readonly createMockAttempt?: (attempt: MockAttempt) => Promise<MockAttempt>;
   readonly updateMockAttemptProgress?: (

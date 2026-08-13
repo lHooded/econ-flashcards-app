@@ -120,7 +120,9 @@ export function deriveCardState(
   reviews: readonly ReviewEvent[],
   settings: AppSettings,
   nowMs: number,
+  manuallyLearnedCardIds?: ReadonlySet<string>,
 ): ExamSrsCardState {
+  const isManuallyLearned = manuallyLearnedCardIds?.has(cardId) === true;
   const chronologicalReviews = [...reviews].sort(compareReviewEventsChronologically);
   let strength = 0;
   let latestEvidence: LatestEvidence | null = null;
@@ -145,13 +147,14 @@ export function deriveCardState(
   if (latestEvidence === null) {
     return {
       cardId,
-      learningState: "unseen",
+      learningState: isManuallyLearned ? "learned" : "unseen",
       strength: 0,
       reviewCount: chronologicalReviews.length,
       lastReviewedAt: null,
       lastOutcome: null,
       dueAt: null,
       isDue: false,
+      ...(isManuallyLearned ? { isManuallyLearned: true } : {}),
     };
   }
 
@@ -162,7 +165,7 @@ export function deriveCardState(
   const dueAtMs = deriveDueAtMs(latestEvidence, learningState, settings, nowMs);
   const dueAt = new Date(dueAtMs).toISOString();
 
-  return {
+  const derived: ExamSrsCardState = {
     cardId,
     learningState,
     strength: latestEvidence.resultingStrength,
@@ -172,6 +175,15 @@ export function deriveCardState(
     dueAt,
     isDue: dueAtMs <= nowMs,
   };
+  return isManuallyLearned
+    ? {
+        ...derived,
+        learningState: "learned",
+        dueAt: null,
+        isDue: false,
+        isManuallyLearned: true,
+      }
+    : derived;
 }
 
 export function deriveExamSrsSnapshot(
@@ -179,6 +191,7 @@ export function deriveExamSrsSnapshot(
   reviews: readonly ReviewEvent[],
   settings: AppSettings,
   nowMs: number,
+  manuallyLearnedCardIds?: ReadonlySet<string>,
 ): ExamSrsSnapshot {
   const reviewsByCardId = new Map<string, ReviewEvent[]>();
   for (const review of reviews) {
@@ -188,7 +201,13 @@ export function deriveExamSrsSnapshot(
   }
 
   const states = cards.map((card) =>
-    deriveCardState(card.id, reviewsByCardId.get(card.id) ?? [], settings, nowMs),
+    deriveCardState(
+      card.id,
+      reviewsByCardId.get(card.id) ?? [],
+      settings,
+      nowMs,
+      manuallyLearnedCardIds,
+    ),
   );
 
   return {

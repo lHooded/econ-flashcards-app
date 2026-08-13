@@ -1,11 +1,12 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import type { ManualLearnedOverride } from "../domain/manualLearned";
 import type { AppSettings, CardState, ReviewEvent } from "../domain/progress";
 import type { MockAttempt } from "../exam/mock/model";
 import { randomBase64Url } from "../sync/encoding";
 import { SYNC_CONFIG_KEY, type SyncConfig } from "../sync/model";
 
 export const DATABASE_NAME = "econ-flashcards";
-export const DATABASE_VERSION = 4;
+export const DATABASE_VERSION = 5;
 export const SETTINGS_KEY = "app";
 
 export interface SettingsRecord {
@@ -15,6 +16,10 @@ export interface SettingsRecord {
 
 export interface GuidedLessonSeenRecord {
   readonly conceptId: string;
+}
+
+export interface ManualLearnedOverrideRecord extends ManualLearnedOverride {
+  readonly key: string;
 }
 
 export interface EconDatabase extends DBSchema {
@@ -41,6 +46,10 @@ export interface EconDatabase extends DBSchema {
   guidedLessonSeen: {
     key: string;
     value: GuidedLessonSeenRecord;
+  };
+  manualLearnedOverrides: {
+    key: string;
+    value: ManualLearnedOverrideRecord;
   };
 }
 
@@ -73,6 +82,9 @@ export function openProgressDatabase(
       }
       if (!database.objectStoreNames.contains("guidedLessonSeen")) {
         database.createObjectStore("guidedLessonSeen", { keyPath: "conceptId" });
+      }
+      if (!database.objectStoreNames.contains("manualLearnedOverrides")) {
+        database.createObjectStore("manualLearnedOverrides", { keyPath: "key" });
       }
     },
   });
