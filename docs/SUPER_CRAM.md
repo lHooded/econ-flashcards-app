@@ -116,6 +116,12 @@ repetition, rather than banning the card for the session. Once the review is vis
 ordinary Exam-SRS dueAt is authoritative again; the card can return at a later
 legitimate due time, and another due target can be offered immediately.
 
+When the highest-priority attempted-and-due card has no eligible MCQ, Super Cram
+shows it as **Due review · canonical card**. The learner is told that the card is due
+in Exam-SRS, that no eligible MCQ is available for it, and that completing the
+retrieval card lets Super Cram continue with the best available target. This is an
+intentional canonical fallback, not a failed or exhausted MCQ bank.
+
 ## Session-only formula coverage units
 
 Formula coverage is held in React session state only. The 26 broad Formula Application

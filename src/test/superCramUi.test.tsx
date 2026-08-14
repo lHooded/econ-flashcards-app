@@ -9,6 +9,12 @@ import { KnowledgeProvider } from "../knowledge/KnowledgeProvider";
 import { PracticePage } from "../pages/PracticePage";
 import { SuperCramPage } from "../pages/SuperCramPage";
 
+const fallbackRatingCases = [
+  ["Forgot", "forgot"],
+  ["Struggled", "struggled"],
+  ["Got it", "got_it"],
+] as const;
+
 function renderWithProgress(
   recordReview: ProgressContextValue["recordReview"],
   page: ReactNode,
@@ -165,7 +171,7 @@ describe("Super Cram and Formula Application practice surfaces", () => {
       });
       expect(view.container.querySelector(".mock-stem")?.textContent).toBe(stem);
       expect(screen.getAllByRole("radio")[0]).toBeChecked();
-      expect(screen.queryByText("Urgent canonical fallback")).not.toBeInTheDocument();
+      expect(screen.queryByText("Due review · canonical card")).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
       await act(async () => {
@@ -173,7 +179,7 @@ describe("Super Cram and Formula Application practice surfaces", () => {
       });
       expect(recordReviewMock).toHaveBeenCalledTimes(1);
       fireEvent.click(screen.getByRole("button", { name: "Next" }));
-      expect(screen.getByText("Urgent canonical fallback")).toBeInTheDocument();
+      expect(screen.getByText("Due review · canonical card")).toBeInTheDocument();
       expect(screen.getByText(fallbackCard.id)).toBeInTheDocument();
     } finally {
       vi.useRealTimers();
@@ -276,34 +282,109 @@ describe("Super Cram and Formula Application practice surfaces", () => {
     }
   });
 
-  it("moves from one stale-snapshot fallback to the next due fallback", async () => {
-    const firstId = "ch01-001";
-    const secondId = "ch01-003";
-    const reviewedAt = new Date(Date.now() - 10 * 60 * 1000);
-    const reviews = [firstId, secondId].map((cardId) =>
-      createReviewEvent({
-        id: `fallback-${cardId}`,
-        cardId,
-        reviewedAt: reviewedAt.toISOString(),
+  it.each(fallbackRatingCases)(
+    "moves from one stale-snapshot fallback to the next due fallback after %s",
+    async (ratingLabel, ratingValue) => {
+      const firstId = "ch01-001";
+      const secondId = "ch01-003";
+      const secondCard = cards.find((card) => card.id === secondId)!;
+      const reviewedAt = new Date(Date.now() - 10 * 60 * 1000);
+      const reviews = [firstId, secondId].map((cardId) =>
+        createReviewEvent({
+          id: `fallback-${cardId}`,
+          cardId,
+          reviewedAt: reviewedAt.toISOString(),
+          mode: "recall",
+          correct: false,
+          rating: "forgot",
+          responseTimeMs: 900,
+          selectedChoice: null,
+        }),
+      );
+      const recordReviewMock = vi.fn().mockResolvedValue({});
+      renderWithProgress(recordReviewMock, <SuperCramPage />, {
+        settings: { examAt: null, studyBufferHours: 24 },
+        cardStates: {},
+        reviewEvents: reviews,
+      });
+      expect(screen.getByText(firstId)).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Show answer" }));
+      fireEvent.click(screen.getByRole("button", { name: ratingLabel }));
+      await waitFor(() => expect(recordReviewMock).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(screen.getByText(secondId)).toBeInTheDocument());
+      expect(screen.queryByText(firstId)).not.toBeInTheDocument();
+
+      expect(screen.getByRole("button", { name: "Show answer" })).toBeInTheDocument();
+      expect(screen.queryByText("Answer")).not.toBeInTheDocument();
+      expect(screen.queryByText("Why it works")).not.toBeInTheDocument();
+      expect(screen.queryByText(secondCard.answer)).not.toBeInTheDocument();
+      for (const label of fallbackRatingCases.map(([label]) => label)) {
+        expect(screen.queryByRole("button", { name: label })).not.toBeInTheDocument();
+      }
+
+      fireEvent.click(screen.getByRole("button", { name: "Show answer" }));
+      for (const label of fallbackRatingCases.map(([label]) => label)) {
+        expect(screen.getByRole("button", { name: label })).toBeEnabled();
+      }
+      fireEvent.click(screen.getByRole("button", { name: ratingLabel }));
+      await waitFor(() => expect(recordReviewMock).toHaveBeenCalledTimes(2));
+      expect(recordReviewMock.mock.calls[1][0]).toMatchObject({
+        cardId: secondId,
         mode: "recall",
-        correct: false,
-        rating: "forgot",
-        responseTimeMs: 900,
-        selectedChoice: null,
-      }),
-    );
+        rating: ratingValue,
+      });
+    },
+  );
+
+  it("keeps fallback keyboard input isolated from Super Cram MCQ shortcuts", async () => {
+    const fallbackId = "ch01-001";
+    const fallbackReview = createReviewEvent({
+      id: "fallback-keyboard-isolation",
+      cardId: fallbackId,
+      reviewedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+      mode: "recall",
+      correct: false,
+      rating: "forgot",
+      responseTimeMs: 900,
+      selectedChoice: null,
+    });
     const recordReviewMock = vi.fn().mockResolvedValue({});
     renderWithProgress(recordReviewMock, <SuperCramPage />, {
       settings: { examAt: null, studyBufferHours: 24 },
       cardStates: {},
-      reviewEvents: reviews,
+      reviewEvents: [fallbackReview],
     });
-    expect(screen.getByText(firstId)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Show answer" }));
-    fireEvent.click(screen.getByRole("button", { name: "Forgot" }));
+
+    const hiddenMcqShortcut = new KeyboardEvent("keydown", {
+      key: "1",
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => window.dispatchEvent(hiddenMcqShortcut));
+    expect(hiddenMcqShortcut.defaultPrevented).toBe(false);
+    expect(recordReviewMock).not.toHaveBeenCalled();
+
+    const revealEvent = new KeyboardEvent("keydown", {
+      key: "Enter",
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => window.dispatchEvent(revealEvent));
+    expect(revealEvent.defaultPrevented).toBe(true);
+    expect(screen.getByRole("button", { name: "Forgot" })).toBeEnabled();
+
+    const ratingEvent = new KeyboardEvent("keydown", {
+      key: "1",
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => window.dispatchEvent(ratingEvent));
     await waitFor(() => expect(recordReviewMock).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(screen.getByText(secondId)).toBeInTheDocument());
-    expect(screen.queryByText(firstId)).not.toBeInTheDocument();
+    expect(recordReviewMock.mock.calls[0][0]).toMatchObject({
+      cardId: fallbackId,
+      mode: "recall",
+      rating: "forgot",
+    });
   });
 
   it("resets Formula Application response timing for a wrapped one-question set", async () => {
