@@ -198,6 +198,13 @@ describe("Super Cram metadata and selector", () => {
     );
   });
 
+  it("uses question-level overrides for lookupable forms inside broader skills", () => {
+    const conversion = examQuestions.find((item) => item.id === "auth-ch09-005")!;
+    const fixedPeg = examQuestions.find((item) => item.id === "auth-form-ch09-014")!;
+    expect(getQuestionCheatSheetProfile(conversion).studyWorthiness).toBe(1);
+    expect(getQuestionCheatSheetProfile(fixedPeg).studyWorthiness).toBe(5);
+  });
+
   it("keeps scenario/form bonuses bounded against an urgent target", () => {
     const urgent = candidate({
       question: question("urgent", "ch03-003", 3),
