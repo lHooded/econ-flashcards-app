@@ -48,9 +48,9 @@ The full bank now has 39 stimulus-bearing questions. All 166 authored questions
 have `provenance: "authored_from_flashcards"`; each maps one primary
 `reviewCardId`—the canonical concept most directly tested by a miss—and includes it
 in `sourceCardIds`. Multiple representations of one concept are allowed and are
-controlled at a maximum of two questions per review card. The future mock selector,
-which is deliberately not implemented here, must select at most one question for a
-given `reviewCardId` in a single attempt.
+controlled at a maximum of two questions per review card. The unified mock selector
+selects at most one question for a given `reviewCardId` in a single attempt and is
+covered by the 1,000-seed invariant test.
 
 ## Canonical 354-card inventory
 
@@ -203,8 +203,8 @@ ranges. The current 39 stimulus questions contribute 10 / 20 / 9 at difficulties
 
 | Correct position | Unified | Additional stimuli |
 | ---------------- | ------: | -----------------: |
-| A                |      50 |                  6 |
-| B                |      50 |                  6 |
+| A                |      49 |                  6 |
+| B                |      51 |                  6 |
 | C                |      49 |                  6 |
 | D                |      48 |                  6 |
 
@@ -282,7 +282,7 @@ Chapter 9 stimuli: 5
 Chapter 10 stimuli: 4
 Styles: concept 42 / scenario 46 / calculation 65 / model 31 / sequence 13
 Difficulty: 1 56 / 2 103 / 3 38
-Correct positions: A 50 / B 50 / C 49 / D 48
+Correct positions: A 49 / B 51 / C 49 / D 48
 Calculation questions: 65
 Unique reviewCardId: 175
 Review cards with multiple questions: 22
@@ -375,7 +375,7 @@ graph/table structures and representative economics geometry. Renderer tests cov
 graph SVG primitives, labels, styles, accessibility, annotations, semantic table
 structure and the no-stimulus case.
 
-The current full local suite is 51 test files and 448 tests. The additional Formula
+The current full local suite is 53 test files and 460 tests. The additional Formula
 Application and Super Cram validators/tests are reported in the continuation below.
 
 ## Super Cram / Formula Application continuation
@@ -409,3 +409,44 @@ review-card cap.
 The pure MPK/MPL formula-recognition item `auth-ch10-011` is now `concept` style and
 is excluded from Formula Application. Numeric MPL and MPK application are separate
 items (`auth-form-ch10-013` and `auth-form-ch10-014`).
+
+### Formula Application semantic correction pass
+
+The complete 45-question curated set was independently audited after the initial
+bank validation. For each item the reviewer selected the intended formula, extracted
+the supplied values, recomputed the result, checked the stored key and every
+distractor rationale, and checked that declarative stimulus captions/notes did not
+reveal the answer. The independent expected-key record is kept in
+src/superCram/formulaAudit.ts; it is not generated from the question
+correctChoice field.
+
+The most convention-sensitive checks were:
+
+- exact Fisher: (1.08 / 1.03) - 1 = 4.85%;
+- user cost: (0.05 + 0.10) x $100 = $15, so only the first table machine is
+  purchased;
+- four-sector multiplier: 1 / [1 - 0.80(1 - 0.25) + 0.10] = 2.00;
+- fiscal gap closure: $200m / 2.5 = $80m;
+- government borrowing: $250m + $50m + 0.05($1,000m) - $200m = $150m;
+- PAE/PRF: r = 4, then Y = 440, and the derived AD form is Y = 420 - 16pi;
+- real FX: under the course quote q = e P_home / P_foreign,
+  0.8 x 110 / 100 = 0.88;
+- fixed peg: supply minus demand is 180 - 120 = $60m, requiring the authority
+  to buy domestic currency and sell reserves;
+- BOP: 1,000 - 3,500 - 1,200 = -$3,700m;
+- Cobb-Douglas: MPL = (1 - 0.35)1,200/60 = 13 and
+  MPK = 0.35(1,200)/100 = 4.2; and
+- growth accounting: 2% + 0.3(6%) + 0.7(1%) = 4.5%.
+
+Four confirmed errors were corrected: auth-form-ch08-013 now keys 2%; auth-form-
+ch09-016 uses the current-course real-FX convention and keys 0.88; auth-form-
+ch05-013 is a true four-sector multiplier with nonzero import leakage; and
+auth-form-ch10-016 now applies y = A k^0.5 numerically to distinguish capital
+deepening from TFP. The pure MPK/MPL recognition item auth-ch10-011 remains
+concept style and outside Formula Application.
+
+The Formula Application validator now requires four choices and rationales,
+review-card/source-card consistency, valid operations metadata, and at least one
+genuine application operation (rearrange, substitute, calculate or sign/units).
+This is separate from the bank's existing blind/stimulus and two-question
+review-card audits.

@@ -264,15 +264,15 @@
     "topic": "Government-spending multiplier with proportional tax",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "Suppose MPC is 0.80 and the proportional tax rate is 0.25. Using the four-sector PAE multiplier, what is the government-spending multiplier?",
-    "choices": ["1.25", "1.60", "4.00", "2.50"],
+    "stem": "Suppose MPC is 0.80, the proportional tax rate is 0.25 and the marginal propensity to import is 0.10. Using the four-sector PAE multiplier, what is the government-spending multiplier?",
+    "choices": ["2.50", "3.33", "0.50", "2.00"],
     "correctChoice": 3,
-    "explanation": "The multiplier is 1 / [1 - MPC(1 - t)] = 1 / [1 - 0.80(0.75)] = 2.50.",
+    "explanation": "The four-sector multiplier is 1 / [1 - c(1 - t) + m]. Substitution gives \\(1 / [1 - 0.80(0.75) + 0.10] = 1 / 0.50 = 2.00\\).",
     "choiceRationales": [
-      "1.25 omits the induced-spending denominator and is not the four-sector multiplier.",
-      "1.60 is the no-tax multiplier for MPC = 0.375, not the stated parameters.",
-      "4.00 treats the tax-adjusted induced response as 0.75 rather than 0.60.",
-      "The tax-adjusted marginal spending response is 0.60, so \\(1 / (1 - 0.60) = 2.50\\)."
+      "2.50 omits the import leakage and incorrectly uses the three-sector denominator 1 - c(1 - t).",
+      "3.33 omits the tax adjustment and uses 1 - c + m as the denominator.",
+      "0.50 is the denominator itself, not its reciprocal.",
+      "The tax-adjusted induced spending response is 0.80(1 - 0.25) = 0.60; adding the import leakage gives a denominator of 0.50, so the multiplier is 2.00."
     ],
     "reviewCardId": "ch05-007",
     "sourceCardIds": ["ch05-005", "ch05-007"],
@@ -515,7 +515,7 @@
     "difficulty": 2,
     "stem": "A course PAE equation is PAE = 500 + 0.4Y - 25r. If observed equilibrium output is 750, what real interest rate is consistent with goods-market equilibrium?",
     "choices": ["0%", "2%", "4%", "8%"],
-    "correctChoice": 2,
+    "correctChoice": 1,
     "explanation": "Set PAE equal to observed Y: 750 = 500 + 0.4(750) - 25r = 800 - 25r. Thus 25r = 50 and r = 2%.",
     "choiceRationales": [
       "At r = 0%, PAE would be 800, not the observed equilibrium output of 750.",
@@ -651,15 +651,15 @@
     "topic": "Real exchange-rate calculation",
     "style": "calculation",
     "difficulty": 2,
-    "stem": "Use the course convention q = eP*/P. The nominal exchange rate is 0.8 units of foreign currency per unit of domestic currency, the foreign price index is 100 and the domestic price index is 110. What is q?",
+    "stem": "Use the course convention \\(q=eP_{\\text{home}}/P_{\\text{foreign}}\\). The nominal exchange rate is 0.8 units of foreign currency per unit of home currency, the home price index is 110 and the foreign price index is 100. What is q?",
     "choices": ["0.73", "0.80", "0.88", "1.38"],
-    "correctChoice": 0,
-    "explanation": "\\(q = eP^*/P = 0.8 \\times 100 / 110 \\approx 0.73\\).",
+    "correctChoice": 2,
+    "explanation": "Using the course convention, \\(q=eP_{\\text{home}}/P_{\\text{foreign}}=0.8 \\times 110 / 100=0.88\\).",
     "choiceRationales": [
-      "Using \\(q = 0.8 \\times 100 / 110\\) gives approximately 0.73.",
+      "0.73 reverses the home and foreign price indices under the course convention.",
       "0.80 is the nominal exchange rate and leaves the price indices unused.",
-      "0.88 multiplies the domestic price index in the wrong direction.",
-      "1.38 divides the price indices in the wrong direction and reverses the quote adjustment."
+      "Substitution gives \\(0.8 \\times 110 / 100=0.88\\).",
+      "1.38 uses the reciprocal price ratio and therefore reverses the real-exchange-rate calculation."
     ],
     "reviewCardId": "ch09-022",
     "sourceCardIds": ["ch09-022", "ch09-023"],
@@ -759,20 +759,20 @@
     "topic": "Capital deepening versus TFP",
     "style": "calculation",
     "difficulty": 3,
-    "stem": "Two economies use the same constant-returns production function. In Economy A, \\(K/L\\) rises by 10% while A is unchanged. In Economy B, \\(K/L\\) is unchanged while A rises by 3%. Which interpretation is correct?",
+    "stem": "Use the per-worker Cobb-Douglas relationship \\(y=A k^{0.5}\\). The table gives the initial and final values for two economies. Which statement correctly calculates output per worker and identifies the source of each change?",
     "choices": [
-      "A has capital deepening; B has a TFP improvement",
-      "A has a TFP improvement; B has capital deepening",
-      "Both changes are TFP improvements because output per worker rises",
-      "Neither change affects output per worker because labour is unchanged"
+      "Economy A rises from 10 to 11 through capital deepening; Economy B rises from 10 to 11 through a TFP improvement",
+      "Economy A rises from 10 to 12.1 through capital deepening; Economy B rises from 10 to 11 through a TFP improvement",
+      "Economy A rises from 10 to 11 through a TFP improvement; Economy B rises from 10 to 11 through capital deepening",
+      "Neither economy changes output per worker because total labour is unchanged"
     ],
     "correctChoice": 0,
-    "explanation": "An increase in capital per worker is capital deepening. A rise in A shifts the production relationship for given inputs and is a TFP improvement; both can raise output per worker through different channels.",
+    "explanation": "For Economy A, \\(y_0=1\\sqrt{100}=10\\) and \\(y_1=1\\sqrt{121}=11\\); k rises while A is fixed, so this is capital deepening. For Economy B, \\(y_0=1\\sqrt{100}=10\\) and \\(y_1=1.1\\sqrt{100}=11\\); A rises with k fixed, so this is a TFP improvement.",
     "choiceRationales": [
-      "Economy A changes \\(K/L\\), while Economy B changes the technology/productivity term A.",
-      "This swaps the input-deepening and technology interpretations.",
-      "A higher output per worker alone does not identify TFP; the source of the change matters.",
-      "Both changes affect output per worker in a production function with the stated inputs."
+      "The calculations are \\(1\\sqrt{100}=10\\), \\(1\\sqrt{121}=11\\), and \\(1.1\\sqrt{100}=11\\). The first change is in k and the second is in A.",
+      "\\(1\\sqrt{121}=11\\), not 12.1; the square-root production relationship must be applied to k.",
+      "This swaps the capital-deepening and TFP channels shown by the table.",
+      "Labour being unchanged does not prevent output per worker from changing when k or A changes."
     ],
     "reviewCardId": "ch10-015",
     "sourceCardIds": ["ch10-015", "ch10-018", "ch10-025"],
@@ -786,17 +786,19 @@
     "provenance": "authored_from_flashcards",
     "stimulus": {
       "type": "table",
-      "caption": "Changes in two economies",
+      "caption": "Per-worker production inputs",
       "columns": [
         { "key": "economy", "label": "Economy" },
-        { "key": "capitalWorker", "label": "Change in \\(K/L\\)" },
-        { "key": "technology", "label": "Change in A" }
+        { "key": "initialA", "label": "Initial A" },
+        { "key": "finalA", "label": "Final A" },
+        { "key": "initialKPerWorker", "label": "Initial k" },
+        { "key": "finalKPerWorker", "label": "Final k" }
       ],
       "rows": [
-        { "id": "a", "cells": ["A", "+10%", "0%"] },
-        { "id": "b", "cells": ["B", "0%", "+3%"] }
+        { "id": "a", "cells": ["A", "1", "1", "100", "121"] },
+        { "id": "b", "cells": ["B", "1", "1.1", "100", "100"] }
       ],
-      "note": "In \\(y = A f(K/L)\\), distinguish a change in the input ratio from a change in A."
+      "note": "Use \\(y=A k^{0.5}\\), where \\(k=K/L\\)."
     }
   }
 ]

@@ -42,20 +42,30 @@ Question-level overrides are explicit. For example, `auth-ch10-011` is level 1 a
 calculation or Formula Application question. The numeric MPK/MPL applications are
 `auth-form-ch10-013` and `auth-form-ch10-014`.
 
+The section tags come from the typed 80-entry catalog in
+src/superCram/cheatSheetCatalog.ts. Unknown identifiers are rejected by validation;
+the app stores section IDs rather than reproducing the supplied cheat sheet.
+
+The four corrected current Formula Application items are auth-form-ch08-013
+(reverse PAE, 2%), auth-form-ch09-016 (the course convention
+q=eP_home/P_foreign, giving 0.88), auth-form-ch05-013 (a genuine four-sector
+multiplier including import leakage), and auth-form-ch10-016 (numeric per-worker
+Cobb-Douglas application distinguishing capital deepening from TFP).
+
 ## Selection policy
 
 The selector in `src/superCram/selector.ts` keeps ordinary Exam-SRS evidence
 authoritative. The effective ordering is:
 
-1. urgent attempted/relearning or due evidence;
+1. urgent attempted-and-due evidence;
 2. high-yield reasoning and model-discrimination questions;
 3. formula application, with a cold-family bonus until a family is successfully
    applied in this session;
 4. lookup validation and breadth checks.
 
-An urgent target is never multiplied by cheat-sheet worthiness. A due or relearning
-target can therefore outrank a fashionable unseen skill even when the latter is
-harder to outsource. Scenario, model-discrimination, sequence and substantive
+An urgent target is never multiplied by cheat-sheet worthiness. An attempted target
+whose scheduled review is due can therefore outrank a fashionable unseen skill even
+when the latter is harder to outsource. Scenario, model-discrimination, sequence and
 stimulus questions receive modest form bonuses; direct substitution is not rewarded
 merely because its style is called `calculation`.
 
@@ -78,13 +88,25 @@ covered formula family            8
 unfamiliar chapter               90
 model/scenario/sequence/stimulus 22 / 14 / 10 / 8
 underrepresented lookup mix      70
+cheap level-1/2 lookup validation 150 after the first answer, capped at two
 ```
 
-These are bounded policy constants, not calibration parameters. A short recent
+These are bounded policy constants, not calibration parameters. The cheap lookup
+pressure is a soft cold-validation push, not a quota, and never competes with the
+5,000-point due override. A short recent
 question/card memory avoids immediate repetition and encourages a different variant
 when a formula family is remediated. The selector retains the existing late-course
 evidence uplift but applies a strong finite chapter-breadth push for a chapter not yet
 touched in the session.
+
+Non-due weak or relearning labels do not receive the urgent override. They have a
+separate bounded weak-evidence bonus and are not labelled urgent.
+
+The page samples the scheduler clock every 30 seconds with useNow. A clock refresh
+can expose a newly due target or phase transition, but the unanswered question is
+held stable until it is answered or advanced. Canonical fallbacks keep a
+session-local set of completed card IDs, so the next due fallback can appear
+without looping back to the just-completed card from a stale snapshot.
 
 ## Session-only formula coverage
 
@@ -162,6 +184,10 @@ The exact family-to-question mapping is the static
 four rationales, a canonical review-card mapping, and stays within the bank's
 maximum two questions per `reviewCardId`.
 
+Each Formula Application metadata record declares application operations such as
+formula selection, input extraction, rearrangement, substitution, calculation and
+sign/unit control. The validator rejects missing or recognition-only records.
+
 ## Practice-test form provenance
 
 The three supplied official/current-course sets remain scoped recent-assessment
@@ -196,18 +222,57 @@ Empty/new learner
   chapters: 0=4, 1=1, 2=1, 3=1, 4=1, 5=1, 6=1, 7=1, 8=7, 9=6, 10=6
   mix: reasoning 18, formula 9, lookup 3, urgent 0
   tiers: critical 23, very-high 4, core 3, support 0
-  worthiness: 1=0, 2=0, 3=5, 4=1, 5=24
-  unique review cards: 17; formula families: 5
+  worthiness: 1=2, 2=1, 3=3, 4=1, 5=23
+  unique review cards: 18; formula families: 6
 
 Weak learner (failed ch10-031)
-  chapters: 0=2, 1=1, 2=1, 3=1, 4=1, 5=1, 6=1, 7=1, 8=6, 9=5, 10=10
+  chapters: 0=3, 1=1, 2=1, 3=1, 4=1, 5=1, 6=1, 7=1, 8=5, 9=5, 10=10
   mix: reasoning 15, formula 8, lookup 2, urgent 5
   tiers: critical 23, very-high 4, core 3, support 0
-  worthiness: 1=2, 2=3, 3=4, 4=1, 5=20
-  unique review cards: 16; formula families: 6
+  worthiness: 1=4, 2=4, 3=1, 4=1, 5=20
+  unique review cards: 17; formula families: 6
 ```
 
 This is a deterministic pathology check, not an optimality claim. It catches a
 late-chapter loop, zero formula application, zero chapter breadth, and immediate
 question repetition without changing ordinary Study, Guided Cram, High-Yield Cram,
 Mock selection, Exam-SRS intervals, forecast, persistence, backup or sync.
+
+## Semantic audit and hardening record
+
+All 45 curated Formula Application questions were independently checked against
+the intended formula, inputs, signs, units, course convention, distractor logic and
+stimulus leakage. The static audit record is
+src/superCram/formulaAudit.ts and is exercised by both the Formula Application
+tests and the Super Cram validator; it is independent of the JSON correctChoice
+field. The 24 authored IDs are the auth-form IDs listed above; the remaining 21
+are reused existing application questions.
+
+| Area independently recomputed                   | Result                                                |
+| ----------------------------------------------- | ----------------------------------------------------- |
+| Ch1–2 value added, base-price GDP and Okun      | 3 / 1 / 1 curated forms                               |
+| Ch3 Fisher, user cost, saving and PAE           | exact Fisher 4.85%; user cost $15; first machine only |
+| Ch5 fiscal multiplier and gap closure           | four-sector k = 2.00 with m = 0.10; gap closure $80m  |
+| Ch5 primary/overall balance and debt constraint | +$130m primary, +$50m overall; borrowing $150m        |
+| Ch6–7 quantity, PV, returns, corridor and ESA   | keys and signs match the course identities            |
+| Ch8 PAE/PRF and AD                              | reverse PAE gives r = 2%; AD is Y = 420 − 16π         |
+| Ch9 FX, BOP and peg                             | q = 0.88; CA = −$3,700m; peg purchase = $60m          |
+| Ch10 MPK/MPL and growth accounting              | MPL = 13; MPK = 4.2; growth = 4.5%                    |
+
+The four confirmed content corrections are:
+
+- auth-form-ch08-013 now keys 2%, independently solving
+  750 = 500 + 0.4(750) − 25r;
+- auth-form-ch09-016 uses q = e P_home / P_foreign, so 0.8 × 110 / 100
+  gives 0.88. The related Ch9 real-FX questions were checked against the same
+  convention;
+- auth-form-ch05-013 includes nonzero import leakage m in
+  1 / [1 − c(1 − t) + m]; and
+- auth-form-ch10-016 is now a numeric y = A k^0.5 application, not a
+  conceptual-only classification item.
+
+The MPK/MPL recognition item auth-ch10-011 remains outside Formula Application.
+The direct Critical AD/PRF set retains ch08-001 and ch08-002: the former retrieves
+the three constitutive links in the course derivation and the latter directly
+retrieves the interest-sensitive C/I channel that must precede solving Y(r).
+Neither is treated as evidence that every adjacent card is direct Critical.

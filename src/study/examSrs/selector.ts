@@ -448,6 +448,19 @@ function stateAtSelectionTime(
   return state;
 }
 
+/** The authoritative due flag used by ordinary Exam-SRS selection. */
+export function isExamSrsDueReview(state: ExamSrsCardState): boolean {
+  return state.isDue;
+}
+
+/**
+ * Super Cram's urgent override is narrower: only an attempted card that is
+ * currently due may bypass the normal unseen/content policy.
+ */
+export function isExamSrsAttemptedDueReview(state: ExamSrsCardState): boolean {
+  return state.reviewCount > 0 && isExamSrsDueReview(state);
+}
+
 /**
  * Return the same ordinary Exam-SRS candidate order used by Study. Guided
  * Cram uses this read-only ranking to skip a graph-blocked unseen anchor while
@@ -465,7 +478,8 @@ export function rankExamSrsCandidatesFromSnapshot(
       (candidate): candidate is { card: Flashcard; state: ExamSrsCardState } =>
         candidate.state !== undefined &&
         candidate.state.isManuallyLearned !== true &&
-        (candidate.state.learningState === "unseen" || candidate.state.isDue),
+        (candidate.state.learningState === "unseen" ||
+          isExamSrsDueReview(candidate.state)),
     )
     .map((candidate) => ({
       ...candidate,

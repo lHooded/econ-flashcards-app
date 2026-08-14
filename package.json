@@ -12,6 +12,7 @@
     "validate:exam-questions": "tsx scripts/validate-exam-questions.ts",
     "validate:calculations": "tsx scripts/validate-calculations.ts",
     "validate:knowledge": "tsx scripts/validate-knowledge.ts",
+    "validate:guided": "npm run validate:guided-learning",
     "validate:guided-learning": "tsx scripts/validate-guided-learning.ts",
     "validate:exam-yield": "tsx scripts/validate-exam-yield.ts",
     "validate:super-cram": "tsx scripts/validate-super-cram.ts",

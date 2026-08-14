@@ -161,6 +161,11 @@ Ordinary `#/guided` omits the high-yield candidate restriction and uses the
 same selector inputs and ordering as before. `#/study`, mocks, Practice Lab,
 and the ReviewEvent/CardState evidence model are not weighted by this registry.
 
+The separate Super Cram policy also uses the ordinary attempted-and-due eligibility
+rule; a non-due weak or relearning card does not bypass Exam-SRS spacing. This
+does not alter High-Yield's prerequisite-aware Guided selection or its scheduler
+semantics.
+
 `#/super-cram` is intentionally a separate policy. It is question-first and
 cheat-sheet-aware: it discounts lookup-skippable exam content, applies explicit
 question-level form metadata, and tracks cold formula-family application only for

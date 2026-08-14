@@ -14,7 +14,9 @@ import {
   formulaApplicationMetaByQuestionId,
   formulaApplicationQuestionMeta,
 } from "./formulaFamilies";
-import type { StudyWorthiness } from "./model";
+import { assertValidCheatSheetSections } from "./cheatSheetCatalog";
+import { auditFormulaApplicationAnswerKeys } from "./formulaAudit";
+import type { FormulaApplicationOperation, StudyWorthiness } from "./model";
 
 export interface SuperCramValidationStats {
   readonly examSkillCount: number;
@@ -27,6 +29,14 @@ export interface SuperCramValidationStats {
 }
 
 const VALID_WORTHINESS = new Set<StudyWorthiness>([1, 2, 3, 4, 5]);
+const VALID_FORMULA_OPERATIONS = new Set<FormulaApplicationOperation>([
+  "select-formula",
+  "extract-inputs",
+  "rearrange",
+  "substitute",
+  "calculate",
+  "sign-or-units",
+]);
 
 export function validateSuperCramRegistry(): SuperCramValidationStats {
   const issues: string[] = [];
@@ -43,6 +53,7 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
   );
   const sourceIds = new Set(examYieldBlueprint.sources.map((source) => source.id));
   const cardIds = new Set(cards.map((card) => card.id));
+  issues.push(...auditFormulaApplicationAnswerKeys(examQuestions));
 
   if (cheatSheetSkillProfiles.length !== skillIds.size) {
     issues.push(
@@ -50,6 +61,11 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
     );
   }
   for (const profile of cheatSheetSkillProfiles) {
+    try {
+      assertValidCheatSheetSections(profile.cheatSheetSections, "Cheat-sheet profile");
+    } catch (error: unknown) {
+      issues.push(error instanceof Error ? error.message : String(error));
+    }
     if (!skillIds.has(profile.skillId)) {
       issues.push(`Unknown cheat-sheet skill profile "${profile.skillId}".`);
     }
@@ -62,6 +78,16 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
   }
 
   for (const override of questionStudyWorthinessOverrides) {
+    if (override.cheatSheetSections !== undefined) {
+      try {
+        assertValidCheatSheetSections(
+          override.cheatSheetSections,
+          "Question study-worthiness override",
+        );
+      } catch (error: unknown) {
+        issues.push(error instanceof Error ? error.message : String(error));
+      }
+    }
     if (!questionById.has(override.questionId)) {
       issues.push(`Unknown Super Cram question override "${override.questionId}".`);
     }
@@ -84,6 +110,21 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
   const byChapter: Record<string, number> = {};
   let stimulusCount = 0;
   for (const family of formulaApplicationFamilies) {
+    try {
+      assertValidCheatSheetSections(
+        family.cheatSheetSections,
+        "Formula Application family",
+      );
+    } catch (error: unknown) {
+      issues.push(error instanceof Error ? error.message : String(error));
+    }
+    for (const skillId of family.examSkillIds) {
+      if (!skillIds.has(skillId)) {
+        issues.push(
+          "Formula Application family references unknown exam skill " + skillId,
+        );
+      }
+    }
     if (family.chapters.length === 0)
       issues.push(`Family "${family.id}" has no chapter.`);
     if (family.cheatSheetSections.some((section) => section.trim().length === 0)) {
@@ -96,7 +137,12 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
     }
     for (const questionId of family.questionIds) {
       const question = questionById.get(questionId);
-      if (question === undefined) continue;
+      if (question === undefined) {
+        issues.push(
+          "Formula Application family references unknown question " + questionId,
+        );
+        continue;
+      }
       if (question.style !== "calculation") {
         issues.push(
           `Formula Application question "${questionId}" must be a calculation/application style, found "${question.style}".`,
@@ -110,6 +156,26 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
       if (!cardIds.has(question.reviewCardId)) {
         issues.push(
           `Formula Application question "${questionId}" has an unknown review card.`,
+        );
+      }
+      if (!question.sourceCardIds.includes(question.reviewCardId)) {
+        issues.push(
+          "Formula Application question does not include its review card in sourceCardIds: " +
+            questionId,
+        );
+      }
+      if (question.choices.length !== 4 || question.choiceRationales.length !== 4) {
+        issues.push(
+          "Formula Application question must have four choices and four rationales: " +
+            questionId,
+        );
+      }
+      if (
+        question.correctChoice < 0 ||
+        question.correctChoice >= question.choices.length
+      ) {
+        issues.push(
+          "Formula Application question has an invalid answer key: " + questionId,
         );
       }
       familyQuestionIds.add(questionId);
@@ -126,6 +192,33 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
   }
 
   for (const meta of formulaApplicationQuestionMeta) {
+    if (!questionById.has(meta.questionId)) {
+      issues.push(
+        "Formula Application metadata references unknown question " + meta.questionId,
+      );
+    }
+    if (meta.operations.length === 0) {
+      issues.push("Formula Application metadata has no operations: " + meta.questionId);
+    }
+    if (
+      !meta.operations.some((operation) =>
+        ["rearrange", "substitute", "calculate", "sign-or-units"].includes(operation),
+      )
+    ) {
+      issues.push(
+        "Formula Application metadata is recognition-only: " + meta.questionId,
+      );
+    }
+    for (const operation of meta.operations) {
+      if (!VALID_FORMULA_OPERATIONS.has(operation)) {
+        issues.push(
+          "Formula Application metadata has an unknown operation " +
+            operation +
+            ": " +
+            meta.questionId,
+        );
+      }
+    }
     if (meta.form.trim().length === 0 || meta.analogueNote.trim().length === 0) {
       issues.push(
         `Formula Application metadata for "${meta.questionId}" is incomplete.`,

@@ -147,6 +147,11 @@ local timezone for the `datetime-local` exam setting.
 npm run validate:deck
 npm run validate:exam-questions
 npm run validate:calculations
+npm run validate:knowledge
+npm run validate:guided
+npm run validate:exam-yield
+npm run validate:super-cram
+npm run audit:super-cram
 npm run typecheck
 npm run lint
 npm run format:check

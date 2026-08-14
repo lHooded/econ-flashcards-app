@@ -6,6 +6,7 @@ import { examQuestions } from "../exam/questionBank";
 import { getExamSkillsForCard, getExamSkillsForQuestion } from "../examYield/score";
 import { cardConceptMap } from "../knowledge/contentMap";
 import { getEffectiveManualLearned } from "../study/manualLearned";
+import { useNow } from "../utils/useNow";
 import { PracticeMcq } from "./PracticePage";
 import { StudyCard } from "../components/StudyCard";
 import {
@@ -36,18 +37,23 @@ const WORTHINESS_LABELS = {
 
 export function SuperCramPage() {
   const { snapshot, recordReview } = useProgress();
-  const sessionNowMs = useRef(Date.now()).current;
+  const sessionNowMs = useNow(30 * 1000);
   const [session, setSession] = useState<SuperCramSessionState>(() =>
     createEmptySuperCramSession(),
   );
   const [selected, setSelected] = useState<number | null>(null);
   const [revealedCandidate, setRevealedCandidate] =
     useState<SuperCramQuestionCandidate | null>(null);
+  const [presentedCandidate, setPresentedCandidate] =
+    useState<SuperCramQuestionCandidate | null>(null);
   const [phase, setPhase] = useState<SuperCramSavePhase>("answering");
   const [saveError, setSaveError] = useState<string | null>(null);
   const pendingPayload = useRef<NewReviewEvent | null>(null);
   const pendingCandidate = useRef<SuperCramQuestionCandidate | null>(null);
   const startedAt = useRef(0);
+  const [completedFallbackCardIds, setCompletedFallbackCardIds] = useState<
+    ReadonlySet<string>
+  >(() => new Set<string>());
   const manualLearned = useMemo(
     () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
     [snapshot?.manualLearnedOverrides],
@@ -77,10 +83,9 @@ export function SuperCramPage() {
       }),
     [candidates, session, sessionNowMs],
   );
-  const [fallbackDismissed, setFallbackDismissed] = useState(false);
   const fallbackCard = useMemo(
     () =>
-      snapshot === null || fallbackDismissed
+      snapshot === null
         ? null
         : findUrgentCanonicalFallback({
             cards,
@@ -90,9 +95,10 @@ export function SuperCramPage() {
             nowMs: sessionNowMs,
             manuallyLearnedQuestionIds: manualLearned.questionIds,
             manuallyLearnedCardIds: manualLearned.cardIds,
+            excludedCardIds: completedFallbackCardIds,
           }),
     [
-      fallbackDismissed,
+      completedFallbackCardIds,
       manualLearned.cardIds,
       manualLearned.questionIds,
       sessionNowMs,
@@ -100,25 +106,33 @@ export function SuperCramPage() {
     ],
   );
 
+  const activeCandidate = presentedCandidate ?? candidate;
+
+  useEffect(() => {
+    if (phase === "answering" && presentedCandidate === null && candidate !== null) {
+      setPresentedCandidate(candidate);
+    }
+  }, [candidate, phase, presentedCandidate]);
+
   useEffect(() => {
     startedAt.current =
       typeof performance === "undefined" ? Date.now() : performance.now();
-  }, [candidate?.question.id]);
+  }, [activeCandidate?.question.id]);
 
   const submit = useCallback(async () => {
-    if (candidate === null || selected === null || phase !== "answering") return;
+    if (activeCandidate === null || selected === null || phase !== "answering") return;
     const now = typeof performance === "undefined" ? Date.now() : performance.now();
     const payload: NewReviewEvent = {
-      cardId: candidate.question.reviewCardId,
+      cardId: activeCandidate.question.reviewCardId,
       mode: "mcq",
       rating: null,
-      correct: selected === candidate.question.correctChoice,
+      correct: selected === activeCandidate.question.correctChoice,
       selectedChoice: selected,
       responseTimeMs: Math.max(0, now - startedAt.current),
     };
     pendingPayload.current = payload;
-    pendingCandidate.current = candidate;
-    setRevealedCandidate(candidate);
+    pendingCandidate.current = activeCandidate;
+    setRevealedCandidate(activeCandidate);
     setPhase("pending_save");
     setSaveError(null);
     try {
@@ -126,8 +140,8 @@ export function SuperCramPage() {
       setSession((current) =>
         applySuperCramAnswer(
           current,
-          candidate,
-          selected === candidate.question.correctChoice,
+          activeCandidate,
+          selected === activeCandidate.question.correctChoice,
         ),
       );
       setPhase("completed");
@@ -138,7 +152,7 @@ export function SuperCramPage() {
           : "Super Cram review could not be saved.",
       );
     }
-  }, [candidate, phase, recordReview, selected]);
+  }, [activeCandidate, phase, recordReview, selected]);
 
   const retry = useCallback(async () => {
     const payload = pendingPayload.current;
@@ -164,6 +178,7 @@ export function SuperCramPage() {
     if (phase !== "completed") return;
     setSelected(null);
     setRevealedCandidate(null);
+    setPresentedCandidate(null);
     setPhase("answering");
     setSaveError(null);
     pendingPayload.current = null;
@@ -197,7 +212,7 @@ export function SuperCramPage() {
   const correctPercent =
     answered === 0 ? "—" : `${Math.round((session.correctCount / answered) * 100)}%`;
   const shownCandidate =
-    phase === "answering" ? candidate : (revealedCandidate ?? candidate);
+    phase === "answering" ? activeCandidate : (revealedCandidate ?? activeCandidate);
   const feedbackNote =
     shownCandidate === null ? undefined : buildFeedbackNote(shownCandidate);
 
@@ -245,7 +260,14 @@ export function SuperCramPage() {
             onSubmitReview={async (payload) => {
               await recordReview({ ...payload, cardId: fallbackCard.id });
             }}
-            onFinish={() => setFallbackDismissed(true)}
+            onFinish={() => {
+              const completedCardId = fallbackCard.id;
+              setCompletedFallbackCardIds((current) => {
+                const next = new Set(current);
+                next.add(completedCardId);
+                return next;
+              });
+            }}
           />
         </section>
       ) : shownCandidate === null ? (

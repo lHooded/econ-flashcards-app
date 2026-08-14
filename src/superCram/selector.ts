@@ -9,7 +9,10 @@ import {
 } from "../examYield/score";
 import { buildPracticeSet } from "../practice/selector";
 import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
-import { getExamSrsStatePriority } from "../study/examSrs/selector";
+import {
+  getExamSrsStatePriority,
+  isExamSrsAttemptedDueReview,
+} from "../study/examSrs/selector";
 import {
   cheatSheetSkillProfileById,
   questionStudyWorthinessOverrideById,
@@ -29,6 +32,7 @@ import type {
   SuperCramSelectionInput,
   SuperCramSessionState,
 } from "./model";
+import type { CheatSheetSectionId } from "./cheatSheetCatalog";
 
 export { getFormulaFamilyForQuestion } from "./formulaFamilies";
 
@@ -61,6 +65,7 @@ export const SUPER_CRAM_CONSTANTS = Object.freeze({
   recentCardPenalty: 180,
   kindPressureBonus: 30,
   lookupMixBonus: 70,
+  cheapLookupValidationBonus: 150,
 });
 
 const DEFAULT_PROFILE: CheatSheetSkillProfile = Object.freeze({
@@ -97,6 +102,7 @@ export interface UrgentCanonicalFallbackInput {
   readonly nowMs: number;
   readonly manuallyLearnedQuestionIds?: ReadonlySet<string>;
   readonly manuallyLearnedCardIds?: ReadonlySet<string>;
+  readonly excludedCardIds?: ReadonlySet<string>;
 }
 
 export interface SuperCramSimulationSummary {
@@ -165,10 +171,10 @@ export function buildSuperCramCandidates(
       const family = getFormulaFamilyForQuestion(question.id);
       const formulaFamilyId = family?.id ?? null;
       const directYield = getExamYieldForCard(card.id);
-      const isUrgent =
-        state.learningState === "relearning" ||
-        state.isDue ||
-        state.learningState === "weak";
+      const isUrgent = isExamSrsAttemptedDueReview(state);
+      const hasWeakEvidence =
+        state.reviewCount > 0 &&
+        (state.learningState === "relearning" || state.learningState === "weak");
       const reasonKind = getQuestionReasonKind(question, profile, isUrgent, family);
       const candidate: SuperCramQuestionCandidate = {
         question,
@@ -180,6 +186,7 @@ export function buildSuperCramCandidates(
         formulaFamilyId,
         reasonKind,
         isUrgent,
+        hasWeakEvidence,
         srsPriority: getExamSrsStatePriority(state, input.nowMs),
         score: 0,
       };
@@ -230,8 +237,17 @@ export function scoreSuperCramCandidate(input: {
   const examComponent = candidate.examYieldScore * retention;
   const urgentComponent = candidate.isUrgent
     ? SUPER_CRAM_CONSTANTS.urgentBase + candidate.srsPriority
-    : candidate.reasonKind === "urgent-weakness"
-      ? SUPER_CRAM_CONSTANTS.weakEvidenceBonus + candidate.srsPriority
+    : 0;
+  const weakEvidenceComponent =
+    candidate.hasWeakEvidence && !candidate.isUrgent
+      ? SUPER_CRAM_CONSTANTS.weakEvidenceBonus
+      : 0;
+  const cheapLookupValidationComponent =
+    candidate.reasonKind === "lookup-validation" &&
+    candidate.studyWorthiness <= 2 &&
+    session.answeredCount > 0 &&
+    session.kindCounts["lookup-validation"] < 2
+      ? SUPER_CRAM_CONSTANTS.cheapLookupValidationBonus
       : 0;
   const resistanceComponent =
     (candidate.studyWorthiness - 1) * SUPER_CRAM_CONSTANTS.cheatResistancePerLevel;
@@ -255,6 +271,8 @@ export function scoreSuperCramCandidate(input: {
   return (
     examComponent +
     urgentComponent +
+    weakEvidenceComponent +
+    cheapLookupValidationComponent +
     resistanceComponent +
     formulaComponent +
     breadthComponent +
@@ -340,6 +358,7 @@ export function findUrgentCanonicalFallback(
   const manuallyLearnedCards = input.manuallyLearnedCardIds ?? new Set<string>();
   const manuallyLearnedQuestions =
     input.manuallyLearnedQuestionIds ?? new Set<string>();
+  const excludedCards = input.excludedCardIds ?? new Set<string>();
   const scheduler = deriveExamSrsSnapshot(
     input.cards,
     input.reviewEvents,
@@ -360,11 +379,10 @@ export function findUrgentCanonicalFallback(
     .filter((card) => {
       const state = scheduler.stateByCardId[card.id];
       return (
+        !excludedCards.has(card.id) &&
         state !== undefined &&
         state.isManuallyLearned !== true &&
-        (state.learningState === "relearning" ||
-          state.isDue ||
-          state.learningState === "weak")
+        isExamSrsAttemptedDueReview(state)
       );
     })
     .sort((left, right) => {
@@ -385,15 +403,22 @@ export function findUrgentCanonicalFallback(
 export function getQuestionCheatSheetProfile(
   question: ExamQuestion,
 ): CheatSheetSkillProfile {
+  const baseProfile = getBaseQuestionCheatSheetProfile(question);
   const override = questionStudyWorthinessOverrideById.get(question.id);
   if (override !== undefined) {
-    return {
+    return Object.assign(baseProfile, {
       skillId: `question:${question.id}`,
       studyWorthiness: override.studyWorthiness,
-      cheatSheetSections: getQuestionSections(question),
+      cheatSheetSections: override.cheatSheetSections ?? baseProfile.cheatSheetSections,
       class: override.class,
-    };
+    });
   }
+  return getBaseQuestionCheatSheetProfile(question);
+}
+
+function getBaseQuestionCheatSheetProfile(
+  question: ExamQuestion,
+): CheatSheetSkillProfile {
   const family = getFormulaFamilyForQuestion(question.id);
   const skillIds = new Set([
     ...getExamSkillsForQuestion(question.id).map((skill) => skill.id),
@@ -512,8 +537,11 @@ function getKindPressureBonus(
   session: SuperCramSessionState,
 ): number {
   const total = session.answeredCount;
-  if (total === 0)
-    return kind === "lookup-validation" ? 0 : SUPER_CRAM_CONSTANTS.kindPressureBonus;
+  if (total === 0) {
+    return kind === "lookup-validation"
+      ? SUPER_CRAM_CONSTANTS.lookupMixBonus
+      : SUPER_CRAM_CONSTANTS.kindPressureBonus;
+  }
   const share = session.kindCounts[kind] / total;
   if (kind === "reasoning-heavy" && share < 0.5)
     return SUPER_CRAM_CONSTANTS.kindPressureBonus;
@@ -524,7 +552,7 @@ function getKindPressureBonus(
   return 0;
 }
 
-function getQuestionSections(question: ExamQuestion): readonly string[] {
+function getQuestionSections(question: ExamQuestion): readonly CheatSheetSectionId[] {
   return formulaApplicationMetaByQuestionId.get(question.id)?.familyId === undefined
     ? []
     : (formulaApplicationFamilyById.get(

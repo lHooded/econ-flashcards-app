@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { ProgressContext, type ProgressContextValue } from "../app/progressContext";
@@ -90,5 +90,22 @@ describe("Super Cram and Formula Application practice surfaces", () => {
     fireEvent.keyDown(window, { key: "1" });
     fireEvent.keyDown(window, { key: "Enter" });
     await waitFor(() => expect(recordReviewMock).toHaveBeenCalledTimes(1));
+  });
+
+  it("refreshes the scheduler clock without replacing an unanswered question", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-14T00:00:00.000Z"));
+    try {
+      const recordReviewMock = vi.fn().mockResolvedValue({});
+      const view = renderWithProgress(recordReviewMock, <SuperCramPage />);
+      const stem = view.container.querySelector(".mock-stem")?.textContent;
+      expect(stem).toBeTruthy();
+      act(() => {
+        vi.advanceTimersByTime(30 * 1000);
+      });
+      expect(view.container.querySelector(".mock-stem")?.textContent).toBe(stem);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

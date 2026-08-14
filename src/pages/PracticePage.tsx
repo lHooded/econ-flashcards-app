@@ -694,6 +694,16 @@ function FormulaApplicationSession({ onBack }: { readonly onBack: () => void }) 
   const question = questions[index];
   const family =
     question === undefined ? undefined : getFormulaFamilyForQuestion(question.id);
+  const compatibleFamilies = useMemo(
+    () =>
+      formulaApplicationFamilies.filter(
+        (item) => chapter === null || item.chapters.includes(chapter),
+      ),
+    [chapter],
+  );
+  const practiceContextKey = [chapter ?? "all", familyId ?? "all", size, seed].join(
+    "|",
+  );
 
   useEffect(() => {
     setIndex(0);
@@ -704,9 +714,21 @@ function FormulaApplicationSession({ onBack }: { readonly onBack: () => void }) 
   }, [chapter, familyId, seed, size]);
 
   useEffect(() => {
+    if (
+      familyId !== null &&
+      chapter !== null &&
+      !formulaApplicationFamilies.some(
+        (item) => item.id === familyId && item.chapters.includes(chapter),
+      )
+    ) {
+      setFamilyId(null);
+    }
+  }, [chapter, familyId]);
+
+  useEffect(() => {
     startedAt.current =
       typeof performance === "undefined" ? Date.now() : performance.now();
-  }, [question?.id]);
+  }, [practiceContextKey, question?.id]);
 
   const submit = useCallback(async () => {
     if (question === undefined || selected === null || phase !== "answering") return;
@@ -822,7 +844,7 @@ function FormulaApplicationSession({ onBack }: { readonly onBack: () => void }) 
             disabled={locked}
           >
             <option value="all">All formula forms</option>
-            {formulaApplicationFamilies.map((item) => (
+            {compatibleFamilies.map((item) => (
               <option value={item.id} key={item.id}>
                 {item.label}
               </option>

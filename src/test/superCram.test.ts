@@ -13,6 +13,10 @@ import {
 } from "../superCram/selector";
 import { getQuestionCheatSheetProfile } from "../superCram/selector";
 import { validateSuperCramRegistry } from "../superCram/validate";
+import {
+  assertValidCheatSheetSections,
+  CHEAT_SHEET_SECTIONS,
+} from "../superCram/cheatSheetCatalog";
 import type {
   SuperCramQuestionCandidate,
   SuperCramSessionState,
@@ -46,6 +50,7 @@ function candidate(
     formulaFamilyId: null,
     reasonKind: "reasoning-heavy",
     isUrgent: false,
+    hasWeakEvidence: false,
     srsPriority: 1100,
     score: 0,
     ...overrides,
@@ -67,6 +72,14 @@ describe("Super Cram metadata and selector", () => {
     expect(stats.newFormulaApplicationQuestionCount).toBeGreaterThanOrEqual(16);
     expect(stats.byChapter["1"]).toBeGreaterThanOrEqual(1);
     expect(stats.byChapter["10"]).toBeGreaterThanOrEqual(1);
+  });
+
+  it("uses only the supplied cheat-sheet catalog", () => {
+    expect(Object.keys(CHEAT_SHEET_SECTIONS)).toHaveLength(80);
+    expect(() => assertValidCheatSheetSections(["8G"], "test")).toThrow(
+      /unknown cheat-sheet section/,
+    );
+    expect(() => assertValidCheatSheetSections(["9D", "Q3"], "test")).not.toThrow();
   });
 
   it("keeps direct lookup material below equal-yield reasoning material", () => {
@@ -203,6 +216,15 @@ describe("Super Cram metadata and selector", () => {
     const fixedPeg = examQuestions.find((item) => item.id === "auth-form-ch09-014")!;
     expect(getQuestionCheatSheetProfile(conversion).studyWorthiness).toBe(1);
     expect(getQuestionCheatSheetProfile(fixedPeg).studyWorthiness).toBe(5);
+  });
+
+  it("retains base skill sections when a question-level worthiness override changes class", () => {
+    const supplyShock = examQuestions.find((item) => item.id === "auth-ch08-006")!;
+    const profile = getQuestionCheatSheetProfile(supplyShock);
+    expect(profile.studyWorthiness).toBe(5);
+    expect(profile.cheatSheetSections).toEqual(
+      expect.arrayContaining(["8C", "8E", "8F", "T4"]),
+    );
   });
 
   it("keeps scenario/form bonuses bounded against an urgent target", () => {
