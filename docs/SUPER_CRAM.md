@@ -80,7 +80,7 @@ The current selector constants are:
 
 ```text
 urgent override                 5000 + existing Exam-SRS state priority
-weak attempted evidence          300 + existing state priority
+weak attempted evidence          300 bounded points; no due-state priority
 cheat resistance                 6 points per worthiness level above 1
 cold formula family              42
 failed formula family            60
