@@ -288,6 +288,9 @@ export function SuperCramPage() {
       ) {
         return;
       }
+      if (activeTarget?.kind !== "mcq") {
+        return;
+      }
       if (/^[1-4]$/.test(event.key) && phase === "answering") {
         event.preventDefault();
         setSelected(Number(event.key) - 1);
@@ -299,7 +302,7 @@ export function SuperCramPage() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [next, phase, submit]);
+  }, [activeTarget, next, phase, submit]);
 
   if (snapshot === null) return null;
   const answered = session.answeredCount;
@@ -343,13 +346,15 @@ export function SuperCramPage() {
 
       {activeFallback !== null ? (
         <section className="panel">
-          <p className="section-kicker">Urgent canonical fallback</p>
+          <p className="section-kicker">Due review · canonical card</p>
           <p className="muted-text">
-            This attempted target has no eligible high-quality MCQ, so Super Cram is
-            returning to the existing canonical retrieval surface.
+            This card is due in Exam-SRS, but there isn&apos;t an eligible MCQ for it.
+            Complete this retrieval card and Super Cram will continue with the best
+            available target.
           </p>
           <StudyCard
             card={activeFallback}
+            key={activeFallback.id}
             testedConceptIds={cardConceptMap[activeFallback.id] ?? []}
             onSubmitReview={submitFallback}
             onFinish={finishFallback}
