@@ -93,11 +93,14 @@ cheap level-1/2 lookup validation 150 after the first answer, capped at two
 
 These are bounded policy constants, not calibration parameters. The cheap lookup
 pressure is a soft cold-validation push, not a quota, and never competes with the
-5,000-point due override. A short recent
-question/card memory avoids immediate repetition and encourages a different variant
-when a formula coverage unit is remediated. The selector retains the existing late-course
-evidence uplift but applies a strong finite chapter-breadth push for a chapter not yet
-touched in the session.
+5,000-point due override. A short recent question/card memory avoids immediate
+repetition and encourages a different variant when a formula coverage unit is
+remediated, but that memory is subordinate to genuine attempted-and-due Exam-SRS
+eligibility: if any urgent MCQ candidates exist, selection stays inside that urgent
+pool. Among multiple due targets, the selector prefers a question and card that are
+less recent where possible, then allows a recent urgent target if necessary. The
+selector retains the existing late-course evidence uplift but applies a strong finite
+chapter-breadth push for a chapter not yet touched in the session.
 
 Non-due weak or relearning labels do not receive the urgent override. They have a
 separate bounded weak-evidence bonus and are not labelled urgent.
@@ -105,11 +108,13 @@ separate bounded weak-evidence bonus and are not labelled urgent.
 The page samples the scheduler clock every 30 seconds with useNow. A clock refresh
 can expose a newly due target or phase transition, but the exact presented target is
 held stable until it is answered or advanced. This is an atomic MCQ/fallback target
-state: a newly due fallback cannot interrupt an unanswered MCQ. After a fallback is
-saved, a transient acknowledgement records its pre-review count and suppresses only
-that card while the React snapshot is stale. Once the review is visible, ordinary
-Exam-SRS dueAt is authoritative again; the card can return at a later legitimate
-due time, and another due fallback can be offered immediately.
+state: a newly due fallback cannot interrupt an unanswered MCQ. After any MCQ or
+fallback is saved, a transient acknowledgement records its pre-review count and
+suppresses that exact review card across both question and canonical-fallback
+surfaces while the React snapshot is stale. This prevents stale just-saved
+repetition, rather than banning the card for the session. Once the review is visible,
+ordinary Exam-SRS dueAt is authoritative again; the card can return at a later
+legitimate due time, and another due target can be offered immediately.
 
 ## Session-only formula coverage units
 

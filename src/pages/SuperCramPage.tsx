@@ -15,14 +15,14 @@ import {
   buildSuperCramCandidates,
   createEmptySuperCramSession,
   findUrgentCanonicalFallback,
-  isFallbackSnapshotStale,
+  isReviewSnapshotStale,
   selectSuperCramQuestion,
 } from "../superCram/selector";
 import {
   formulaApplicationMetaByQuestionId,
   getFormulaFamilyForQuestion,
 } from "../superCram/formulaFamilies";
-import type { PendingFallbackAcknowledgement } from "../superCram/selector";
+import type { PendingReviewAcknowledgement } from "../superCram/selector";
 import type {
   SuperCramQuestionCandidate,
   SuperCramSessionState,
@@ -58,12 +58,27 @@ export function SuperCramPage() {
   const pendingPayload = useRef<NewReviewEvent | null>(null);
   const pendingCandidate = useRef<SuperCramQuestionCandidate | null>(null);
   const startedAt = useRef(0);
-  const [pendingFallbackAcknowledgement, setPendingFallbackAcknowledgement] =
-    useState<PendingFallbackAcknowledgement | null>(null);
+  const [pendingReviewAcknowledgement, setPendingReviewAcknowledgement] =
+    useState<PendingReviewAcknowledgement | null>(null);
   const manualLearned = useMemo(
     () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
     [snapshot?.manualLearnedOverrides],
   );
+  const reviewAcknowledgementCount = useMemo(
+    () =>
+      pendingReviewAcknowledgement === null || snapshot === null
+        ? 0
+        : snapshot.reviewEvents.filter(
+            (event) => event.cardId === pendingReviewAcknowledgement.cardId,
+          ).length,
+    [pendingReviewAcknowledgement, snapshot],
+  );
+  const suppressedReviewCardId = isReviewSnapshotStale(
+    reviewAcknowledgementCount,
+    pendingReviewAcknowledgement,
+  )
+    ? pendingReviewAcknowledgement?.cardId
+    : undefined;
   const candidates = useMemo(
     () =>
       snapshot === null
@@ -76,9 +91,20 @@ export function SuperCramPage() {
             nowMs: sessionNowMs,
             manuallyLearnedQuestionIds: manualLearned.questionIds,
             manuallyLearnedCardIds: manualLearned.cardIds,
+            suppressedCardIds:
+              suppressedReviewCardId === undefined
+                ? undefined
+                : new Set([suppressedReviewCardId]),
             session,
           }),
-    [manualLearned.cardIds, manualLearned.questionIds, session, sessionNowMs, snapshot],
+    [
+      manualLearned.cardIds,
+      manualLearned.questionIds,
+      session,
+      sessionNowMs,
+      snapshot,
+      suppressedReviewCardId,
+    ],
   );
   const candidate = useMemo(
     () =>
@@ -89,21 +115,6 @@ export function SuperCramPage() {
       }),
     [candidates, session, sessionNowMs],
   );
-  const fallbackReviewCount = useMemo(
-    () =>
-      pendingFallbackAcknowledgement === null || snapshot === null
-        ? 0
-        : snapshot.reviewEvents.filter(
-            (event) => event.cardId === pendingFallbackAcknowledgement.cardId,
-          ).length,
-    [pendingFallbackAcknowledgement, snapshot],
-  );
-  const suppressedFallbackCardId = isFallbackSnapshotStale(
-    fallbackReviewCount,
-    pendingFallbackAcknowledgement,
-  )
-    ? pendingFallbackAcknowledgement?.cardId
-    : undefined;
   const fallbackCard = useMemo(
     () =>
       snapshot === null
@@ -117,14 +128,14 @@ export function SuperCramPage() {
             manuallyLearnedQuestionIds: manualLearned.questionIds,
             manuallyLearnedCardIds: manualLearned.cardIds,
             excludedCardIds:
-              suppressedFallbackCardId === undefined
+              suppressedReviewCardId === undefined
                 ? undefined
-                : new Set([suppressedFallbackCardId]),
+                : new Set([suppressedReviewCardId]),
           }),
     [
       manualLearned.cardIds,
       manualLearned.questionIds,
-      suppressedFallbackCardId,
+      suppressedReviewCardId,
       sessionNowMs,
       snapshot,
     ],
@@ -152,12 +163,12 @@ export function SuperCramPage() {
 
   useEffect(() => {
     if (
-      pendingFallbackAcknowledgement !== null &&
-      !isFallbackSnapshotStale(fallbackReviewCount, pendingFallbackAcknowledgement)
+      pendingReviewAcknowledgement !== null &&
+      !isReviewSnapshotStale(reviewAcknowledgementCount, pendingReviewAcknowledgement)
     ) {
-      setPendingFallbackAcknowledgement(null);
+      setPendingReviewAcknowledgement(null);
     }
-  }, [fallbackReviewCount, pendingFallbackAcknowledgement]);
+  }, [pendingReviewAcknowledgement, reviewAcknowledgementCount]);
 
   useEffect(() => {
     if (activeCandidateId !== undefined) {
@@ -171,13 +182,14 @@ export function SuperCramPage() {
       if (activeFallback === null || snapshot === null) {
         throw new Error("The canonical fallback is no longer available.");
       }
-      setPendingFallbackAcknowledgement({
-        cardId: activeFallback.id,
-        reviewCountBefore: snapshot.reviewEvents.filter(
-          (event) => event.cardId === activeFallback.id,
-        ).length,
-      });
+      const reviewCountBefore = snapshot.reviewEvents.filter(
+        (event) => event.cardId === activeFallback.id,
+      ).length;
       await recordReview({ ...payload, cardId: activeFallback.id });
+      setPendingReviewAcknowledgement({
+        cardId: activeFallback.id,
+        reviewCountBefore,
+      });
     },
     [activeFallback, recordReview, snapshot],
   );
@@ -207,6 +219,12 @@ export function SuperCramPage() {
     setSaveError(null);
     try {
       await recordReview(payload);
+      setPendingReviewAcknowledgement({
+        cardId: payload.cardId,
+        reviewCountBefore:
+          snapshot?.reviewEvents.filter((event) => event.cardId === payload.cardId)
+            .length ?? 0,
+      });
       setSession((current) =>
         applySuperCramAnswer(
           current,
@@ -222,7 +240,7 @@ export function SuperCramPage() {
           : "Super Cram review could not be saved.",
       );
     }
-  }, [activeCandidate, phase, recordReview, selected]);
+  }, [activeCandidate, phase, recordReview, selected, snapshot]);
 
   const retry = useCallback(async () => {
     const payload = pendingPayload.current;
@@ -231,6 +249,12 @@ export function SuperCramPage() {
     setSaveError(null);
     try {
       await recordReview(payload);
+      setPendingReviewAcknowledgement({
+        cardId: payload.cardId,
+        reviewCountBefore:
+          snapshot?.reviewEvents.filter((event) => event.cardId === payload.cardId)
+            .length ?? 0,
+      });
       setSession((current) =>
         applySuperCramAnswer(current, retryCandidate, payload.correct === true),
       );
@@ -242,7 +266,7 @@ export function SuperCramPage() {
           : "Super Cram review could not be saved.",
       );
     }
-  }, [phase, recordReview]);
+  }, [phase, recordReview, snapshot]);
 
   const next = useCallback(() => {
     if (phase !== "completed") return;

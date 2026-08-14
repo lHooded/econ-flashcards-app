@@ -84,6 +84,8 @@ export interface BuildSuperCramCandidatesInput {
   readonly nowMs: number;
   readonly manuallyLearnedQuestionIds?: ReadonlySet<string>;
   readonly manuallyLearnedCardIds?: ReadonlySet<string>;
+  /** A just-saved card whose stale snapshot must not re-enter either surface. */
+  readonly suppressedCardIds?: ReadonlySet<string>;
   readonly session?: SuperCramSessionState;
 }
 
@@ -106,14 +108,14 @@ export interface UrgentCanonicalFallbackInput {
   readonly excludedCardIds?: ReadonlySet<string>;
 }
 
-export interface PendingFallbackAcknowledgement {
+export interface PendingReviewAcknowledgement {
   readonly cardId: string;
   readonly reviewCountBefore: number;
 }
 
-export function isFallbackSnapshotStale(
+export function isReviewSnapshotStale(
   reviewCount: number,
-  acknowledgement: PendingFallbackAcknowledgement | null,
+  acknowledgement: PendingReviewAcknowledgement | null,
 ): boolean {
   return acknowledgement !== null && reviewCount <= acknowledgement.reviewCountBefore;
 }
@@ -156,6 +158,7 @@ export function buildSuperCramCandidates(
   const session = input.session ?? createEmptySuperCramSession();
   const manualQuestions = input.manuallyLearnedQuestionIds ?? new Set<string>();
   const manualCards = input.manuallyLearnedCardIds ?? new Set<string>();
+  const suppressedCards = input.suppressedCardIds ?? new Set<string>();
   const scheduler = deriveExamSrsSnapshot(
     input.cards,
     input.reviewEvents,
@@ -170,6 +173,7 @@ export function buildSuperCramCandidates(
       (question) =>
         !manualQuestions.has(question.id) && !manualCards.has(question.reviewCardId),
     )
+    .filter((question) => !suppressedCards.has(question.reviewCardId))
     .flatMap((question) => {
       const card = cardById.get(question.reviewCardId);
       const state = scheduler.stateByCardId[question.reviewCardId];
@@ -233,15 +237,56 @@ export function selectSuperCramQuestion(
   }));
   const recentQuestions = new Set(input.session.recentQuestionIds);
   const recentCards = new Set(input.session.recentReviewCardIds);
-  const notSameQuestion = rankedCandidates.filter(
+  const urgentCandidates = rankedCandidates.filter((candidate) => candidate.isUrgent);
+  const pool =
+    urgentCandidates.length > 0
+      ? selectBestUrgentRecencyBucket(urgentCandidates, recentQuestions, recentCards)
+      : selectNonUrgentPool(rankedCandidates, recentQuestions, recentCards);
+  if (pool.length === 0) return null;
+  return [...pool].sort(compareCandidates)[0] ?? null;
+}
+
+function selectBestUrgentRecencyBucket(
+  candidates: readonly SuperCramQuestionCandidate[],
+  recentQuestions: ReadonlySet<string>,
+  recentCards: ReadonlySet<string>,
+): readonly SuperCramQuestionCandidate[] {
+  const bestBucket = Math.min(
+    ...candidates.map((candidate) =>
+      getRecencyBucket(candidate, recentQuestions, recentCards),
+    ),
+  );
+  return candidates.filter(
+    (candidate) =>
+      getRecencyBucket(candidate, recentQuestions, recentCards) === bestBucket,
+  );
+}
+
+function selectNonUrgentPool(
+  candidates: readonly SuperCramQuestionCandidate[],
+  recentQuestions: ReadonlySet<string>,
+  recentCards: ReadonlySet<string>,
+): readonly SuperCramQuestionCandidate[] {
+  const notSameQuestion = candidates.filter(
     (candidate) => !recentQuestions.has(candidate.question.id),
   );
-  if (notSameQuestion.length === 0) return null;
+  if (notSameQuestion.length === 0) return [];
   const withoutRecentCards = notSameQuestion.filter(
     (candidate) => !recentCards.has(candidate.question.reviewCardId),
   );
-  const pool = withoutRecentCards.length > 0 ? withoutRecentCards : notSameQuestion;
-  return [...pool].sort(compareCandidates)[0] ?? null;
+  return withoutRecentCards.length > 0 ? withoutRecentCards : notSameQuestion;
+}
+
+function getRecencyBucket(
+  candidate: SuperCramQuestionCandidate,
+  recentQuestions: ReadonlySet<string>,
+  recentCards: ReadonlySet<string>,
+): 0 | 1 | 2 {
+  const questionRecent = recentQuestions.has(candidate.question.id);
+  const cardRecent = recentCards.has(candidate.question.reviewCardId);
+  if (!questionRecent && !cardRecent) return 0;
+  if (!questionRecent && cardRecent) return 1;
+  return 2;
 }
 
 export function scoreSuperCramCandidate(input: {

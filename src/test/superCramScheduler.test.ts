@@ -5,7 +5,8 @@ import { examQuestions } from "../exam/questionBank";
 import {
   buildSuperCramCandidates,
   findUrgentCanonicalFallback,
-  isFallbackSnapshotStale,
+  isReviewSnapshotStale,
+  selectSuperCramQuestion,
 } from "../superCram/selector";
 import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
 import {
@@ -95,6 +96,68 @@ describe("Super Cram scheduler invariants", () => {
     }
   });
 
+  it("keeps a recent eligible MCQ available instead of losing the due card", () => {
+    const cardId = "ch08-003";
+    const event = review(cardId, NOW, { correct: false, rating: "forgot" });
+    const question = examQuestions.find((item) => item.reviewCardId === cardId);
+    expect(question).toBeDefined();
+    const candidates = buildSuperCramCandidates({
+      questions: [question!],
+      cards,
+      reviewEvents: [event],
+      settings: DEFAULT_APP_SETTINGS,
+      nowMs: NOW + 10 * MINUTE_MS,
+      session: {
+        recentQuestionIds: [question!.id],
+        recentReviewCardIds: [cardId],
+        chaptersTouched: [],
+        formulaCoverageUnitsCovered: new Set(),
+        formulaCoverageUnitsFailed: new Set(),
+        answeredCount: 1,
+        correctCount: 0,
+        reasoningGaps: 0,
+        kindCounts: {
+          "reasoning-heavy": 0,
+          "formula-application": 0,
+          "lookup-validation": 0,
+          "urgent-weakness": 0,
+        },
+      },
+    });
+    expect(candidates[0]?.isUrgent).toBe(true);
+    expect(
+      selectSuperCramQuestion({
+        candidates,
+        session: {
+          recentQuestionIds: [question!.id],
+          recentReviewCardIds: [cardId],
+          chaptersTouched: [],
+          formulaCoverageUnitsCovered: new Set(),
+          formulaCoverageUnitsFailed: new Set(),
+          answeredCount: 1,
+          correctCount: 0,
+          reasoningGaps: 0,
+          kindCounts: {
+            "reasoning-heavy": 0,
+            "formula-application": 0,
+            "lookup-validation": 0,
+            "urgent-weakness": 0,
+          },
+        },
+        nowMs: NOW + 10 * MINUTE_MS,
+      })?.question.id,
+    ).toBe(question!.id);
+    expect(
+      findUrgentCanonicalFallback({
+        cards,
+        questions: [question!],
+        reviewEvents: [event],
+        settings: DEFAULT_APP_SETTINGS,
+        nowMs: NOW + 10 * MINUTE_MS,
+      }),
+    ).toBeNull();
+  });
+
   it("offers sequential canonical fallbacks without a stale first-card loop", () => {
     const first = cards.find((card) => card.id === "ch01-001")!;
     const second = cards.find((card) => card.id === "ch01-002")!;
@@ -121,8 +184,8 @@ describe("Super Cram scheduler invariants", () => {
 
   it("clears fallback suppression when the snapshot acknowledges the review", () => {
     const acknowledgement = { cardId: "ch01-001", reviewCountBefore: 1 } as const;
-    expect(isFallbackSnapshotStale(1, acknowledgement)).toBe(true);
-    expect(isFallbackSnapshotStale(2, acknowledgement)).toBe(false);
+    expect(isReviewSnapshotStale(1, acknowledgement)).toBe(true);
+    expect(isReviewSnapshotStale(2, acknowledgement)).toBe(false);
   });
 
   it("lets the same fallback return only after its new Exam-SRS dueAt", () => {

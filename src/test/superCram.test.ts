@@ -131,6 +131,74 @@ describe("Super Cram metadata and selector", () => {
     expect(selected?.question.id).toBe("urgent");
   });
 
+  it("keeps a recent urgent question ahead of non-due work", () => {
+    const urgent = candidate({
+      question: question("urgent-recent-question", "ch08-003", 8),
+      examYieldScore: 30,
+      isUrgent: true,
+      srsPriority: 1400,
+      reasonKind: "urgent-weakness",
+    });
+    const nonUrgent = candidate({
+      question: question("nonurgent-fashionable", "ch09-003", 9),
+      examYieldScore: 10_000,
+      studyWorthiness: 5,
+    });
+    const selected = selectSuperCramQuestion({
+      candidates: [urgent, nonUrgent],
+      session: session({ recentQuestionIds: [urgent.question.id] }),
+      nowMs: NOW,
+    });
+    expect(selected?.question.id).toBe(urgent.question.id);
+  });
+
+  it("keeps a recent urgent review card ahead of non-due work", () => {
+    const urgent = candidate({
+      question: question("urgent-recent-card", "ch08-003", 8),
+      examYieldScore: 30,
+      isUrgent: true,
+      srsPriority: 1400,
+      reasonKind: "urgent-weakness",
+    });
+    const nonUrgent = candidate({
+      question: question("nonurgent-card", "ch09-003", 9),
+      examYieldScore: 10_000,
+      studyWorthiness: 5,
+    });
+    const selected = selectSuperCramQuestion({
+      candidates: [urgent, nonUrgent],
+      session: session({ recentReviewCardIds: [urgent.question.reviewCardId] }),
+      nowMs: NOW,
+    });
+    expect(selected?.question.id).toBe(urgent.question.id);
+  });
+
+  it("prefers a less-recent urgent alternative without leaving the urgent pool", () => {
+    const recentUrgent = candidate({
+      question: question("urgent-recent", "ch08-003", 8),
+      examYieldScore: 10_000,
+      isUrgent: true,
+      srsPriority: 1400,
+      reasonKind: "urgent-weakness",
+    });
+    const freshUrgent = candidate({
+      question: question("urgent-fresh", "ch09-003", 9),
+      examYieldScore: 1,
+      isUrgent: true,
+      srsPriority: 1,
+      reasonKind: "urgent-weakness",
+    });
+    const selected = selectSuperCramQuestion({
+      candidates: [recentUrgent, freshUrgent],
+      session: session({
+        recentQuestionIds: [recentUrgent.question.id],
+        recentReviewCardIds: [recentUrgent.question.reviewCardId],
+      }),
+      nowMs: NOW,
+    });
+    expect(selected?.question.id).toBe(freshUrgent.question.id);
+  });
+
   it("samples a cold formula unit and lowers its bonus after success", () => {
     const formula = candidate({
       question: question("formula-one", "ch03-001", 3),
@@ -289,6 +357,22 @@ describe("Super Cram metadata and selector", () => {
     });
     expect(questionExcluded).toEqual([]);
     expect(cardExcluded).toEqual([]);
+  });
+
+  it("suppresses every MCQ attached to a stale just-saved review card", () => {
+    const cardId = "ch08-003";
+    const cardQuestions = examQuestions.filter((item) => item.reviewCardId === cardId);
+    expect(cardQuestions.length).toBeGreaterThan(1);
+    expect(
+      buildSuperCramCandidates({
+        questions: cardQuestions,
+        cards,
+        reviewEvents: [],
+        settings: DEFAULT_APP_SETTINGS,
+        nowMs: NOW,
+        suppressedCardIds: new Set([cardId]),
+      }),
+    ).toEqual([]);
   });
 
   it("does not classify MPK/MPL formula recognition as formula application", () => {

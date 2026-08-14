@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { ProgressContext, type ProgressContextValue } from "../app/progressContext";
 import { cards } from "../data/deck";
 import { createReviewEvent, type NewReviewEvent } from "../domain/progress";
+import { examQuestions } from "../exam/questionBank";
 import { KnowledgeProvider } from "../knowledge/KnowledgeProvider";
 import { PracticePage } from "../pages/PracticePage";
 import { SuperCramPage } from "../pages/SuperCramPage";
@@ -17,8 +18,10 @@ function renderWithProgress(
     reviewEvents: [],
   },
 ) {
-  const value: ProgressContextValue = {
-    snapshot,
+  const createValue = (
+    nextSnapshot: Exclude<ProgressContextValue["snapshot"], null>,
+  ): ProgressContextValue => ({
+    snapshot: nextSnapshot,
     isLoading: false,
     error: null,
     clearError: vi.fn(),
@@ -28,17 +31,34 @@ function renderWithProgress(
     exportProgress: vi.fn(() => "{}"),
     replaceProgress: vi.fn().mockResolvedValue(undefined),
     resetProgress: vi.fn().mockResolvedValue(undefined),
-  };
-  return render(
+  });
+  let value = createValue(snapshot);
+  const view = render(
     <KnowledgeProvider>
       <ProgressContext.Provider value={value}>{page}</ProgressContext.Provider>
     </KnowledgeProvider>,
   );
+  return {
+    ...view,
+    updateSnapshot(nextSnapshot: Exclude<ProgressContextValue["snapshot"], null>) {
+      value = createValue(nextSnapshot);
+      view.rerender(
+        <KnowledgeProvider>
+          <ProgressContext.Provider value={value}>{page}</ProgressContext.Provider>
+        </KnowledgeProvider>,
+      );
+    },
+  };
 }
 
 function answerCurrentQuestion() {
   fireEvent.click(screen.getAllByRole("radio")[0]);
   fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
+}
+
+function currentQuestionId(): string {
+  const radio = screen.getAllByRole("radio")[0] as HTMLInputElement;
+  return radio.name.replace(/^practice-/, "");
 }
 
 describe("Super Cram and Formula Application practice surfaces", () => {
@@ -155,6 +175,102 @@ describe("Super Cram and Formula Application practice surfaces", () => {
       fireEvent.click(screen.getByRole("button", { name: "Next" }));
       expect(screen.getByText("Urgent canonical fallback")).toBeInTheDocument();
       expect(screen.getByText(fallbackCard.id)).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("suppresses every stale MCQ for a just-saved review card", async () => {
+    const cardId = "ch08-003";
+    const reviewedAt = new Date(Date.now() - 10 * 60 * 1000);
+    const initialReview = createReviewEvent({
+      id: "stale-mcq-initial",
+      cardId,
+      reviewedAt: reviewedAt.toISOString(),
+      mode: "mcq",
+      correct: false,
+      rating: "forgot",
+      responseTimeMs: 900,
+      selectedChoice: 0,
+    });
+    const recordReviewMock = vi.fn().mockResolvedValue({});
+    renderWithProgress(recordReviewMock, <SuperCramPage />, {
+      settings: { examAt: null, studyBufferHours: 24 },
+      cardStates: {},
+      reviewEvents: [initialReview],
+    });
+    const firstQuestionId = currentQuestionId();
+    expect(
+      examQuestions.find((question) => question.id === firstQuestionId)?.reviewCardId,
+    ).toBe(cardId);
+
+    answerCurrentQuestion();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    const nextQuestion = examQuestions.find(
+      (question) => question.id === currentQuestionId(),
+    );
+    expect(nextQuestion?.reviewCardId).not.toBe(cardId);
+    expect(recordReviewMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("lets an acknowledged recent MCQ return when Exam-SRS makes it due again", async () => {
+    vi.useFakeTimers();
+    const now = new Date("2026-08-14T00:00:00.000Z");
+    vi.setSystemTime(now);
+    try {
+      const cardId = "ch08-003";
+      const initialReview = createReviewEvent({
+        id: "due-again-initial",
+        cardId,
+        reviewedAt: new Date(now.getTime() - 10 * 60 * 1000).toISOString(),
+        mode: "mcq",
+        correct: false,
+        rating: "forgot",
+        responseTimeMs: 900,
+        selectedChoice: 0,
+      });
+      const recordReviewMock = vi.fn().mockResolvedValue({});
+      const view = renderWithProgress(recordReviewMock, <SuperCramPage />, {
+        settings: { examAt: null, studyBufferHours: 24 },
+        cardStates: {},
+        reviewEvents: [initialReview],
+      });
+      expect(
+        examQuestions.find((question) => question.id === currentQuestionId())
+          ?.reviewCardId,
+      ).toBe(cardId);
+
+      answerCurrentQuestion();
+      await act(async () => {
+        await Promise.resolve();
+      });
+      const acknowledgedReview = createReviewEvent({
+        id: "due-again-acknowledged",
+        cardId,
+        reviewedAt: now.toISOString(),
+        mode: "mcq",
+        correct: false,
+        rating: "forgot",
+        responseTimeMs: 900,
+        selectedChoice: 0,
+      });
+      view.updateSnapshot({
+        settings: { examAt: null, studyBufferHours: 24 },
+        cardStates: {},
+        reviewEvents: [initialReview, acknowledgedReview],
+      });
+      act(() => {
+        vi.advanceTimersByTime(10 * 60 * 1000 + 1);
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+      expect(
+        examQuestions.find((question) => question.id === currentQuestionId())
+          ?.reviewCardId,
+      ).toBe(cardId);
     } finally {
       vi.useRealTimers();
     }
