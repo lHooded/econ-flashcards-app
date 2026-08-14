@@ -4,6 +4,7 @@ import { createReviewEvent, DEFAULT_APP_SETTINGS } from "../domain/progress";
 import { examQuestions } from "../exam/questionBank";
 import {
   buildSuperCramCandidates,
+  createEmptySuperCramSession,
   findUrgentCanonicalFallback,
   isReviewSnapshotStale,
   selectSuperCramQuestion,
@@ -156,6 +157,60 @@ describe("Super Cram scheduler invariants", () => {
         nowMs: NOW + 10 * MINUTE_MS,
       }),
     ).toBeNull();
+  });
+
+  it("uses acknowledged Exam-SRS dueAt, not recency suppression, for a later return", () => {
+    const cardId = "ch08-003";
+    const question = examQuestions.find((item) => item.reviewCardId === cardId)!;
+    const first = review(cardId, NOW, { correct: false, rating: "forgot" });
+    const acknowledged = createReviewEvent({
+      id: "acknowledged-review",
+      cardId,
+      reviewedAt: new Date(NOW).toISOString(),
+      mode: "mcq",
+      correct: false,
+      rating: "forgot",
+      responseTimeMs: 900,
+      selectedChoice: 0,
+    });
+    const recentSession = {
+      ...createEmptySuperCramSession(),
+      recentQuestionIds: [question.id],
+      recentReviewCardIds: [cardId],
+    };
+    const beforeDue = buildSuperCramCandidates({
+      questions: [question],
+      cards,
+      reviewEvents: [first, acknowledged],
+      settings: DEFAULT_APP_SETTINGS,
+      nowMs: NOW + 5 * MINUTE_MS,
+      session: recentSession,
+    });
+    expect(beforeDue[0]?.isUrgent).toBe(false);
+    expect(
+      selectSuperCramQuestion({
+        candidates: beforeDue,
+        session: recentSession,
+        nowMs: NOW + 5 * MINUTE_MS,
+      }),
+    ).toBeNull();
+
+    const due = buildSuperCramCandidates({
+      questions: [question],
+      cards,
+      reviewEvents: [first, acknowledged],
+      settings: DEFAULT_APP_SETTINGS,
+      nowMs: NOW + 10 * MINUTE_MS + 1,
+      session: recentSession,
+    });
+    expect(due[0]?.isUrgent).toBe(true);
+    expect(
+      selectSuperCramQuestion({
+        candidates: due,
+        session: recentSession,
+        nowMs: NOW + 10 * MINUTE_MS + 1,
+      })?.question.id,
+    ).toBe(question.id);
   });
 
   it("offers sequential canonical fallbacks without a stale first-card loop", () => {
