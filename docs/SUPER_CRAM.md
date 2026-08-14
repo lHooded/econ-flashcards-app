@@ -193,18 +193,18 @@ The fixed 30-question audit currently reports:
 
 ```text
 Empty/new learner
-  chapters: 0=4, 1=1, 2=1, 3=1, 4=1, 5=1, 6=1, 7=1, 8=5, 9=8, 10=6
+  chapters: 0=4, 1=1, 2=1, 3=1, 4=1, 5=1, 6=1, 7=1, 8=7, 9=6, 10=6
   mix: reasoning 18, formula 9, lookup 3, urgent 0
   tiers: critical 23, very-high 4, core 3, support 0
-  worthiness: 1=0, 2=0, 3=5, 4=3, 5=22
-  unique review cards: 19; formula families: 7
+  worthiness: 1=0, 2=0, 3=5, 4=1, 5=24
+  unique review cards: 17; formula families: 5
 
 Weak learner (failed ch10-031)
-  chapters: 0=2, 1=1, 2=1, 3=1, 4=1, 5=1, 6=1, 7=1, 8=5, 9=6, 10=10
-  mix: reasoning 15, formula 9, lookup 1, urgent 5
+  chapters: 0=2, 1=1, 2=1, 3=1, 4=1, 5=1, 6=1, 7=1, 8=6, 9=5, 10=10
+  mix: reasoning 15, formula 8, lookup 2, urgent 5
   tiers: critical 23, very-high 4, core 3, support 0
-  worthiness: 1=2, 2=3, 3=3, 4=4, 5=18
-  unique review cards: 18; formula families: 9
+  worthiness: 1=2, 2=3, 3=4, 4=1, 5=20
+  unique review cards: 16; formula families: 6
 ```
 
 This is a deterministic pathology check, not an optimality claim. It catches a
