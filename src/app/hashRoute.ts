@@ -13,13 +13,15 @@ export type AppRoute =
   | "/practice"
   | "/knowledge"
   | "/guided"
-  | "/high-yield";
+  | "/high-yield"
+  | "/super-cram";
 
 export interface ParsedHashLocation {
   readonly route: AppRoute;
   readonly studyScope: StudyScope;
   readonly attemptId: string | null;
-  readonly practiceMode: "mcq" | "stimulus" | "written" | "calculations" | null;
+  readonly practiceMode:
+    "mcq" | "stimulus" | "written" | "calculations" | "formula-application" | null;
   readonly conceptId: string | null;
   readonly pairingCode?: string | null;
 }
@@ -95,7 +97,8 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
         mode === "mcq" ||
         mode === "stimulus" ||
         mode === "written" ||
-        mode === "calculations"
+        mode === "calculations" ||
+        mode === "formula-application"
           ? mode
           : null,
       conceptId: params.get("concept")?.trim() || null,
@@ -132,6 +135,16 @@ export function parseHashLocation(hash: string): ParsedHashLocation {
       attemptId: null,
       practiceMode: null,
       conceptId: conceptId?.trim() || null,
+    };
+  }
+
+  if (path === "/super-cram") {
+    return {
+      route: "/super-cram",
+      studyScope: DEFAULT_STUDY_SCOPE,
+      attemptId: null,
+      practiceMode: null,
+      conceptId: null,
     };
   }
 

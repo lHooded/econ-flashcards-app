@@ -149,8 +149,9 @@ The five new authored questions are:
 4. `auth-ch09-013`: full current-account component table with an explicit sign convention;
 5. `auth-ch05-011`: primary versus overall government budget balance.
 
-The current bank is 354 canonical cards, 301 knowledge concepts and 173 unified
-exam questions. All five questions use four static choices, specific rationales,
+The current bank is 354 canonical cards, 301 knowledge concepts and 197 unified
+exam questions. All five original recalibration questions and the 24 new Formula
+Application analogues use four static choices, specific rationales,
 canonical review-card/source-card mappings and remain within the maximum two
 variants per `reviewCardId`.
 
@@ -192,3 +193,27 @@ course records distinguish produced physical capital from natural capital (which
 includes land and natural resources), while financial assets are not physical
 capital. The practice item’s broad option set is therefore treated as imprecise;
 the cleaner current-course distinction remains canonical.
+
+## Super Cram continuation audit
+
+The separate Super Cram layer does not reinterpret the three practice blocks as final
+weights. It uses them to identify practice-test forms for the Formula Application
+lane and keeps scoped source IDs in `src/superCram/formulaFamilies.ts`. The 24 new
+analogues are original wording and numbers, not official question reproductions.
+
+Two bounded corrections were made during the continuation audit. `auth-ch10-011` is
+now `concept` style because it asks for MPK/MPL formula recognition; numeric
+application is supplied separately by `auth-form-ch10-013` and
+`auth-form-ch10-014`. The cards `ch08-001` and `ch08-002` remain direct Critical
+assets in `critical-ad-prf-quantitative-chain`: the first is the exact course model
+selection/three-link chain, and the second is the constitutive interest-rate effect
+on C/I and PAE. They are not generic neighbouring facts. The direct mapping is
+documented and the existing test continues to ensure unrelated Ch8 cards do not
+leak into that family.
+
+The generic wealth-effect explanation for a downward AD curve remains rejected as a
+canonical current-course explanation. The course derivation is inflation → PRF real
+rate → interest-sensitive C/I → PAE → equilibrium output. The practice wording does
+not override that model. Likewise, land/natural capital remains distinct from
+produced physical capital; the broad practice option set is treated as imprecise
+rather than changing the course ontology.

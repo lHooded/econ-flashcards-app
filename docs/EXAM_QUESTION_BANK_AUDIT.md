@@ -41,9 +41,10 @@ correct index, explanation, topic, difficulty and tags. A small static map suppl
 the style and four choice rationales without modifying the canonical JSON.
 
 The original authored questions and the five targeted 2026 practice-test analogues remain in
-`exam_questions/MACRO1_exam_questions.json`. The 30 additional stimulus questions are
-in `exam_questions/MACRO1_exam_stimulus_questions.json`; the full bank has 31
-stimulus-bearing questions because `auth-ch09-013` carries the new inline table. All 142 authored questions
+`exam_questions/MACRO1_exam_questions.json`. The 24 newly authored Formula Application
+analogues are in `exam_questions/MACRO1_formula_application_questions.json`; the 30
+existing stimulus questions remain in `exam_questions/MACRO1_exam_stimulus_questions.json`.
+The full bank now has 39 stimulus-bearing questions. All 166 authored questions
 have `provenance: "authored_from_flashcards"`; each maps one primary
 `reviewCardId`—the canonical concept most directly tested by a miss—and includes it
 in `sourceCardIds`. Multiple representations of one concept are allowed and are
@@ -58,71 +59,71 @@ The inventory below was generated programmatically from
 
 ### Authored MCQs and chapter coverage
 
-| Chapter | Canonical cards | Valid authored MCQs | Calculation cards | High-yield cards |
-| ---: | ---: | ---: | ---: | ---: |
-| 0 | 30 | 30 | 0 | 0 |
-| 1 | 33 | 1 | 2 | 2 |
-| 2 | 31 | 0 | 3 | 0 |
-| 3 | 32 | 0 | 2 | 0 |
-| 4 | 29 | 0 | 2 | 0 |
-| 5 | 33 | 0 | 1 | 0 |
-| 6 | 32 | 0 | 3 | 1 |
-| 7 | 29 | 0 | 4 | 3 |
-| 8 | 33 | 0 | 2 | 2 |
-| 9 | 41 | 0 | 4 | 3 |
-| 10 | 31 | 0 | 3 | 1 |
-| **Total** | **354** | **31** | **26** | **12** |
+|   Chapter | Canonical cards | Valid authored MCQs | Calculation cards | High-yield cards |
+| --------: | --------------: | ------------------: | ----------------: | ---------------: |
+|         0 |              30 |                  30 |                 0 |                0 |
+|         1 |              33 |                   1 |                 2 |                2 |
+|         2 |              31 |                   0 |                 3 |                0 |
+|         3 |              32 |                   0 |                 2 |                0 |
+|         4 |              29 |                   0 |                 2 |                0 |
+|         5 |              33 |                   0 |                 1 |                0 |
+|         6 |              32 |                   0 |                 3 |                1 |
+|         7 |              29 |                   0 |                 4 |                3 |
+|         8 |              33 |                   0 |                 2 |                2 |
+|         9 |              41 |                   0 |                 4 |                3 |
+|        10 |              31 |                   0 |                 3 |                1 |
+| **Total** |         **354** |              **31** |            **26** |           **12** |
 
 The 31 valid authored MCQs are the 30 existing mixed Chapter 0 cards plus
 `ch01-002`. The other 323 canonical cards have no authored four-choice MCQ.
 
 ### Cards by canonical kind
 
-| Kind | Count |
-| --- | ---: |
-| recall | 117 |
-| formula | 80 |
-| scenario | 59 |
-| mcq | 31 |
-| calculation | 26 |
-| contrast | 17 |
-| relationship | 14 |
-| classification | 3 |
-| sequence | 6 |
-| exam-trap | 1 |
-| **Total** | **354** |
+| Kind           |   Count |
+| -------------- | ------: |
+| recall         |     117 |
+| formula        |      80 |
+| scenario       |      59 |
+| mcq            |      31 |
+| calculation    |      26 |
+| contrast       |      17 |
+| relationship   |      14 |
+| classification |       3 |
+| sequence       |       6 |
+| exam-trap      |       1 |
+| **Total**      | **354** |
 
 ## Final unified bank
 
-| Measure | Result |
-| --- | ---: |
-| Total questions | 173 |
-| Canonical MCQs | 31 |
-| New authored questions | 142 |
-| Stimulus-bearing questions | 31 |
-| Mixed questions (Chapter 0) | 30 |
-| Unique `reviewCardId` values | 167 |
-| Review cards with multiple questions | 6 |
-| Maximum questions per `reviewCardId` | 2 |
-| Calculation-style questions | 42 |
-| Graph stimuli | 20 |
-| Table stimuli | 11 |
+| Measure                              | Result |
+| ------------------------------------ | -----: |
+| Total questions                      |    197 |
+| Canonical MCQs                       |     31 |
+| New authored questions               |    166 |
+| Stimulus-bearing questions           |     39 |
+| Mixed questions (Chapter 0)          |     30 |
+| Unique `reviewCardId` values         |    175 |
+| Review cards with multiple questions |     22 |
+| Maximum questions per `reviewCardId` |      2 |
+| Calculation-style questions          |     65 |
+| Graph stimuli                        |     20 |
+| Table stimuli                        |     19 |
 
 ### Chapter and topic/stimulus matrix
 
-| Chapter | Exam questions | Stimuli | Representative coverage |
-| ---: | ---: | ---: | --- |
-| 1 | 14 total / 13 new | 2 graphs, 1 table | Price-index inflation, business-cycle position, GDP deflator |
-| 2 | 14 | 2 graphs, 1 table | Wage floor, labour-demand shift, unemployment rate |
-| 3 | 13 | 2 graphs, 1 table | Saving-investment equilibrium, investment demand, expected real rate |
-| 4 | 13 | 2 graphs, 1 table | PAE/45-degree equilibrium, inventory pressure, open-economy multiplier |
-| 5 | 14 | 2 graphs, 1 table | Fiscal PAE shift, primary/overall budget balance, debt-to-GDP dynamics |
-| 6 | 15 | 2 graphs, 1 table | Bond price/yield, money demand, bank reserves, money destruction |
-| 7 | 15 | 2 graphs, 1 table | ES-balance demand/corridor, PRF shift, cash-rate security transmission |
-| 8 | 14 | 2 graphs, 1 table | AD/PRF derivation, anchored expectations, supply shock, output gap |
-| 9 | 16 | 2 graphs, 3 tables | AUD FX demand, BOP current-account table, TWI, overvalued peg |
-| 10 | 15 | 2 graphs, 1 table | Cobb-Douglas marginal products, living-standards decomposition, growth accounting |
-| 0 | 30 | 0 | Existing canonical cross-model and cross-chapter questions retained unchanged |
+| Chapter | Exam questions |            Stimuli | Representative coverage                                                       |
+| ------: | -------------: | -----------------: | ----------------------------------------------------------------------------- |
+|       1 |             16 | 2 graphs, 3 tables | Price-index inflation, value-added, real GDP and GDP deflator                 |
+|       2 |             15 |  2 graphs, 1 table | Wage floor, labour-demand shift, unemployment and Okun gap                    |
+|       3 |             16 | 2 graphs, 2 tables | Saving-investment equilibrium, Fisher, user cost and saving identity          |
+|       4 |             14 |  2 graphs, 1 table | PAE/45-degree equilibrium, inventory pressure, open-economy multiplier        |
+|       5 |             19 | 2 graphs, 3 tables | Fiscal multipliers, tax schedules, budget balance and debt                    |
+|       6 |             16 |  2 graphs, 1 table | Bond price/yield, money demand, quantity equation and bank reserves           |
+|       7 |             16 | 2 graphs, 2 tables | ES-balance demand/corridor, PRF shift, OMO arithmetic                         |
+|       8 |             17 |  2 graphs, 1 table | AD/PRF derivation, anchored expectations, supply shock and output gap         |
+|       9 |             19 | 2 graphs, 3 tables | FX demand, BOP/current account, peg intervention and real exchange rate       |
+|      10 |             19 | 2 graphs, 2 tables | Cobb-Douglas MPK/MPL, living standards, growth accounting and TFP             |
+|       0 |             30 |                  0 | Existing canonical cross-model and cross-chapter questions retained unchanged |
 
 Every Chapter 1–10 has at least three stimulus questions, exceeding the minimum of two per
 chapter. The graphs demonstrate labour supply/demand, saving/investment, PAE, bond
@@ -134,54 +135,54 @@ existing text question when that is the concept actually tested.
 
 ### Stimulus mapping audit
 
-This table is the semantic provenance audit for all 31 stimulus questions. Supporting
+This table is the semantic provenance audit for the original 31 stimulus questions. Supporting
 cards remain in each JSON record where the graph, table, convention or calculation
 genuinely uses them.
 
-| Question | Primary card | Canonical topic |
-| --- | --- | --- |
-| `auth-stim-ch01-001` | `ch01-019` | Inflation |
-| `auth-stim-ch01-002` | `ch01-025` | Business cycle |
-| `auth-stim-ch01-003` | `ch01-017` | GDP deflator |
-| `auth-stim-ch02-001` | `ch02-027` | Wage floor |
-| `auth-stim-ch02-002` | `ch02-025` | Labour demand shift |
-| `auth-stim-ch02-003` | `ch02-004` | Unemployment rate |
-| `auth-stim-ch03-001` | `ch03-028` | Closed-economy equilibrium |
-| `auth-stim-ch03-002` | `ch03-020` | Investment demand |
-| `auth-stim-ch03-003` | `ch03-005` | Ex-post vs expected real rate |
-| `auth-stim-ch04-001` | `ch04-016` | PAE shift |
-| `auth-stim-ch04-002` | `ch04-006` | Disequilibrium inventories |
-| `auth-stim-ch04-003` | `ch04-022` | Open-economy multiplier |
-| `auth-stim-ch05-001` | `ch05-007` | Government spending multiplier |
-| `auth-stim-ch05-002` | `ch05-026` | Debt stabilisation |
-| `auth-stim-ch05-003` | `ch05-024` | Debt-to-GDP ratio |
-| `auth-stim-ch06-001` | `ch06-004` | Bond price and interest rate |
-| `auth-stim-ch06-002` | `ch06-012` | Money demand |
-| `auth-stim-ch06-003` | `ch06-020` | Reserve-deposit ratio |
-| `auth-stim-ch07-001` | `ch07-009` | Reserve demand |
-| `auth-stim-ch07-002` | `ch07-027` | PRF shift |
-| `auth-stim-ch07-003` | `ch07-013` | Government payments and ESAs |
-| `auth-stim-ch08-001` | `ch08-008` | AD shift |
-| `auth-stim-ch08-002` | `ch08-023` | Favourable supply shock |
-| `auth-stim-ch08-003` | `ch08-016` | Inflation dynamics |
-| `auth-stim-ch09-001` | `ch09-031` | FX shift |
-| `auth-stim-ch09-002` | `ch09-036` | Overvalued peg |
-| `auth-stim-ch09-003` | `ch09-021` | Cross rate |
-| `auth-ch09-013` | `ch09-002` | Current-account composition table |
-| `auth-stim-ch10-001` | `ch10-011` | Diminishing marginal product |
-| `auth-stim-ch10-002` | `ch10-015` | Capital deepening |
-| `auth-stim-ch10-003` | `ch10-025` | Growth accounting |
+| Question             | Primary card | Canonical topic                   |
+| -------------------- | ------------ | --------------------------------- |
+| `auth-stim-ch01-001` | `ch01-019`   | Inflation                         |
+| `auth-stim-ch01-002` | `ch01-025`   | Business cycle                    |
+| `auth-stim-ch01-003` | `ch01-017`   | GDP deflator                      |
+| `auth-stim-ch02-001` | `ch02-027`   | Wage floor                        |
+| `auth-stim-ch02-002` | `ch02-025`   | Labour demand shift               |
+| `auth-stim-ch02-003` | `ch02-004`   | Unemployment rate                 |
+| `auth-stim-ch03-001` | `ch03-028`   | Closed-economy equilibrium        |
+| `auth-stim-ch03-002` | `ch03-020`   | Investment demand                 |
+| `auth-stim-ch03-003` | `ch03-005`   | Ex-post vs expected real rate     |
+| `auth-stim-ch04-001` | `ch04-016`   | PAE shift                         |
+| `auth-stim-ch04-002` | `ch04-006`   | Disequilibrium inventories        |
+| `auth-stim-ch04-003` | `ch04-022`   | Open-economy multiplier           |
+| `auth-stim-ch05-001` | `ch05-007`   | Government spending multiplier    |
+| `auth-stim-ch05-002` | `ch05-026`   | Debt stabilisation                |
+| `auth-stim-ch05-003` | `ch05-024`   | Debt-to-GDP ratio                 |
+| `auth-stim-ch06-001` | `ch06-004`   | Bond price and interest rate      |
+| `auth-stim-ch06-002` | `ch06-012`   | Money demand                      |
+| `auth-stim-ch06-003` | `ch06-020`   | Reserve-deposit ratio             |
+| `auth-stim-ch07-001` | `ch07-009`   | Reserve demand                    |
+| `auth-stim-ch07-002` | `ch07-027`   | PRF shift                         |
+| `auth-stim-ch07-003` | `ch07-013`   | Government payments and ESAs      |
+| `auth-stim-ch08-001` | `ch08-008`   | AD shift                          |
+| `auth-stim-ch08-002` | `ch08-023`   | Favourable supply shock           |
+| `auth-stim-ch08-003` | `ch08-016`   | Inflation dynamics                |
+| `auth-stim-ch09-001` | `ch09-031`   | FX shift                          |
+| `auth-stim-ch09-002` | `ch09-036`   | Overvalued peg                    |
+| `auth-stim-ch09-003` | `ch09-021`   | Cross rate                        |
+| `auth-ch09-013`      | `ch09-002`   | Current-account composition table |
+| `auth-stim-ch10-001` | `ch10-011`   | Diminishing marginal product      |
+| `auth-stim-ch10-002` | `ch10-015`   | Capital deepening                 |
+| `auth-stim-ch10-003` | `ch10-025`   | Growth accounting                 |
 
 ## Style distribution
 
-| Style | Unified | New authored | Unified share |
-| --- | ---: | ---: | ---: |
-| concept | 41 | 35 | 23.7% |
-| scenario | 46 | 38 | 26.6% |
-| calculation | 42 | 35 | 24.3% |
-| model discrimination | 31 | 25 | 18.5% |
-| sequence | 13 | 9 | 7.7% |
-| **Total** | **173** | **142** | **100%** |
+| Style                | Unified | New authored | Unified share |
+| -------------------- | ------: | -----------: | ------------: |
+| concept              |      42 |           36 |         21.3% |
+| scenario             |      46 |           38 |         23.4% |
+| calculation          |      65 |           58 |         33.0% |
+| model discrimination |      31 |           25 |         15.7% |
+| sequence             |      13 |            9 |          6.6% |
+| **Total**            | **197** |      **166** |      **100%** |
 
 The chapter-specific pool therefore stays close to the intended concept/scenario/
 calculation/model mix. The sequence remainder is used for mechanism and debt-path
@@ -189,23 +190,23 @@ questions where ordering is the examinable skill.
 
 ## Difficulty and answer positions
 
-| Difficulty | Count | Share |
-| ---: | ---: | ---: |
-| 1 | 54 | 31.2% |
-| 2 | 87 | 50.3% |
-| 3 | 32 | 18.5% |
-| **Total** | **173** | **100%** |
+| Difficulty |   Count |    Share |
+| ---------: | ------: | -------: |
+|          1 |      56 |    28.4% |
+|          2 |     103 |    52.3% |
+|          3 |      38 |    19.3% |
+|  **Total** | **197** | **100%** |
 
 The unified shares remain inside the configured 25–35%, 45–55% and 15–25% target
-ranges. The 31 stimulus questions contribute 10 / 16 / 5 at difficulties 1 / 2 / 3;
-graph reading is not automatically treated as advanced.
+ranges. The current 39 stimulus questions contribute 10 / 20 / 9 at difficulties
+1 / 2 / 3; graph reading is not automatically treated as advanced.
 
 | Correct position | Unified | Additional stimuli |
-| --- | ---: | ---: |
-| A | 44 | 7 |
-| B | 44 | 9 |
-| C | 43 | 7 |
-| D | 42 | 8 |
+| ---------------- | ------: | -----------------: |
+| A                |      50 |                  6 |
+| B                |      50 |                  6 |
+| C                |      49 |                  6 |
+| D                |      48 |                  6 |
 
 The unified maximum-minus-minimum position count is 2. Positions remain static and
 are not randomised at runtime.
@@ -250,13 +251,13 @@ The content command is:
 npm run validate:exam-questions
 ```
 
-The final validator output is:
+The current validator output is:
 
 ```text
 Exam question bank valid
-Total: 173
+Total: 197
 Canonical MCQ: 31
-New authored: 142
+New authored: 166
 Mixed: 30
 Chapter 1: 14
 Chapter 2: 14
@@ -268,30 +269,30 @@ Chapter 7: 15
 Chapter 8: 14
 Chapter 9: 16
 Chapter 10: 15
-Stimuli: 31 (graphs 20 / tables 11)
-Chapter 1 stimuli: 3
+Stimuli: 39 (graphs 20 / tables 19)
+Chapter 1 stimuli: 5
 Chapter 2 stimuli: 3
-Chapter 3 stimuli: 3
+Chapter 3 stimuli: 4
 Chapter 4 stimuli: 3
-Chapter 5 stimuli: 3
+Chapter 5 stimuli: 5
 Chapter 6 stimuli: 3
-Chapter 7 stimuli: 3
+Chapter 7 stimuli: 4
 Chapter 8 stimuli: 3
-Chapter 9 stimuli: 4
-Chapter 10 stimuli: 3
-Styles: concept 41 / scenario 46 / calculation 42 / model 31 / sequence 13
-Difficulty: 1 54 / 2 87 / 3 32
-Correct positions: A 44 / B 44 / C 43 / D 42
-Calculation questions: 42
-Unique reviewCardId: 167
-Review cards with multiple questions: 6
+Chapter 9 stimuli: 5
+Chapter 10 stimuli: 4
+Styles: concept 42 / scenario 46 / calculation 65 / model 31 / sequence 13
+Difficulty: 1 56 / 2 103 / 3 38
+Correct positions: A 50 / B 50 / C 49 / D 48
+Calculation questions: 65
+Unique reviewCardId: 175
+Review cards with multiple questions: 22
 Maximum questions per reviewCardId: 2
 Warnings: none
 ```
 
 ## Content and stimulus review pass
 
-I performed a separate second pass over the 31 stimulus questions in addition to
+I performed a separate second pass over the original 31 stimulus questions in addition to
 the original 100-question audit. It checked economic correctness, one-best-answer
 quality, distractor plausibility, source-card consistency, model closure, signs and
 units, arithmetic, wording cues, semantic duplication, graph scale and table units.
@@ -308,7 +309,7 @@ Particular scrutiny was given to:
 - production-function concavity, capital-deepening interpretation and growth-accounting
   weights.
 
-A stimulus-aware blind-answer pass was performed after this hardening pass for all 31
+A stimulus-aware blind-answer pass was performed after this hardening pass for the original 31
 stimulus questions using the stem, declarative graph/table data (including rendered
 labels/captions) and choices without consulting `correctChoice`. The independently
 selected answers matched all 31 keys. The pass also checked that titles, captions,
@@ -374,4 +375,37 @@ graph/table structures and representative economics geometry. Renderer tests cov
 graph SVG primitives, labels, styles, accessibility, annotations, semantic table
 structure and the no-stimulus case.
 
-The final local suite is 15 test files and 112 tests.
+The current full local suite is 51 test files and 448 tests. The additional Formula
+Application and Super Cram validators/tests are reported in the continuation below.
+
+## Super Cram / Formula Application continuation
+
+The Formula Application lane adds 24 original authored analogues in
+`MACRO1_formula_application_questions.json`. They use changed numbers, names,
+wording and distractor phrasing; they are not copied official questions. Their
+metadata records the observed practice-test form and scoped source ID, not textual
+provenance or a final-exam weighting claim.
+
+The curated set contains 45 questions: 24 newly authored and 21 strong existing
+calculation questions reused. It has 13 stimulus questions (all declarative tables or
+existing calculation stimuli), and its chapter distribution is:
+
+| Chapters | Curated questions |
+| -------- | ----------------: |
+| 1–4      |                14 |
+| 5–7      |                14 |
+| 8–10     |                17 |
+
+The 26 formula families cover value added, base-year real GDP, Okun output gaps,
+Fisher rates, investment user cost, national saving, PAE equilibrium, fiscal
+arithmetic, tax schedules, debt financing, quantity theory, bond/return/corridor
+arithmetic, ESA transactions, the course-specific AD/PRF chain, FX conversion and
+real exchange rates, BOP/current-account tables, fixed-peg intervention, small-open
+accounting, Cobb-Douglas output and MPK/MPL, growth accounting, and capital
+deepening versus TFP. The validator checks the 32-question minimum, 16-new-question
+minimum, chapter minimums, four-choice/rationale bank invariants, and the two-question
+review-card cap.
+
+The pure MPK/MPL formula-recognition item `auth-ch10-011` is now `concept` style and
+is excluded from Formula Application. Numeric MPL and MPK application are separate
+items (`auth-form-ch10-013` and `auth-form-ch10-014`).

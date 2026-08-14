@@ -1,0 +1,802 @@
+[
+  {
+    "id": "auth-form-ch01-011",
+    "chapter": 1,
+    "topic": "Value-added chain",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "A grower sells wheat for $40 to a mill, the mill sells flour for $90 to a bakery, and the bakery sells bread to households for $180. What total value added is counted along this production chain?",
+    "choices": ["$90", "$140", "$310", "$180"],
+    "correctChoice": 3,
+    "explanation": "Total value added is the final sale value minus intermediate purchases: $40 + ($90 - $40) + ($180 - $90) = $180. Equivalently, it is the value of final bread sold to households.",
+    "choiceRationales": [
+      "$90 is the mill's sale value, not the total contribution of all three stages.",
+      "$140 adds some stages but omits part of the bakery's value added.",
+      "$310 adds intermediate sales and double counts the wheat and flour.",
+      "Adding value added at each stage gives $40 + $50 + $90 = $180, avoiding double counting."
+    ],
+    "reviewCardId": "ch01-006",
+    "sourceCardIds": ["ch01-006"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "value-added",
+      "practice-form-test-1-2026"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Sales in one production chain",
+      "columns": [
+        { "key": "stage", "label": "Stage" },
+        { "key": "sale", "label": "Sale value", "align": "right" },
+        { "key": "buyer", "label": "Buyer" }
+      ],
+      "rows": [
+        { "id": "grower", "cells": ["Grower", "$40", "Mill"] },
+        { "id": "mill", "cells": ["Mill", "$90", "Bakery"] },
+        { "id": "bakery", "cells": ["Bakery", "$180", "Households"] }
+      ],
+      "note": "Count only value added at each stage; the final bread is the final good."
+    }
+  },
+  {
+    "id": "auth-form-ch01-012",
+    "chapter": 1,
+    "topic": "Real GDP at base-year prices",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "An economy produces only goods A and B. Using the base-year prices in the table and current-year quantities, what is current real GDP?",
+    "choices": ["$340", "$680", "$500", "$440"],
+    "correctChoice": 3,
+    "explanation": "Real GDP holds prices at base-year values and uses current quantities: 2(120) + 4(50) = $440.",
+    "choiceRationales": [
+      "$340 uses neither the stated base-price weighting nor both current quantities correctly.",
+      "$680 is an overcount that does not use the fixed base-year price vector.",
+      "$500 applies an incorrect price or quantity to one of the goods.",
+      "Base-year prices times current quantities give 2(120) + 4(50) = $440."
+    ],
+    "reviewCardId": "ch01-015",
+    "sourceCardIds": ["ch01-015"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "real-GDP",
+      "base-year",
+      "practice-form-test-1-2026"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Prices and quantities for real-GDP calculation",
+      "columns": [
+        { "key": "good", "label": "Good" },
+        { "key": "basePrice", "label": "Base-year price", "align": "right" },
+        { "key": "currentQuantity", "label": "Current quantity", "align": "right" }
+      ],
+      "rows": [
+        { "id": "a", "cells": ["A", "$2", "120"] },
+        { "id": "b", "cells": ["B", "$4", "50"] }
+      ],
+      "note": "Real GDP uses base-year prices with current-year quantities."
+    }
+  },
+  {
+    "id": "auth-form-ch02-012",
+    "chapter": 2,
+    "topic": "Okun output-gap calculation",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "The natural unemployment rate is 4%, actual unemployment is 6%, and the course Okun relationship uses an output-gap response of 2 percentage points for each unemployment-rate point. What is the implied output gap?",
+    "choices": ["-4%", "-2%", "+2%", "+4%"],
+    "correctChoice": 0,
+    "explanation": "Unemployment is 2 percentage points above its natural rate. With a coefficient of 2, the output gap is -2 × 2% = -4%.",
+    "choiceRationales": [
+      "Above-natural unemployment is associated with a negative gap: -2 × (6 - 4) = -4%.",
+      "This uses the unemployment-rate difference but omits the coefficient of 2.",
+      "This reverses the sign: unemployment above its natural rate indicates output below potential.",
+      "This keeps the magnitude but assigns the wrong positive direction."
+    ],
+    "reviewCardId": "ch02-017",
+    "sourceCardIds": ["ch02-017"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "Okun",
+      "output-gap",
+      "practice-form-test-1-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch03-011",
+    "chapter": 3,
+    "topic": "Exact Fisher calculation",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "A one-year nominal interest rate is 8% and expected inflation is 3%. Using the exact Fisher relationship, what is the expected real interest rate?",
+    "choices": ["3.00%", "5.00%", "4.85%", "11.00%"],
+    "correctChoice": 2,
+    "explanation": "The exact real rate is \\((1.08 / 1.03) - 1\\), which is approximately 4.85%.",
+    "choiceRationales": [
+      "3% is the inflation rate, not the real return after accounting for the nominal rate.",
+      "5% is the useful approximation 8% - 3%, but the question asks for the exact relationship.",
+      "Dividing the nominal gross return by the expected-inflation gross factor gives about 4.85%.",
+      "Adding the nominal rate and inflation rate treats inflation as an extra real return."
+    ],
+    "reviewCardId": "ch03-003",
+    "sourceCardIds": ["ch03-003", "ch03-006"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "Fisher",
+      "real-interest-rate",
+      "practice-form-test-1-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch03-012",
+    "chapter": 3,
+    "topic": "Investment user-cost table",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "A machine costs $100. The real interest rate is 5%, depreciation is 10%, and the machine price is expected to be unchanged. The table gives each machine's MPK. If the firm buys whole machines while VMPK exceeds user cost, how many should it buy?",
+    "choices": ["0", "1", "2", "3"],
+    "correctChoice": 1,
+    "explanation": "The exact user cost is (0.05 + 0.10) × $100 = $15. VMPK is $24 for the first machine and $11 for the second if output is valued at $100 per unit, so only the first machine passes the condition. The firm buys 1 machine.",
+    "choiceRationales": [
+      "The first machine has VMPK of $24, which exceeds the $15 user cost.",
+      "One machine is profitable, but the second is not: its VMPK is $11, below $15.",
+      "This counts the second machine despite its marginal product falling below user cost.",
+      "This treats every listed MPK as profitable and ignores the marginal decision rule."
+    ],
+    "reviewCardId": "ch03-017",
+    "sourceCardIds": ["ch03-014", "ch03-015", "ch03-017", "ch03-019"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "investment",
+      "user-cost",
+      "VMPK",
+      "practice-form-test-1-2026"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Marginal products of successive machines",
+      "columns": [
+        { "key": "machine", "label": "Machine" },
+        { "key": "mpk", "label": "MPK", "align": "right" },
+        { "key": "vmpk", "label": "VMPK at output price $100", "align": "right" }
+      ],
+      "rows": [
+        { "id": "one", "cells": ["1", "0.24", "$24"] },
+        { "id": "two", "cells": ["2", "0.11", "$11"] }
+      ],
+      "note": "User cost = (real interest rate + depreciation rate) × machine price because the expected machine price change is zero."
+    }
+  },
+  {
+    "id": "auth-form-ch03-013",
+    "chapter": 3,
+    "topic": "National saving accounting",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "An economy has output of 1,400, consumption of 900 and government purchases of 300. What is national saving using the course identity NS = Y - C - G?",
+    "choices": ["$140", "$500", "$260", "$200"],
+    "correctChoice": 3,
+    "explanation": "National saving is output not used for consumption or government purchases: 1,400 - 900 - 300 = 200.",
+    "choiceRationales": [
+      "$140 is not the result of applying the stated national-saving identity.",
+      "$500 is output minus consumption and ignores government purchases.",
+      "$260 subtracts only some government uses and does not apply the national-saving identity.",
+      "National saving is Y - C - G = 1,400 - 900 - 300 = $200."
+    ],
+    "reviewCardId": "ch03-026",
+    "sourceCardIds": ["ch03-021", "ch03-026"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "national-saving",
+      "accounting",
+      "practice-form-test-1-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch04-011",
+    "chapter": 4,
+    "topic": "PAE equilibrium",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "In a simple closed economy, planned aggregate expenditure is PAE = 240 + 0.60Y. What level of output satisfies goods-market equilibrium?",
+    "choices": ["240", "400", "840", "600"],
+    "correctChoice": 3,
+    "explanation": "Set Y equal to PAE: Y = 240 + 0.60Y, so 0.40Y = 240 and Y = 600.",
+    "choiceRationales": [
+      "240 is the autonomous part of PAE, not the equilibrium level after induced spending.",
+      "400 does not solve Y = 240 + 0.60Y.",
+      "840 overstates equilibrium by adding the autonomous and induced terms without solving.",
+      "At Y = 600, PAE = 240 + 360 = 600, so goods-market equilibrium holds."
+    ],
+    "reviewCardId": "ch04-011",
+    "sourceCardIds": ["ch04-005", "ch04-011"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "PAE",
+      "equilibrium",
+      "practice-form-test-1-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch05-012",
+    "chapter": 5,
+    "topic": "MPC from observed changes",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "Disposable income rises by $200 and consumption rises by $150. What marginal propensity to consume is implied?",
+    "choices": ["0.75", "1.33", "0.25", "0.50"],
+    "correctChoice": 0,
+    "explanation": "MPC is the change in consumption divided by the change in disposable income: \\(150 / 200 = 0.75\\).",
+    "choiceRationales": [
+      "Dividing the consumption change by the disposable-income change gives MPC = \\(150 / 200 = 0.75\\).",
+      "1.33 reverses the ratio and calculates \\(\\Delta Y^D / \\Delta C\\).",
+      "0.25 is the marginal propensity to save implied by MPC = 1 - 0.75, not MPC itself.",
+      "0.50 does not use the two observed changes correctly."
+    ],
+    "reviewCardId": "ch05-003",
+    "sourceCardIds": ["ch05-003", "ch05-004"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "MPC",
+      "consumption",
+      "practice-form-test-2-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch05-013",
+    "chapter": 5,
+    "topic": "Government-spending multiplier with proportional tax",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Suppose MPC is 0.80 and the proportional tax rate is 0.25. Using the four-sector PAE multiplier, what is the government-spending multiplier?",
+    "choices": ["1.25", "1.60", "4.00", "2.50"],
+    "correctChoice": 3,
+    "explanation": "The multiplier is 1 / [1 - MPC(1 - t)] = 1 / [1 - 0.80(0.75)] = 2.50.",
+    "choiceRationales": [
+      "1.25 omits the induced-spending denominator and is not the four-sector multiplier.",
+      "1.60 is the no-tax multiplier for MPC = 0.375, not the stated parameters.",
+      "4.00 treats the tax-adjusted induced response as 0.75 rather than 0.60.",
+      "The tax-adjusted marginal spending response is 0.60, so \\(1 / (1 - 0.60) = 2.50\\)."
+    ],
+    "reviewCardId": "ch05-007",
+    "sourceCardIds": ["ch05-005", "ch05-007"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "fiscal-multiplier",
+      "proportional-tax",
+      "practice-form-test-2-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch05-014",
+    "chapter": 5,
+    "topic": "Progressive tax schedule",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "A progressive schedule taxes the first $20,000 of income at 0%, the next $30,000 at 10%, and income above $50,000 at 20%. For income of $70,000, which pair gives total tax and the average tax rate?",
+    "choices": [
+      "$14,000 and 20.0%",
+      "$7,000 and 10.0%",
+      "$10,000 and 14.3%",
+      "$5,000 and 7.1%"
+    ],
+    "correctChoice": 1,
+    "explanation": "Tax is 0 on the first $20,000, $3,000 on the next $30,000 and $4,000 on the final $20,000: total $7,000. Average tax is \\(7{,}000 / 70{,}000 = 10\\%\\).",
+    "choiceRationales": [
+      "20% is the marginal rate on the last dollar, not the rate applied to all income.",
+      "The bracket calculation gives $7,000 total tax and a 10% average rate.",
+      "$10,000 applies an incorrect rate to part of the schedule and therefore overstates tax.",
+      "$5,000 omits the tax due on the income above $50,000."
+    ],
+    "reviewCardId": "ch05-002",
+    "sourceCardIds": ["ch05-002", "ch05-003"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "progressive-tax",
+      "average-tax",
+      "practice-form-test-2-2026"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Progressive tax schedule",
+      "columns": [
+        { "key": "band", "label": "Income band" },
+        { "key": "rate", "label": "Marginal rate", "align": "right" }
+      ],
+      "rows": [
+        { "id": "first", "cells": ["First $20,000", "0%"] },
+        { "id": "middle", "cells": ["Next $30,000", "10%"] },
+        { "id": "top", "cells": ["Above $50,000", "20%"] }
+      ],
+      "note": "The marginal rate applies only to income in its bracket."
+    }
+  },
+  {
+    "id": "auth-form-ch05-015",
+    "chapter": 5,
+    "topic": "Fiscal closure of an output gap",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "The fiscal multiplier is 2.5 and actual output is $200 million below potential. Holding other terms fixed, what change in government purchases would close the gap?",
+    "choices": [
+      "Increase G by $80 million",
+      "Increase G by $500 million",
+      "Decrease G by $80 million",
+      "Decrease G by $200 million"
+    ],
+    "correctChoice": 0,
+    "explanation": "The required autonomous spending change is the output gap divided by the multiplier: \\(200 / 2.5 = 80\\) million. Because output is below potential, G must rise.",
+    "choiceRationales": [
+      "An $80 million increase multiplied by 2.5 raises output by $200 million.",
+      "$500 million is the gap multiplied by the multiplier rather than divided by it.",
+      "A decrease in G would widen a contractionary output gap.",
+      "A $200 million change ignores the multiplier effect."
+    ],
+    "reviewCardId": "ch05-016",
+    "sourceCardIds": ["ch05-006", "ch05-016"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "output-gap",
+      "fiscal-policy",
+      "practice-form-test-2-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch05-016",
+    "chapter": 5,
+    "topic": "Government budget constraint",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "At the start of the year government debt is $1,000 million. The interest rate is 5%, purchases are $250 million, transfers are $50 million and tax revenue is $200 million. Ignoring asset sales, how much new borrowing is required?",
+    "choices": ["$50 million", "$100 million", "$150 million", "$300 million"],
+    "correctChoice": 2,
+    "explanation": "New borrowing equals G + transfers + interest on existing debt - tax revenue = 250 + 50 + 50 - 200 = $150 million.",
+    "choiceRationales": [
+      "$50 million omits government purchases and the interest bill from the financing need.",
+      "$100 million omits either transfers or interest when calculating the deficit flow.",
+      "The financing requirement is 250 + 50 + (0.05 × 1,000) - 200 = $150 million.",
+      "$300 million adds tax revenue instead of subtracting it."
+    ],
+    "reviewCardId": "ch05-022",
+    "sourceCardIds": ["ch05-019", "ch05-020", "ch05-022"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "budget-constraint",
+      "debt",
+      "interest",
+      "practice-form-test-2-2026"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Government budget data for one year",
+      "columns": [
+        { "key": "item", "label": "Item" },
+        { "key": "amount", "label": "Amount ($m)", "align": "right" }
+      ],
+      "rows": [
+        { "id": "debt", "cells": ["Opening debt", "1,000"] },
+        { "id": "interest", "cells": ["Interest rate", "5%"] },
+        { "id": "purchases", "cells": ["Government purchases", "250"] },
+        { "id": "transfers", "cells": ["Transfers", "50"] },
+        { "id": "tax", "cells": ["Tax revenue", "200"] }
+      ],
+      "note": "New borrowing = purchases + transfers + interest on opening debt - tax revenue."
+    }
+  },
+  {
+    "id": "auth-form-ch06-013",
+    "chapter": 6,
+    "topic": "Quantity equation and velocity",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "The price level is 2, real output is 1,500 and the money stock is 500. Using MV = PY, what is velocity?",
+    "choices": ["0.67", "1.50", "3.00", "6.00"],
+    "correctChoice": 3,
+    "explanation": "Velocity is \\(PY/M = (2 \\times 1{,}500) / 500 = 6\\).",
+    "choiceRationales": [
+      "0.67 reverses the money-stock and nominal-output relationship.",
+      "1.50 omits the price level from nominal output.",
+      "3.00 divides real output by the money stock and omits P.",
+      "Nominal output is 3,000, so \\(V = 3{,}000 / 500 = 6\\)."
+    ],
+    "reviewCardId": "ch06-026",
+    "sourceCardIds": ["ch06-009", "ch06-026"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "quantity-equation",
+      "velocity",
+      "practice-form-test-2-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch07-013",
+    "chapter": 7,
+    "topic": "Government payment and OMO ESA arithmetic",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Before two transactions, exchange settlement account balances in the banking system are $900 million. The government makes a $80 million payment into the system and the central bank sells $30 million of securities. What are ES balances after both transactions?",
+    "choices": ["$790 million", "$850 million", "$950 million", "$1,010 million"],
+    "correctChoice": 2,
+    "explanation": "The government payment adds $80 million to banking-system ES balances, while the securities sale drains $30 million. The net change is +$50 million, giving $950 million.",
+    "choiceRationales": [
+      "$790 million subtracts both flows and reverses the government-payment direction.",
+      "$850 million subtracts the OMO drain from the opening balance but omits the government payment.",
+      "The government payment adds $80 million and the securities sale removes $30 million: 900 + 80 - 30 = $950 million.",
+      "$1,010 million adds both transactions and ignores the OMO drain."
+    ],
+    "reviewCardId": "ch07-013",
+    "sourceCardIds": ["ch07-013", "ch07-014"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "ESA",
+      "OMO",
+      "practice-form-test-2-2026"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Transactions affecting exchange settlement balances",
+      "columns": [
+        { "key": "transaction", "label": "Transaction" },
+        { "key": "change", "label": "Change in ES balances ($m)", "align": "right" }
+      ],
+      "rows": [
+        { "id": "payment", "cells": ["Government payment", "+80"] },
+        { "id": "sale", "cells": ["Central-bank securities sale", "-30"] }
+      ],
+      "note": "Use the banking-system ES balance perspective."
+    }
+  },
+  {
+    "id": "auth-form-ch08-012",
+    "chapter": 8,
+    "topic": "PAE and PRF equilibrium",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "Suppose \\(PAE = 300 + 0.5Y - 20r\\) and the policy reaction function is \\(r = 2 + 0.5\\pi\\). At inflation \\(\\pi = 4\\), which pair gives the real rate and equilibrium output?",
+    "choices": [
+      "r = 2 and Y = 520",
+      "r = 4 and Y = 520",
+      "r = 4 and Y = 440",
+      "r = 6 and Y = 300"
+    ],
+    "correctChoice": 2,
+    "explanation": "The PRF gives r = 2 + 0.5(4) = 4. Substituting into PAE and setting Y = PAE gives Y = 300 + 0.5Y - 80, so Y = 440.",
+    "choiceRationales": [
+      "This leaves the inflation response out of the PRF and does not solve the equilibrium equation.",
+      "r = 4 is correct, but Y = 520 does not satisfy Y = 220 + 0.5Y.",
+      "The PRF gives r = 4 and solving the substituted PAE gives Y = 440.",
+      "r = 6 miscalculates the PRF and the output value ignores equilibrium."
+    ],
+    "reviewCardId": "ch08-004",
+    "sourceCardIds": ["ch08-003", "ch08-004", "ch08-005"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "AD",
+      "PRF",
+      "PAE",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch08-013",
+    "chapter": 8,
+    "topic": "Reverse PAE calculation",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "A course PAE equation is PAE = 500 + 0.4Y - 25r. If observed equilibrium output is 750, what real interest rate is consistent with goods-market equilibrium?",
+    "choices": ["0%", "2%", "4%", "8%"],
+    "correctChoice": 2,
+    "explanation": "Set PAE equal to observed Y: 750 = 500 + 0.4(750) - 25r = 800 - 25r. Thus 25r = 50 and r = 2%.",
+    "choiceRationales": [
+      "At r = 0%, PAE would be 800, not the observed equilibrium output of 750.",
+      "Substitution gives 750 = 800 - 25r, so r = 2%.",
+      "4% would reduce PAE by $100 and produce output of $700 in this equation.",
+      "8% doubles the required interest-rate reduction and produces an output below 750."
+    ],
+    "reviewCardId": "ch08-003",
+    "sourceCardIds": ["ch08-003", "ch08-004"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "AD",
+      "PAE",
+      "reverse-solve",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch08-014",
+    "chapter": 8,
+    "topic": "AD and long-run inflation",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "In the course-specific AD equation Y = 700 - 20π, potential output is 600 in the long run. Which statement gives the long-run inflation rate and the correct short-run interpretation?",
+    "choices": [
+      "\\(\\pi = 3\\%\\); current output must immediately equal potential",
+      "\\(\\pi = 5\\%\\); a current demand disturbance can leave a temporary output gap before self-correction",
+      "\\(\\pi = 20\\%\\); potential output is the AD slope",
+      "\\(\\pi = 100\\%\\); inflation is irrelevant once \\(Y^*\\) is given"
+    ],
+    "correctChoice": 1,
+    "explanation": "Long-run equilibrium sets \\(Y = Y^*\\): \\(600 = 700 - 20\\pi\\), so \\(\\pi = 5\\%\\). The equation also describes short-run combinations where output can differ from potential while adjustment occurs.",
+    "choiceRationales": [
+      "3% does not solve \\(600 = 700 - 20\\pi\\), and the short-run model allows an output gap.",
+      "Solving gives \\(\\pi = 5\\%\\), while short-run demand disturbances need not leave output at \\(Y^*\\) immediately.",
+      "20 is the absolute slope coefficient, not the inflation rate or potential output.",
+      "The inflation term is central to the AD relation, so it is not irrelevant."
+    ],
+    "reviewCardId": "ch08-018",
+    "sourceCardIds": ["ch08-005", "ch08-018", "ch08-021"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "AD",
+      "long-run",
+      "inflation",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch09-014",
+    "chapter": 9,
+    "topic": "Fixed-peg intervention quantity",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "At a defended exchange-rate peg, the table reports the private-market quantities of Australian dollars demanded and supplied. What intervention is required to maintain the peg?",
+    "choices": [
+      "Sell $60 million of Australian dollars and buy foreign reserves",
+      "Buy $60 million of Australian dollars and sell foreign reserves",
+      "Buy $300 million of Australian dollars and sell foreign reserves",
+      "No intervention because demand and supply are both positive"
+    ],
+    "correctChoice": 1,
+    "explanation": "At the peg, supply exceeds demand by $60 million. The central bank must buy the excess Australian dollars, paying with foreign reserves, to prevent the currency from depreciating below the peg.",
+    "choiceRationales": [
+      "Selling Australian dollars would add to excess supply and undermine the peg.",
+      "Buying the excess $60 million of Australian dollars and selling foreign reserves removes the market surplus.",
+      "$300 million is the total supply, not the excess quantity requiring intervention.",
+      "A fixed peg requires action whenever private demand and supply do not balance at the peg."
+    ],
+    "reviewCardId": "ch09-036",
+    "sourceCardIds": ["ch09-035", "ch09-036", "ch09-037"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "fixed-peg",
+      "intervention",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Private FX-market quantities at the peg",
+      "columns": [
+        { "key": "quantity", "label": "Quantity of A$ (million)", "align": "right" },
+        { "key": "value", "label": "Value", "align": "right" }
+      ],
+      "rows": [
+        { "id": "demand", "cells": ["Demand", "120"] },
+        { "id": "supply", "cells": ["Supply", "180"] }
+      ],
+      "note": "The central bank is viewed from the currency-market perspective."
+    }
+  },
+  {
+    "id": "auth-form-ch09-015",
+    "chapter": 9,
+    "topic": "Small-open-economy saving identity",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "In a small open economy, national saving is 500 and domestic investment is 650. Using CA = S - I, what is the current account balance?",
+    "choices": [
+      "A surplus of 150",
+      "A deficit of 150",
+      "A surplus of 1,150",
+      "A deficit of 650"
+    ],
+    "correctChoice": 1,
+    "explanation": "The current account is S - I = 500 - 650 = -150, so the economy runs a current-account deficit of 150.",
+    "choiceRationales": [
+      "A surplus would require saving to exceed investment; here investment is larger.",
+      "S - I = 500 - 650 = -150, which is a current-account deficit of 150.",
+      "Adding saving and investment does not give the current-account balance.",
+      "Investment alone is not the current-account deficit; saving must be subtracted."
+    ],
+    "reviewCardId": "ch09-010",
+    "sourceCardIds": ["ch09-007", "ch09-010"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "current-account",
+      "saving-investment",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch09-016",
+    "chapter": 9,
+    "topic": "Real exchange-rate calculation",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Use the course convention q = eP*/P. The nominal exchange rate is 0.8 units of foreign currency per unit of domestic currency, the foreign price index is 100 and the domestic price index is 110. What is q?",
+    "choices": ["0.73", "0.80", "0.88", "1.38"],
+    "correctChoice": 0,
+    "explanation": "\\(q = eP^*/P = 0.8 \\times 100 / 110 \\approx 0.73\\).",
+    "choiceRationales": [
+      "Using \\(q = 0.8 \\times 100 / 110\\) gives approximately 0.73.",
+      "0.80 is the nominal exchange rate and leaves the price indices unused.",
+      "0.88 multiplies the domestic price index in the wrong direction.",
+      "1.38 divides the price indices in the wrong direction and reverses the quote adjustment."
+    ],
+    "reviewCardId": "ch09-022",
+    "sourceCardIds": ["ch09-022", "ch09-023"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "real-exchange-rate",
+      "quote-convention",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch10-013",
+    "chapter": 10,
+    "topic": "Cobb-Douglas MPL application",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "For \\(Y = A K^\\alpha L^{1-\\alpha}\\), output is 1,200, labour is 60 and \\(\\alpha = 0.35\\). What is the marginal product of labour?",
+    "choices": ["13", "7", "20", "420"],
+    "correctChoice": 0,
+    "explanation": "\\(MPL = (1 - \\alpha)Y/L = 0.65 \\times 1{,}200 / 60 = 13\\).",
+    "choiceRationales": [
+      "MPL uses labour's exponent: \\((1 - 0.35) \\times 1{,}200 / 60 = 13\\).",
+      "7 uses α rather than 1 - α and therefore assigns capital's share to labour.",
+      "20 divides output by labour but omits the labour share coefficient.",
+      "420 multiplies the labour share by output but forgets to divide by labour."
+    ],
+    "reviewCardId": "ch10-031",
+    "sourceCardIds": ["ch10-031", "ch10-014"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "Cobb-Douglas",
+      "MPL",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch10-014",
+    "chapter": 10,
+    "topic": "Cobb-Douglas MPK application",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "For a Cobb-Douglas production function, output is 1,200, the capital stock is 100 and \\(\\alpha = 0.35\\). What is the marginal product of capital?",
+    "choices": ["3.5", "4.2", "7.8", "35"],
+    "correctChoice": 1,
+    "explanation": "\\(MPK = \\alpha Y/K = 0.35 \\times 1{,}200 / 100 = 4.2\\).",
+    "choiceRationales": [
+      "3.5 does not multiply the capital share by output and divide by the capital stock.",
+      "\\(MPK = 0.35 \\times 1{,}200 / 100 = 4.2\\).",
+      "7.8 uses the labour share 1 - α rather than the capital share α.",
+      "35 multiplies α by 100 and ignores output per unit of capital."
+    ],
+    "reviewCardId": "ch10-009",
+    "sourceCardIds": ["ch10-009", "ch10-031"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "Cobb-Douglas",
+      "MPK",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch10-015",
+    "chapter": 10,
+    "topic": "Cobb-Douglas output application",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "An economy uses \\(Y = A K^{0.25} L^{0.75}\\) with \\(A = 1.5\\), \\(K = 16\\) and \\(L = 81\\). What is output?",
+    "choices": ["27", "54", "81", "144"],
+    "correctChoice": 2,
+    "explanation": "The powers give \\(16^{0.25} = 2\\) and \\(81^{0.75} = 27\\), so \\(Y = 1.5 \\times 2 \\times 27 = 81\\).",
+    "choiceRationales": [
+      "27 is the labour-power term and omits productivity and capital's contribution.",
+      "54 includes A and the labour term but omits the capital term of 2.",
+      "Substitution gives 1.5 × 2 × 27 = 81.",
+      "144 overstates the product by applying the exponents as simple multipliers."
+    ],
+    "reviewCardId": "ch10-010",
+    "sourceCardIds": ["ch10-009", "ch10-010"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "Cobb-Douglas",
+      "production-function",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-form-ch10-016",
+    "chapter": 10,
+    "topic": "Capital deepening versus TFP",
+    "style": "calculation",
+    "difficulty": 3,
+    "stem": "Two economies use the same constant-returns production function. In Economy A, \\(K/L\\) rises by 10% while A is unchanged. In Economy B, \\(K/L\\) is unchanged while A rises by 3%. Which interpretation is correct?",
+    "choices": [
+      "A has capital deepening; B has a TFP improvement",
+      "A has a TFP improvement; B has capital deepening",
+      "Both changes are TFP improvements because output per worker rises",
+      "Neither change affects output per worker because labour is unchanged"
+    ],
+    "correctChoice": 0,
+    "explanation": "An increase in capital per worker is capital deepening. A rise in A shifts the production relationship for given inputs and is a TFP improvement; both can raise output per worker through different channels.",
+    "choiceRationales": [
+      "Economy A changes \\(K/L\\), while Economy B changes the technology/productivity term A.",
+      "This swaps the input-deepening and technology interpretations.",
+      "A higher output per worker alone does not identify TFP; the source of the change matters.",
+      "Both changes affect output per worker in a production function with the stated inputs."
+    ],
+    "reviewCardId": "ch10-015",
+    "sourceCardIds": ["ch10-015", "ch10-018", "ch10-025"],
+    "tags": [
+      "exam-bank",
+      "formula-application",
+      "capital-deepening",
+      "TFP",
+      "practice-form-test-3-2026"
+    ],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Changes in two economies",
+      "columns": [
+        { "key": "economy", "label": "Economy" },
+        { "key": "capitalWorker", "label": "Change in \\(K/L\\)" },
+        { "key": "technology", "label": "Change in A" }
+      ],
+      "rows": [
+        { "id": "a", "cells": ["A", "+10%", "0%"] },
+        { "id": "b", "cells": ["B", "0%", "+3%"] }
+      ],
+      "note": "In \\(y = A f(K/L)\\), distinguish a change in the input ratio from a change in A."
+    }
+  }
+]

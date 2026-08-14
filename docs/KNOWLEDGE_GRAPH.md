@@ -100,7 +100,7 @@ Maximum prerequisite depth: 15
 Cards mapped: 354 / 354
 Explicit card mappings: 354 / 354
 Production fallback mappings: 0
-Exam questions mapped: 173 / 173
+Exam questions mapped: 197 / 197
 Concepts with lecture source: 291
 Concepts with textbook source: 294
 Concepts without source support: 0

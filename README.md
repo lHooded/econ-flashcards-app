@@ -123,8 +123,11 @@ selection, timer semantics, persistence, exactly-once Exam-SRS integration, and
 Practice Lab limitations.
 
 Practice Lab is deliberately separate from the scheduler recommendation: Study now
-follows Exam-SRS, while Question Bank Drill, Graphs & Tables, Calculations, and
-self-marked Written Response are untimed user-selected formats. Written responses are
+follows Exam-SRS, while Question Bank Drill, Graphs & Tables, Calculations, Formula
+Application and self-marked Written Response are untimed user-selected formats.
+[`Super Cram`](docs/SUPER_CRAM.md) is a separate MCQ-first, cheat-sheet-aware route
+at `#/super-cram`; it uses the same ordinary review evidence and does not replace
+High-Yield Cram. Written responses are
 not automatically graded and typed text is not stored. No proprietary or authenticated
 Playconomics/Academia content is accessed or copied.
 

@@ -2689,7 +2689,7 @@
     "id": "auth-ch10-011",
     "chapter": 10,
     "topic": "Cobb-Douglas marginal products",
-    "style": "calculation",
+    "style": "concept",
     "difficulty": 2,
     "stem": "For the constant-returns Cobb-Douglas function \\(Y = A K^\\alpha L^{1-\\alpha}\\), which pair gives the marginal products of capital and labour?",
     "choices": [
@@ -2708,7 +2708,7 @@
     ],
     "reviewCardId": "ch10-031",
     "sourceCardIds": ["ch10-031"],
-    "tags": ["exam-bank", "Cobb-Douglas", "MPK", "MPL", "calculation"],
+    "tags": ["exam-bank", "Cobb-Douglas", "MPK", "MPL", "formula-recognition"],
     "provenance": "authored_from_flashcards"
   },
   {

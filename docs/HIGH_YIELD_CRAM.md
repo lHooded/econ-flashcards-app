@@ -161,6 +161,14 @@ Ordinary `#/guided` omits the high-yield candidate restriction and uses the
 same selector inputs and ordering as before. `#/study`, mocks, Practice Lab,
 and the ReviewEvent/CardState evidence model are not weighted by this registry.
 
+`#/super-cram` is intentionally a separate policy. It is question-first and
+cheat-sheet-aware: it discounts lookup-skippable exam content, applies explicit
+question-level form metadata, and tracks cold formula-family application only for
+the current session. It does not change this page's prerequisite-aware Guided-based
+`#/high-yield` behaviour, and it does not add a second scheduler or learner model.
+See [`SUPER_CRAM.md`](./SUPER_CRAM.md) for its selector and Formula Application
+registry.
+
 Guided and High-Yield Cram share one persisted lesson acknowledgement set. A lesson
 is recorded as seen only when the learner explicitly presses `Check understanding`;
 displaying or opening it does not persist exposure. This prevents unnecessary
@@ -266,8 +274,10 @@ produced physical capital, while financial assets are not physical capital. The
 imprecise option set does not justify changing that distinction.
 
 The post-change registry validates at 11 sources, 33 skills (13 critical,
-13 very-high, 7 core), 301 knowledge concepts, 354 canonical cards and 173
-unified exam questions.
+13 very-high, 7 core), 301 knowledge concepts, 354 canonical cards and 197
+unified exam questions. The separate Formula Application registry contains 45
+curated questions, including 24 newly authored practice-form analogues; see
+[`SUPER_CRAM.md`](./SUPER_CRAM.md).
 
 ## Persistence and offline behaviour
 

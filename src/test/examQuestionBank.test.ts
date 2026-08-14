@@ -34,28 +34,28 @@ describe("exam question bank", () => {
   it("loads the full deterministic unified bank", () => {
     expect(examQuestions).toHaveLength(examQuestionStats.total);
     expect(examQuestionStats).toMatchObject({
-      total: 173,
+      total: 197,
       canonical: 31,
-      authored: 142,
-      stimulusCount: 31,
+      authored: 166,
+      stimulusCount: 39,
       graphCount: 20,
-      tableCount: 11,
-      uniqueReviewCardIds: 167,
-      reviewCardsWithMultipleQuestions: 6,
+      tableCount: 19,
+      uniqueReviewCardIds: 175,
+      reviewCardsWithMultipleQuestions: 22,
       maximumQuestionsPerReviewCard: 2,
     });
     expect(examQuestionStats.byChapterStimulus).toEqual({
       "0": 0,
-      "1": 3,
+      "1": 5,
       "2": 3,
-      "3": 3,
+      "3": 4,
       "4": 3,
-      "5": 3,
+      "5": 5,
       "6": 3,
-      "7": 3,
+      "7": 4,
       "8": 3,
-      "9": 4,
-      "10": 3,
+      "9": 5,
+      "10": 4,
     });
     expect(examQuestions).toEqual(
       validateExamQuestionBank(structuredClone(examQuestions), {
