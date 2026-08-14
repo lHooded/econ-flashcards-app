@@ -61,6 +61,10 @@ describe("hash routing", () => {
       practiceMode: "mcq",
       conceptId: "bond",
     });
+    expect(parseHashLocation("#/practice?mode=formula-application")).toMatchObject({
+      route: "/practice",
+      practiceMode: "formula-application",
+    });
     expect(parseHashLocation("#/practice?mode=not-real").practiceMode).toBeNull();
   });
 
@@ -96,6 +100,13 @@ describe("hash routing", () => {
     ).toMatchObject({
       route: "/high-yield",
       conceptId: "trade-weighted-index",
+    });
+  });
+
+  it("supports the separate cheat-sheet-aware Super Cram route", () => {
+    expect(parseHashLocation("#/super-cram")).toMatchObject({
+      route: "/super-cram",
+      practiceMode: null,
     });
   });
 

@@ -1,6 +1,6 @@
 # Econ Cram Cards
 
-Econ Cram Cards is an installable, offline-first React PWA for the 352-card
+Econ Cram Cards is an installable, offline-first React PWA for the 354-card
 macroeconomics deck covering Chapters 1–10. Its default study mode is **Exam-SRS**, a
 transparent deadline-aware heuristic for retrieval practice, corrective feedback,
 successive relearning, and full-deck coverage.
@@ -123,8 +123,11 @@ selection, timer semantics, persistence, exactly-once Exam-SRS integration, and
 Practice Lab limitations.
 
 Practice Lab is deliberately separate from the scheduler recommendation: Study now
-follows Exam-SRS, while Question Bank Drill, Graphs & Tables, Calculations, and
-self-marked Written Response are untimed user-selected formats. Written responses are
+follows Exam-SRS, while Question Bank Drill, Graphs & Tables, Calculations, Formula
+Application and self-marked Written Response are untimed user-selected formats.
+[`Super Cram`](docs/SUPER_CRAM.md) is a separate MCQ-first, cheat-sheet-aware route
+at `#/super-cram`; it uses the same ordinary review evidence and does not replace
+High-Yield Cram. Written responses are
 not automatically graded and typed text is not stored. No proprietary or authenticated
 Playconomics/Academia content is accessed or copied.
 
@@ -144,6 +147,11 @@ local timezone for the `datetime-local` exam setting.
 npm run validate:deck
 npm run validate:exam-questions
 npm run validate:calculations
+npm run validate:knowledge
+npm run validate:guided
+npm run validate:exam-yield
+npm run validate:super-cram
+npm run audit:super-cram
 npm run typecheck
 npm run lint
 npm run format:check
@@ -268,6 +276,6 @@ local to their starting device until terminal finalisation. See
 [docs/SYNC.md](docs/SYNC.md) for owner setup, protocol, pairing, merge, privacy, and
 local-development details.
 
-No malformed economics records were found in the supplied 352-card JSON. The 31
-authored MCQs have valid zero-based correct-choice indexes, and the 321 non-MCQ cards
+No malformed economics records were found in the supplied 354-card JSON. The 31
+authored MCQs have valid zero-based correct-choice indexes, and the 323 non-MCQ cards
 validate without choices.

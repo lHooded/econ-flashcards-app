@@ -1,5 +1,6 @@
 import rawAuthoredQuestions from "../../exam_questions/MACRO1_exam_questions.json";
 import rawStimulusQuestions from "../../exam_questions/MACRO1_exam_stimulus_questions.json";
+import rawFormulaApplicationQuestions from "../../exam_questions/MACRO1_formula_application_questions.json";
 import { cardIds, cards } from "../data/deck";
 import type { Flashcard } from "../domain/content";
 import type { ExamQuestion, FourChoices } from "./model";
@@ -19,7 +20,7 @@ const validationOptions: QuestionBankValidationOptions = {
 };
 
 const authoredQuestions = validateExamQuestionBank(
-  [...rawAuthoredQuestions, ...rawStimulusQuestions],
+  [...rawAuthoredQuestions, ...rawStimulusQuestions, ...rawFormulaApplicationQuestions],
   validationOptions,
 );
 const canonicalQuestions = cards

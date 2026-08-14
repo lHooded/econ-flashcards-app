@@ -15,7 +15,13 @@ describe("historical mock results", () => {
       seed: "result-history",
       createdAt: "2026-08-11T00:00:00.000Z",
     });
-    const first = base.manifest.find((manifest) => manifest.chapter !== 8);
+    const first = base.manifest.find(
+      (manifest) =>
+        manifest.chapter !== 8 &&
+        examQuestions
+          .find((question) => question.id === manifest.questionId)
+          ?.stem.includes("\\(") === true,
+    );
     if (first === undefined) throw new Error("Expected a non-Chapter 8 manifest item");
     const historical = {
       ...base,

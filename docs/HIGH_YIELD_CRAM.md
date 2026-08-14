@@ -8,8 +8,8 @@ course. It is not an exam-prediction model.
 
 ## Evidence and disclosure
 
-The bundled registry is static, deterministic and offline. It contains eight
-source records and 29 skill-family records. Each source has an authenticity
+The bundled registry is static, deterministic and offline. It contains eleven
+source records and 33 skill-family records. Each source has an authenticity
 weight and a current-format-fit weight. These are transparent heuristics, not
 calibrated probabilities. The UI therefore says `Critical`, `Very high`,
 `Core`, `Support`, or gives a short source explanation; it never shows a
@@ -23,7 +23,9 @@ The source hierarchy is:
 3. 2018/19 course-specific final MCQ practice;
 4. 2020 sample/final-style material;
 5. recent course assessments and data exercises;
-6. pre-2017 finals as weak historical consistency evidence.
+6. supplied 2026 current-course practice tests, used as scoped recent-assessment
+   evidence for active practice and format fit;
+7. pre-2017 finals as weak historical consistency evidence.
 
 Current lectures, required textbook/tutorial material and current course
 conventions outrank historical wording. Source URLs and metadata are in
@@ -67,8 +69,8 @@ Everything else remains examinable support material.
 The bounded chapter priors are:
 
 ```text
-Ch1 0.85  Ch2 0.80  Ch3 0.85  Ch4 0.80  Ch5 0.90
-Ch6 1.10  Ch7 1.15  Ch8 1.30  Ch9 1.40  Ch10 1.25  mixed 1.25
+Ch0 1.25  Ch1 0.85  Ch2 0.80  Ch3 0.85  Ch4 0.80  Ch5 1.05
+Ch6 1.10  Ch7 1.15  Ch8 1.40  Ch9 1.40  Ch10 1.40
 ```
 
 They explain a modest late-course uplift, not predicted exam weights. Chapter
@@ -159,6 +161,19 @@ Ordinary `#/guided` omits the high-yield candidate restriction and uses the
 same selector inputs and ordering as before. `#/study`, mocks, Practice Lab,
 and the ReviewEvent/CardState evidence model are not weighted by this registry.
 
+The separate Super Cram policy also uses the ordinary attempted-and-due eligibility
+rule; a non-due weak or relearning card does not bypass Exam-SRS spacing. This
+does not alter High-Yield's prerequisite-aware Guided selection or its scheduler
+semantics.
+
+`#/super-cram` is intentionally a separate policy. It is question-first and
+cheat-sheet-aware: it discounts lookup-skippable exam content, applies explicit
+question-level form metadata, and tracks cold formula-coverage-unit application only
+for the current session. It does not change this page's prerequisite-aware Guided-based
+`#/high-yield` behaviour, and it does not add a second scheduler or learner model.
+See [`SUPER_CRAM.md`](./SUPER_CRAM.md) for its selector and Formula Application
+registry.
+
 Guided and High-Yield Cram share one persisted lesson acknowledgement set. A lesson
 is recorded as seen only when the learner explicitly presses `Check understanding`;
 displaying or opening it does not persist exposure. This prevents unnecessary
@@ -187,10 +202,87 @@ were genuinely undertrained:
 Four additional analogous MCQs strengthen integrated gaps without copying
 historical stems: `auth-ch06-012` (bank-risk chain), `auth-ch07-012`
 (PRF/deflation/ZLB/Fisher), `auth-ch09-012` (fixed-peg speculative attack),
-and `auth-ch02-011` (wage-floor policy comparison). The final bundle therefore
+and `auth-ch02-011` (wage-floor policy comparison). The earlier content-addition
+bundle therefore
 has 352 canonical cards, 168 exam questions and 300 knowledge concepts. The
 three new concepts are `money-destruction`,
 `cash-rate-security-transmission`, and `trade-weighted-index`.
+
+## 2026 current-course practice-test recalibration
+
+The supplied practice sets are registered as `recent-assessment` sources:
+`practice-test-1-2026` (Chapters 1–4), `practice-test-2-2026` (Chapters 5–7),
+and `practice-test-3-2026` (Chapters 8–10). They are exact current-course MCQ
+evidence with strong authenticity and format-fit heuristics. Their scopes are
+chapter-restricted, so raw question totals across the three sets are not
+comparable as comprehensive-final chapter probabilities. Repeated questions
+within one block indicate active practice/testing of a skill, not a calibrated
+final appearance probability. The final remains comprehensive across Chapters
+1–10, and no learner-visible numerical probability is added.
+
+The bounded chapter priors changed exactly as follows:
+
+```text
+Before: Ch0 1.25  Ch1 0.85  Ch2 0.80  Ch3 0.85  Ch4 0.80  Ch5 0.90
+        Ch6 1.10  Ch7 1.15  Ch8 1.30  Ch9 1.40  Ch10 1.25
+After:  Ch0 1.25  Ch1 0.85  Ch2 0.80  Ch3 0.85  Ch4 0.80  Ch5 1.05
+        Ch6 1.10  Ch7 1.15  Ch8 1.40  Ch9 1.40  Ch10 1.40
+```
+
+The maximum chapter-prior contribution remains 8 points; tier bases, evidence
+caps, propagation, scheduler semantics, and forecast calibration are unchanged.
+
+The targeted content additions are deliberately small:
+
+- Canonical cards `ch08-033` (anchored inflation expectations) and `ch10-031`
+  (Cobb-Douglas MPK/MPL formulas).
+- Knowledge concept `anchored-inflation-expectations`, with prerequisite and
+  related edges to expectations, the inflation target, supply shocks, policy
+  credibility and accommodation. No separate human-capital concept was added;
+  the existing `ch10-017` card remains the course-backed retrieval surface for
+  human capital within the broader capital family.
+- Authored questions `auth-ch08-011`, `auth-ch10-011`, `auth-ch10-012`,
+  `auth-ch09-013` (a declared-sign-convention current-account table), and
+  `auth-ch05-011` (primary versus overall budget balance). All have four static
+  choices, specific rationales, valid review-card links and stay within the
+  two-variant cap.
+
+High-yield attribution changed as follows:
+
+- Added critical `critical-ad-prf-quantitative-chain` for the PAE → Y(r) → PRF
+  → AD equation chain, with direct Practice Test 3 evidence and only the
+  constitutive Ch8 cards/concepts.
+- Expanded critical supply-shock policy trade-offs with anchored expectations,
+  and expanded critical BOP/current-account coverage with primary income,
+  secondary income and current-account composition.
+- Expanded critical Cobb-Douglas production with direct MPK/MPL retrieval.
+- Added very-high `very-high-growth-living-standards` for GDP per capita,
+  productivity, output per worker, employment intensity, capital and the
+  decomposition identity; `natural-capital` remains supporting rather than a
+  direct target.
+- Replaced core `core-fiscal-multipliers-debt` with very-high
+  `very-high-fiscal-multipliers-stabilisers` and
+  `very-high-budget-debt-sustainability`, using direct Practice Test 2 evidence
+  without promoting peripheral fiscal-rule material.
+- Added core `core-investment-user-cost` for the real-rate → user-cost → VMPK
+  → desired-investment chain, using direct Practice Test 1 evidence. It remains
+  core rather than critical.
+
+The ambiguous practice claims were checked against the current local course
+sources. The wealth-effect explanation for a downward AD curve was rejected as
+canonical Chapter 8 teaching: current course material derives AD through the
+PRF, interest-sensitive C/I, PAE and equilibrium output. The generic textbook
+wealth-effect explanation is not encoded where it would conflict with that
+course-specific derivation. The land/physical-capital item was also not used to
+flatten the ontology: current course records distinguish natural capital from
+produced physical capital, while financial assets are not physical capital. The
+imprecise option set does not justify changing that distinction.
+
+The post-change registry validates at 11 sources, 33 skills (13 critical,
+13 very-high, 7 core), 301 knowledge concepts, 354 canonical cards and 197
+unified exam questions. The separate Formula Application registry contains 45
+curated questions, including 24 newly authored practice-form analogues; see
+[`SUPER_CRAM.md`](./SUPER_CRAM.md).
 
 ## Persistence and offline behaviour
 

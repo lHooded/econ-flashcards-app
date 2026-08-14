@@ -27,12 +27,12 @@ export const CHAPTER_PRIORS: Readonly<Record<number, number>> = Object.freeze({
   2: 0.8,
   3: 0.85,
   4: 0.8,
-  5: 0.9,
+  5: 1.05,
   6: 1.1,
   7: 1.15,
-  8: 1.3,
+  8: 1.4,
   9: 1.4,
-  10: 1.25,
+  10: 1.4,
 });
 
 export const PROPAGATION_DECAY = 0.6;
@@ -227,6 +227,16 @@ export function getExamYieldReasons(
       reasons.push({
         label: "Skill family repeated in final MCQ practice",
         priority: 90,
+      });
+    } else if (
+      evidence.some(
+        (item) =>
+          item.sourceId.startsWith("practice-test-") && item.relation === "direct",
+      )
+    ) {
+      reasons.push({
+        label: "Current-course practice-test evidence",
+        priority: 88,
       });
     } else if (
       evidence.some(

@@ -188,6 +188,10 @@ export function HomePage() {
           <strong>High-Yield Cram</strong>
           <span>Evidence-backed final priorities shaped by your progress</span>
         </a>
+        <a href="#/super-cram">
+          <strong>Super Cram</strong>
+          <span>Cheat-sheet-aware MCQ drilling</span>
+        </a>
         <a href="#/mock">
           <strong>Full mock exam</strong>
           <span>Realistic 60-question simulation</span>

@@ -1,0 +1,423 @@
+import { describe, expect, it } from "vitest";
+import { cards } from "../data/deck";
+import type { ExamQuestion } from "../exam/model";
+import { examQuestions } from "../exam/questionBank";
+import { DEFAULT_APP_SETTINGS } from "../domain/progress";
+import {
+  applySuperCramAnswer,
+  buildSuperCramCandidates,
+  buildFormulaApplicationSet,
+  createEmptySuperCramSession,
+  getFormulaFamilyForQuestion,
+  getQuestionReasonKind,
+  scoreSuperCramCandidate,
+  selectSuperCramQuestion,
+} from "../superCram/selector";
+import { getQuestionCheatSheetProfile } from "../superCram/selector";
+import { validateSuperCramRegistry } from "../superCram/validate";
+import {
+  assertValidCheatSheetSections,
+  CHEAT_SHEET_SECTIONS,
+} from "../superCram/cheatSheetCatalog";
+import type {
+  SuperCramQuestionCandidate,
+  SuperCramSessionState,
+} from "../superCram/model";
+
+const NOW = Date.parse("2026-08-14T00:00:00.000Z");
+
+function question(id: string, reviewCardId: string, chapter: number): ExamQuestion {
+  const source = examQuestions[0];
+  return {
+    ...source,
+    id,
+    reviewCardId,
+    sourceCardIds: [reviewCardId],
+    chapter,
+    topic: id,
+  };
+}
+
+function candidate(
+  overrides: Partial<SuperCramQuestionCandidate> = {},
+): SuperCramQuestionCandidate {
+  const baseQuestion = question("synthetic-question", "ch01-001", 1);
+  return {
+    question: baseQuestion,
+    examYieldScore: 100,
+    examYieldTier: "critical",
+    studyWorthiness: 3,
+    cheatSheetClass: "mixed",
+    cheatSheetSections: ["Q1"],
+    formulaFamilyId: null,
+    formulaCoverageUnitId: null,
+    reasonKind: "reasoning-heavy",
+    isUrgent: false,
+    hasWeakEvidence: false,
+    srsPriority: 1100,
+    score: 0,
+    ...overrides,
+  };
+}
+
+function session(
+  overrides: Partial<SuperCramSessionState> = {},
+): SuperCramSessionState {
+  return { ...createEmptySuperCramSession(), ...overrides };
+}
+
+describe("Super Cram metadata and selector", () => {
+  it("validates the complete cheat-sheet and Formula Application registries", () => {
+    const stats = validateSuperCramRegistry();
+    expect(stats.examSkillCount).toBe(33);
+    expect(stats.cheatSheetProfileCount).toBe(33);
+    expect(stats.formulaApplicationQuestionCount).toBeGreaterThanOrEqual(32);
+    expect(stats.newFormulaApplicationQuestionCount).toBeGreaterThanOrEqual(16);
+    expect(stats.formulaFamilyCount).toBe(26);
+    expect(stats.formulaCoverageUnitCount).toBe(39);
+    expect(stats.byChapter["1"]).toBeGreaterThanOrEqual(1);
+    expect(stats.byChapter["10"]).toBeGreaterThanOrEqual(1);
+  });
+
+  it("uses only the supplied cheat-sheet catalog", () => {
+    expect(Object.keys(CHEAT_SHEET_SECTIONS)).toHaveLength(80);
+    expect(() => assertValidCheatSheetSections(["8G"], "test")).toThrow(
+      /unknown cheat-sheet section/,
+    );
+    expect(() => assertValidCheatSheetSections(["9D", "Q3"], "test")).not.toThrow();
+  });
+
+  it("keeps direct lookup material below equal-yield reasoning material", () => {
+    const lookup = candidate({
+      question: question("lookup", "ch01-001", 1),
+      studyWorthiness: 1,
+      cheatSheetClass: "direct-lookup",
+      reasonKind: "lookup-validation",
+    });
+    const reasoning = candidate({
+      question: question("reasoning", "ch01-002", 1),
+      studyWorthiness: 5,
+      cheatSheetClass: "reasoning-heavy",
+      reasonKind: "reasoning-heavy",
+    });
+    const state = session();
+    expect(
+      scoreSuperCramCandidate({ candidate: reasoning, session: state, nowMs: NOW }),
+    ).toBeGreaterThan(
+      scoreSuperCramCandidate({ candidate: lookup, session: state, nowMs: NOW }),
+    );
+  });
+
+  it("lets genuine due/relearning evidence beat unseen fashionable material", () => {
+    const urgent = candidate({
+      question: question("urgent", "ch02-001", 2),
+      examYieldScore: 40,
+      studyWorthiness: 1,
+      isUrgent: true,
+      srsPriority: 1400,
+      reasonKind: "urgent-weakness",
+    });
+    const fashionable = candidate({
+      question: question("fashionable", "ch09-001", 9),
+      examYieldScore: 200,
+      studyWorthiness: 5,
+      isUrgent: false,
+    });
+    const selected = selectSuperCramQuestion({
+      candidates: [urgent, fashionable],
+      session: session(),
+      nowMs: NOW,
+    });
+    expect(selected?.question.id).toBe("urgent");
+  });
+
+  it("keeps a recent urgent question ahead of non-due work", () => {
+    const urgent = candidate({
+      question: question("urgent-recent-question", "ch08-003", 8),
+      examYieldScore: 30,
+      isUrgent: true,
+      srsPriority: 1400,
+      reasonKind: "urgent-weakness",
+    });
+    const nonUrgent = candidate({
+      question: question("nonurgent-fashionable", "ch09-003", 9),
+      examYieldScore: 10_000,
+      studyWorthiness: 5,
+    });
+    const selected = selectSuperCramQuestion({
+      candidates: [urgent, nonUrgent],
+      session: session({ recentQuestionIds: [urgent.question.id] }),
+      nowMs: NOW,
+    });
+    expect(selected?.question.id).toBe(urgent.question.id);
+  });
+
+  it("keeps a recent urgent review card ahead of non-due work", () => {
+    const urgent = candidate({
+      question: question("urgent-recent-card", "ch08-003", 8),
+      examYieldScore: 30,
+      isUrgent: true,
+      srsPriority: 1400,
+      reasonKind: "urgent-weakness",
+    });
+    const nonUrgent = candidate({
+      question: question("nonurgent-card", "ch09-003", 9),
+      examYieldScore: 10_000,
+      studyWorthiness: 5,
+    });
+    const selected = selectSuperCramQuestion({
+      candidates: [urgent, nonUrgent],
+      session: session({ recentReviewCardIds: [urgent.question.reviewCardId] }),
+      nowMs: NOW,
+    });
+    expect(selected?.question.id).toBe(urgent.question.id);
+  });
+
+  it("prefers a less-recent urgent alternative without leaving the urgent pool", () => {
+    const recentUrgent = candidate({
+      question: question("urgent-recent", "ch08-003", 8),
+      examYieldScore: 10_000,
+      isUrgent: true,
+      srsPriority: 1400,
+      reasonKind: "urgent-weakness",
+    });
+    const freshUrgent = candidate({
+      question: question("urgent-fresh", "ch09-003", 9),
+      examYieldScore: 1,
+      isUrgent: true,
+      srsPriority: 1,
+      reasonKind: "urgent-weakness",
+    });
+    const selected = selectSuperCramQuestion({
+      candidates: [recentUrgent, freshUrgent],
+      session: session({
+        recentQuestionIds: [recentUrgent.question.id],
+        recentReviewCardIds: [recentUrgent.question.reviewCardId],
+      }),
+      nowMs: NOW,
+    });
+    expect(selected?.question.id).toBe(freshUrgent.question.id);
+  });
+
+  it("samples a cold formula unit and lowers its bonus after success", () => {
+    const formula = candidate({
+      question: question("formula-one", "ch03-001", 3),
+      examYieldScore: 70,
+      studyWorthiness: 2,
+      formulaFamilyId: "formula-test",
+      formulaCoverageUnitId: "coverage-test",
+      reasonKind: "formula-application",
+    });
+    const state = session();
+    const coldScore = scoreSuperCramCandidate({
+      candidate: formula,
+      session: state,
+      nowMs: NOW,
+    });
+    const next = applySuperCramAnswer(state, formula, true);
+    const coveredScore = scoreSuperCramCandidate({
+      candidate: formula,
+      session: next,
+      nowMs: NOW,
+    });
+    expect(coldScore).toBeGreaterThan(coveredScore);
+    expect(next.formulaCoverageUnitsCovered.has("coverage-test")).toBe(true);
+  });
+
+  it("remediates a failed formula unit with a different question after spacing", () => {
+    const first = candidate({
+      question: question("formula-one", "ch03-001", 3),
+      formulaFamilyId: "formula-test",
+      formulaCoverageUnitId: "coverage-test",
+      reasonKind: "formula-application",
+    });
+    const second = candidate({
+      question: question("formula-two", "ch03-002", 3),
+      formulaFamilyId: "formula-test",
+      formulaCoverageUnitId: "other-coverage-test",
+      reasonKind: "formula-application",
+    });
+    const failed = applySuperCramAnswer(session(), first, false);
+    const retryVariant = {
+      ...first,
+      question: question("formula-retry", "ch03-003", 3),
+    };
+    expect(
+      scoreSuperCramCandidate({ candidate: retryVariant, session: failed, nowMs: NOW }),
+    ).toBeGreaterThan(
+      scoreSuperCramCandidate({ candidate: second, session: failed, nowMs: NOW }),
+    );
+    const selected = selectSuperCramQuestion({
+      candidates: [first, second].map((item) => ({
+        ...item,
+        score: scoreSuperCramCandidate({
+          candidate: item,
+          session: failed,
+          nowMs: NOW,
+        }),
+      })),
+      session: failed,
+      nowMs: NOW,
+    });
+    expect(failed.formulaCoverageUnitsFailed.has("coverage-test")).toBe(true);
+    expect(selected?.question.id).toBe("formula-two");
+  });
+
+  it("keeps distinct forms independent inside a broad family", () => {
+    const bond = candidate({
+      formulaFamilyId: "formula-bond-return-and-corridor",
+      formulaCoverageUnitId: "bond-present-value",
+      reasonKind: "formula-application",
+    });
+    const share = candidate({
+      question: question("share", "ch06-001", 6),
+      formulaFamilyId: "formula-bond-return-and-corridor",
+      formulaCoverageUnitId: "share-return",
+      reasonKind: "formula-application",
+    });
+    const corridor = candidate({
+      question: question("corridor", "ch07-004", 7),
+      formulaFamilyId: "formula-bond-return-and-corridor",
+      formulaCoverageUnitId: "cash-rate-corridor",
+      reasonKind: "formula-application",
+    });
+    const next = applySuperCramAnswer(session(), bond, true);
+    expect(next.formulaCoverageUnitsCovered).toEqual(new Set(["bond-present-value"]));
+    expect(next.formulaCoverageUnitsCovered.has("share-return")).toBe(false);
+    expect(next.formulaCoverageUnitsCovered.has("cash-rate-corridor")).toBe(false);
+    expect(
+      scoreSuperCramCandidate({ candidate: share, session: next, nowMs: NOW }),
+    ).toBeGreaterThan(
+      scoreSuperCramCandidate({
+        candidate: { ...share, formulaCoverageUnitId: "bond-present-value" },
+        session: next,
+        nowMs: NOW,
+      }),
+    );
+    expect(corridor.formulaCoverageUnitId).toBe("cash-rate-corridor");
+  });
+
+  it("keeps MPC and four-sector multiplier coverage independent", () => {
+    const mpc = candidate({
+      formulaFamilyId: "formula-mpc-and-fiscal-multiplier",
+      formulaCoverageUnitId: "mpc",
+      reasonKind: "formula-application",
+    });
+    const multiplier = candidate({
+      question: question("multiplier", "ch05-013", 5),
+      formulaFamilyId: "formula-mpc-and-fiscal-multiplier",
+      formulaCoverageUnitId: "four-sector-multiplier",
+      reasonKind: "formula-application",
+    });
+    const next = applySuperCramAnswer(session(), mpc, true);
+    expect(next.formulaCoverageUnitsCovered.has("mpc")).toBe(true);
+    expect(next.formulaCoverageUnitsCovered.has("four-sector-multiplier")).toBe(false);
+    const failed = applySuperCramAnswer(session(), multiplier, false);
+    expect(failed.formulaCoverageUnitsFailed.has("four-sector-multiplier")).toBe(true);
+    expect(failed.formulaCoverageUnitsFailed.has("mpc")).toBe(false);
+  });
+
+  it("retains broad family filtering while selecting fine-grained forms", () => {
+    const set = buildFormulaApplicationSet({
+      chapter: 6,
+      familyId: "formula-bond-return-and-corridor",
+      size: 10,
+      seed: "coverage-filter",
+    });
+    expect(set.length).toBe(2);
+    expect(set.every((item) => item.chapter === 6)).toBe(true);
+    expect(
+      set.every(
+        (item) =>
+          getFormulaFamilyForQuestion(item.id)?.id ===
+          "formula-bond-return-and-corridor",
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes manually learned question and card targets", () => {
+    const sampleQuestion = examQuestions.find(
+      (item) => item.id === "auth-form-ch10-013",
+    )!;
+    const questionExcluded = buildSuperCramCandidates({
+      questions: [sampleQuestion],
+      cards,
+      reviewEvents: [],
+      settings: DEFAULT_APP_SETTINGS,
+      nowMs: NOW,
+      manuallyLearnedQuestionIds: new Set([sampleQuestion.id]),
+    });
+    const cardExcluded = buildSuperCramCandidates({
+      questions: [sampleQuestion],
+      cards,
+      reviewEvents: [],
+      settings: DEFAULT_APP_SETTINGS,
+      nowMs: NOW,
+      manuallyLearnedCardIds: new Set([sampleQuestion.reviewCardId]),
+    });
+    expect(questionExcluded).toEqual([]);
+    expect(cardExcluded).toEqual([]);
+  });
+
+  it("suppresses every MCQ attached to a stale just-saved review card", () => {
+    const cardId = "ch08-003";
+    const cardQuestions = examQuestions.filter((item) => item.reviewCardId === cardId);
+    expect(cardQuestions.length).toBeGreaterThan(1);
+    expect(
+      buildSuperCramCandidates({
+        questions: cardQuestions,
+        cards,
+        reviewEvents: [],
+        settings: DEFAULT_APP_SETTINGS,
+        nowMs: NOW,
+        suppressedCardIds: new Set([cardId]),
+      }),
+    ).toEqual([]);
+  });
+
+  it("does not classify MPK/MPL formula recognition as formula application", () => {
+    const recognition = examQuestions.find((item) => item.id === "auth-ch10-011")!;
+    const profile = getQuestionCheatSheetProfile(recognition);
+    expect(recognition.style).toBe("concept");
+    expect(getQuestionReasonKind(recognition, profile, false, undefined)).toBe(
+      "lookup-validation",
+    );
+  });
+
+  it("uses question-level overrides for lookupable forms inside broader skills", () => {
+    const conversion = examQuestions.find((item) => item.id === "auth-ch09-005")!;
+    const fixedPeg = examQuestions.find((item) => item.id === "auth-form-ch09-014")!;
+    expect(getQuestionCheatSheetProfile(conversion).studyWorthiness).toBe(1);
+    expect(getQuestionCheatSheetProfile(fixedPeg).studyWorthiness).toBe(5);
+  });
+
+  it("retains base skill sections when a question-level worthiness override changes class", () => {
+    const supplyShock = examQuestions.find((item) => item.id === "auth-ch08-006")!;
+    const profile = getQuestionCheatSheetProfile(supplyShock);
+    expect(profile.studyWorthiness).toBe(5);
+    expect(profile.cheatSheetSections).toEqual(
+      expect.arrayContaining(["8C", "8E", "8F", "T4"]),
+    );
+  });
+
+  it("keeps scenario/form bonuses bounded against an urgent target", () => {
+    const urgent = candidate({
+      question: question("urgent", "ch03-003", 3),
+      examYieldScore: 50,
+      isUrgent: true,
+      srsPriority: 1400,
+      reasonKind: "urgent-weakness",
+    });
+    const scenario = candidate({
+      question: { ...question("scenario", "ch09-003", 9), style: "scenario" },
+      examYieldScore: 220,
+      studyWorthiness: 5,
+      reasonKind: "reasoning-heavy",
+    });
+    expect(
+      scoreSuperCramCandidate({ candidate: urgent, session: session(), nowMs: NOW }),
+    ).toBeGreaterThan(
+      scoreSuperCramCandidate({ candidate: scenario, session: session(), nowMs: NOW }),
+    );
+  });
+});

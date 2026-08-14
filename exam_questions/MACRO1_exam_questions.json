@@ -2658,5 +2658,161 @@
       "productivity"
     ],
     "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch08-011",
+    "chapter": 8,
+    "topic": "Anchored inflation expectations",
+    "style": "scenario",
+    "difficulty": 2,
+    "stem": "A temporary adverse supply shock raises current inflation while the central bank remains credible and does not indefinitely accommodate excess inflation. Which outcome best matches the course model?",
+    "choices": [
+      "Current inflation can rise temporarily while medium- and long-run expected inflation remains near the credible target.",
+      "The central bank must immediately lower its inflation target so expectations do not rise.",
+      "Anchored expectations mean current inflation cannot move after a supply shock.",
+      "Permanent accommodation is required because refusing to accommodate the shock destroys the inflation anchor."
+    ],
+    "correctChoice": 0,
+    "explanation": "Credibility can keep medium- and long-run expected inflation near the target even when a temporary supply shock raises current inflation. The anchor is protected when policy does not indefinitely accommodate persistent excess inflation; flexible targeting does not require eliminating every short-run deviation immediately.",
+    "choiceRationales": [
+      "This distinguishes a temporary movement in current inflation from an anchored medium- and long-run expectation.",
+      "A credible target need not be lowered after a temporary shock; lowering it could weaken the anchor.",
+      "Anchoring concerns expected future inflation, not an impossible condition that current inflation never changes.",
+      "Indefinite accommodation can make a one-off shock self-perpetuating rather than preserve credibility."
+    ],
+    "reviewCardId": "ch08-033",
+    "sourceCardIds": ["ch08-033"],
+    "tags": ["exam-bank", "expectations", "supply-shock", "policy-credibility"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-011",
+    "chapter": 10,
+    "topic": "Cobb-Douglas marginal products",
+    "style": "concept",
+    "difficulty": 2,
+    "stem": "For the constant-returns Cobb-Douglas function \\(Y = A K^\\alpha L^{1-\\alpha}\\), which pair gives the marginal products of capital and labour?",
+    "choices": [
+      "\\(MPK = Y/K\\) and \\(MPL = Y/L\\)",
+      "\\(MPK = \\alpha Y/K\\) and \\(MPL = (1-\\alpha) Y/L\\)",
+      "\\(MPK = \\alpha Y/L\\) and \\(MPL = (1-\\alpha) Y/K\\)",
+      "\\(MPK = \\alpha K/Y\\) and \\(MPL = (1-\\alpha) L/Y\\)"
+    ],
+    "correctChoice": 1,
+    "explanation": "Differentiating \\(Y = A K^\\alpha L^{1-\\alpha}\\) with respect to K and L gives \\(MPK = \\alpha Y/K\\) and \\(MPL = (1-\\alpha) Y/L\\). Each marginal product holds the other input fixed.",
+    "choiceRationales": [
+      "These are average-product-style ratios and omit the relevant Cobb-Douglas exponents.",
+      "This correctly assigns alpha to the marginal product of K and 1-alpha to the marginal product of L.",
+      "The denominators attach each factor to the wrong marginal product.",
+      "These invert the output-to-input relationship and do not give an extra-output derivative."
+    ],
+    "reviewCardId": "ch10-031",
+    "sourceCardIds": ["ch10-031"],
+    "tags": ["exam-bank", "Cobb-Douglas", "MPK", "MPL", "formula-recognition"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch10-012",
+    "chapter": 10,
+    "topic": "GDP per capita decomposition",
+    "style": "calculation",
+    "difficulty": 1,
+    "stem": "An economy produces $80,000 of real output per worker and has an employment-to-population ratio of 0.60. Using real GDP per capita = output per worker × employment-to-population ratio, what is real GDP per capita?",
+    "choices": ["$32,000", "$80,000", "$48,000", "$133,333"],
+    "correctChoice": 2,
+    "explanation": "Real GDP per capita is \\((Y/L) \\times (L/\\text{Population})\\) = $80,000 × 0.60 = $48,000.",
+    "choiceRationales": [
+      "$32,000 uses an incorrect 0.40 share rather than the stated employment-to-population ratio of 0.60.",
+      "$80,000 is output per worker, not output per person in the whole population.",
+      "Multiplying output per worker by the employment intensity gives $48,000 per person.",
+      "$133,333 divides by 0.60 and reverses the decomposition."
+    ],
+    "reviewCardId": "ch10-028",
+    "sourceCardIds": ["ch10-028"],
+    "tags": ["exam-bank", "GDP-per-capita", "productivity", "calculation"],
+    "provenance": "authored_from_flashcards"
+  },
+  {
+    "id": "auth-ch09-013",
+    "chapter": 9,
+    "topic": "Current-account composition",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Use the stated sign convention: current account = goods/services balance + net primary income + net secondary income. A balance-of-payments table reports goods/services = +$1,000 million, net primary income = -$3,500 million and net secondary income = -$1,200 million. What is the current-account balance?",
+    "choices": [
+      "+$5,700 million",
+      "-$1,700 million",
+      "+$3,700 million",
+      "-$3,700 million"
+    ],
+    "correctChoice": 3,
+    "explanation": "Adding the three stated current-account components gives +1,000 - 3,500 - 1,200 = -$3,700 million.",
+    "choiceRationales": [
+      "This adds the absolute values and ignores the negative signs on both net income components.",
+      "This does not sum all three components under the stated sign convention.",
+      "This treats the two negative components as positive or reverses their contribution.",
+      "This correctly adds goods/services, net primary income and net secondary income."
+    ],
+    "reviewCardId": "ch09-002",
+    "sourceCardIds": ["ch09-002", "ch09-004", "ch09-005"],
+    "tags": ["exam-bank", "BOP", "current-account", "table", "calculation"],
+    "provenance": "authored_from_flashcards",
+    "stimulus": {
+      "type": "table",
+      "caption": "Current-account components ($ millions)",
+      "columns": [
+        {
+          "key": "component",
+          "label": "Component",
+          "align": "left"
+        },
+        {
+          "key": "balance",
+          "label": "Balance ($m)",
+          "align": "right"
+        }
+      ],
+      "rows": [
+        {
+          "id": "goods-services",
+          "cells": ["Goods/services balance", "+1,000"]
+        },
+        {
+          "id": "primary-income",
+          "cells": ["Net primary income", "-3,500"]
+        },
+        {
+          "id": "secondary-income",
+          "cells": ["Net secondary income", "-1,200"]
+        }
+      ],
+      "note": "Use CA = goods/services balance + net primary income + net secondary income. Positive values are credits and negative values are debits under this question’s convention."
+    }
+  },
+  {
+    "id": "auth-ch05-011",
+    "chapter": 5,
+    "topic": "Primary and overall budget balance",
+    "style": "calculation",
+    "difficulty": 2,
+    "stem": "Suppose tax receipts are $900 million, transfers are $120 million, government purchases G are $650 million and interest payments are $80 million. What are the primary and overall budget balances?",
+    "choices": [
+      "Primary surplus $130 million; overall deficit $50 million",
+      "Primary deficit $130 million; overall deficit $50 million",
+      "Primary surplus $50 million; overall surplus $130 million",
+      "Primary surplus $130 million; overall surplus $50 million"
+    ],
+    "correctChoice": 3,
+    "explanation": "The primary balance is T - transfers - G = 900 - 120 - 650 = +$130 million. Subtracting interest gives the overall balance: +130 - 80 = +$50 million.",
+    "choiceRationales": [
+      "The primary calculation is right, but subtracting interest from a primary surplus of $130 million leaves an overall surplus, not a deficit.",
+      "The primary balance is positive because tax receipts exceed transfers and government purchases by $130 million.",
+      "This swaps the primary and overall results; interest changes the overall balance but not the primary balance.",
+      "This correctly separates the balance before interest from the balance after interest."
+    ],
+    "reviewCardId": "ch05-019",
+    "sourceCardIds": ["ch05-019", "ch05-018", "ch05-022"],
+    "tags": ["exam-bank", "budget-balance", "primary-balance", "debt", "calculation"],
+    "provenance": "authored_from_flashcards"
   }
 ]

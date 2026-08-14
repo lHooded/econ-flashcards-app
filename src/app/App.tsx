@@ -10,6 +10,7 @@ import { PracticePage } from "../pages/PracticePage";
 import { StudyPage } from "../pages/StudyPage";
 import { KnowledgePage } from "../pages/KnowledgePage";
 import { GuidedCramPage } from "../pages/GuidedCramPage";
+import { SuperCramPage } from "../pages/SuperCramPage";
 import type { ParsedHashLocation } from "./hashRoute";
 import { capturePairingRoute } from "./pairingRoute";
 import { KnowledgeProvider } from "../knowledge/KnowledgeProvider";
@@ -90,6 +91,8 @@ function Application() {
           initialConceptId={conceptId}
           mode="high-yield"
         />
+      ) : route === "/super-cram" ? (
+        <SuperCramPage />
       ) : (
         <HomePage />
       )}

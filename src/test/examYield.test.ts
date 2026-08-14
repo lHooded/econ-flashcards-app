@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { cards } from "../data/deck";
-import { examQuestions } from "../exam/questionBank";
+import { examQuestions, getExamQuestion } from "../exam/questionBank";
+import { cardConceptMap } from "../knowledge/contentMap";
 import { knowledgeConcepts } from "../knowledge/data";
 import { examEvidenceSources } from "../examYield/sources";
 import { examSkillEvidence } from "../examYield/skills";
 import {
+  CHAPTER_PRIORS,
   directYieldForSkill,
+  getExamSkillsForCard,
+  getExamSkillsForConcept,
   getExamYieldForCard,
   getExamYieldForConcept,
   getExamYieldReasons,
@@ -25,16 +29,16 @@ describe("immutable exam-yield blueprint", () => {
       questions: examQuestions,
     });
     expect(stats).toMatchObject({
-      sourceCount: 8,
-      skillCount: 29,
-      criticalCount: 12,
-      veryHighCount: 10,
+      sourceCount: 11,
+      skillCount: 33,
+      criticalCount: 13,
+      veryHighCount: 13,
       coreCount: 7,
       supportCount: 0,
-      mappedConcepts: 127,
-      mappedCards: 119,
-      mappedQuestions: 84,
-      criticalWithRetrieval: 12,
+      mappedConcepts: 154,
+      mappedCards: 160,
+      mappedQuestions: 104,
+      criticalWithRetrieval: 13,
       criticalWithoutRetrieval: 0,
     });
     expect(stats.totalConcepts).toBe(knowledgeConcepts.length);
@@ -138,7 +142,7 @@ describe("immutable exam-yield blueprint", () => {
     });
   });
 
-  it("matches the committed 29-skill attribution audit", () => {
+  it("matches the committed 33-skill attribution audit", () => {
     const relationFor = (skill: (typeof examSkillEvidence)[number], sourceId: string) =>
       skill.sourceEvidence.find((evidence) => evidence.sourceId === sourceId)
         ?.relation ?? "none";
@@ -156,12 +160,12 @@ describe("immutable exam-yield blueprint", () => {
       examSkillEvidence.filter(
         (skill) => relationFor(skill, "actual-final-2020") === "none",
       ),
-    ).toHaveLength(8);
+    ).toHaveLength(12);
     expect(
       examSkillEvidence.filter(
         (skill) => relationFor(skill, "final-practice-2018-19") === "direct",
       ),
-    ).toHaveLength(27);
+    ).toHaveLength(28);
     expect(
       examSkillEvidence.every((skill) =>
         skill.sourceEvidence.every((evidence) => evidence.note.trim().length > 0),
@@ -180,6 +184,172 @@ describe("immutable exam-yield blueprint", () => {
           (evidence) => evidence.sourceId === "final-practice-2018-19",
         )?.relation,
     ).toBe("direct");
+  });
+});
+
+describe("2026 practice-test calibration additions", () => {
+  it("uses the intended priors without expanding the chapter-prior cap", () => {
+    expect(CHAPTER_PRIORS).toEqual({
+      0: 1.25,
+      1: 0.85,
+      2: 0.8,
+      3: 0.85,
+      4: 0.8,
+      5: 1.05,
+      6: 1.1,
+      7: 1.15,
+      8: 1.4,
+      9: 1.4,
+      10: 1.4,
+    });
+
+    const criticalAtEarlyPrior = {
+      ...examSkillEvidence[0],
+      id: "test-critical-prior-cap",
+      chapterHints: [0],
+      sourceEvidence: [],
+      crossChapterMechanism: false,
+    };
+    const criticalAtLatePrior = {
+      ...criticalAtEarlyPrior,
+      id: "test-critical-late-prior-cap",
+      chapterHints: [10],
+    };
+    const veryHighAtLatePrior = {
+      ...criticalAtLatePrior,
+      id: "test-very-high-late-prior-cap",
+      tier: "very-high" as const,
+    };
+    expect(
+      directYieldForSkill(criticalAtLatePrior) -
+        directYieldForSkill(criticalAtEarlyPrior),
+    ).toBeLessThanOrEqual(MAX_CHAPTER_PRIOR_CONTRIBUTION);
+    expect(directYieldForSkill(criticalAtEarlyPrior)).toBeGreaterThan(
+      directYieldForSkill(veryHighAtLatePrior),
+    );
+  });
+
+  it("registers scoped practice evidence without a probability field", () => {
+    const practiceSources = examEvidenceSources.filter((source) =>
+      source.id.startsWith("practice-test-"),
+    );
+    expect(practiceSources.map((source) => source.id)).toEqual([
+      "practice-test-1-2026",
+      "practice-test-2-2026",
+      "practice-test-3-2026",
+    ]);
+    for (const source of practiceSources) {
+      expect(source.kind).toBe("recent-assessment");
+      expect(source.notes).toMatch(/restricted to Chapters/);
+      expect(source.notes).toMatch(/not comparable/);
+      expect(source.notes).toMatch(/not a calibrated final appearance rate/);
+      expect(
+        Object.keys(source).some((key) => key.toLowerCase().includes("probab")),
+      ).toBe(false);
+    }
+    expect(getExamYieldReasons("ch10-001")[0]).toEqual({
+      label: "Current-course practice-test evidence",
+      priority: 88,
+    });
+  });
+
+  it("keeps new skills direct and prevents broad-concept leakage", () => {
+    const adSkill = examSkillEvidence.find(
+      (skill) => skill.id === "critical-ad-prf-quantitative-chain",
+    )!;
+    expect(adSkill.cardIds).toEqual(
+      expect.arrayContaining([
+        "ch08-001",
+        "ch08-002",
+        "ch08-003",
+        "ch08-004",
+        "ch08-005",
+        "ch08-006",
+        "ch08-031",
+        "ch08-032",
+      ]),
+    );
+    expect(getExamSkillsForCard("ch08-001")).toContainEqual(adSkill);
+    expect(getExamSkillsForCard("ch08-007")).not.toContainEqual(adSkill);
+    expect(getExamSkillsForConcept("ad-equation")).toContainEqual(adSkill);
+
+    const livingStandards = examSkillEvidence.find(
+      (skill) => skill.id === "very-high-growth-living-standards",
+    )!;
+    expect(livingStandards.supportingConceptIds).toContain("natural-capital");
+    expect(livingStandards.targetConceptIds).not.toContain("natural-capital");
+    expect(getExamSkillsForCard("ch10-024")).not.toContainEqual(livingStandards);
+    expect(getExamSkillsForConcept("natural-capital")).not.toContainEqual(
+      livingStandards,
+    );
+    expect(getExamYieldForCard("ch10-024").directSkillIds).not.toContain(
+      livingStandards.id,
+    );
+  });
+
+  it("maps the new retrieval cards, detailed BOP family and authored questions", () => {
+    expect(cardConceptMap["ch10-031"]).toEqual(
+      expect.arrayContaining([
+        "cobb-douglas",
+        "production-function",
+        "marginal-product-capital",
+        "marginal-product-labour",
+      ]),
+    );
+    expect(cardConceptMap["ch08-033"]).toEqual(
+      expect.arrayContaining([
+        "anchored-inflation-expectations",
+        "inflation-target",
+        "supply-shock",
+      ]),
+    );
+    const anchored = knowledgeConcepts.find(
+      (concept) => concept.id === "anchored-inflation-expectations",
+    )!;
+    expect(anchored.linkedCardIds).toContain("ch08-033");
+    expect(anchored.linkedQuestionIds).toContain("auth-ch08-011");
+
+    const bop = examSkillEvidence.find(
+      (skill) => skill.id === "critical-bop-current-account",
+    )!;
+    expect(bop.targetConceptIds).toEqual(
+      expect.arrayContaining(["primary-income", "secondary-income"]),
+    );
+    expect(bop.cardIds).toEqual(expect.arrayContaining(["ch09-004", "ch09-005"]));
+    expect(bop.cardIds).not.toContain("ch09-016");
+
+    for (const id of [
+      "auth-ch08-011",
+      "auth-ch10-011",
+      "auth-ch10-012",
+      "auth-ch09-013",
+      "auth-ch05-011",
+    ]) {
+      expect(getExamQuestion(id)).toBeDefined();
+    }
+    expect(getExamQuestion("auth-ch09-013")?.stimulus?.type).toBe("table");
+  });
+
+  it("promotes only the intended fiscal families and keeps user cost core", () => {
+    expect(
+      examSkillEvidence.find((skill) => skill.id === "core-fiscal-multipliers-debt"),
+    ).toBeUndefined();
+    expect(
+      examSkillEvidence.find(
+        (skill) => skill.id === "very-high-fiscal-multipliers-stabilisers",
+      )?.tier,
+    ).toBe("very-high");
+    expect(
+      examSkillEvidence.find(
+        (skill) => skill.id === "very-high-budget-debt-sustainability",
+      )?.tier,
+    ).toBe("very-high");
+    expect(
+      examSkillEvidence.find((skill) => skill.id === "core-investment-user-cost")?.tier,
+    ).toBe("core");
+    expect(
+      examSkillEvidence.find((skill) => skill.id === "core-investment-user-cost")?.tier,
+    ).not.toBe("critical");
   });
 });
 

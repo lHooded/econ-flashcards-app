@@ -4,6 +4,11 @@ import { cards } from "../data/deck";
 import { examQuestions } from "../exam/questionBank";
 import type { ExamQuestion } from "../exam/model";
 import { buildPracticeSet } from "../practice/selector";
+import {
+  buildFormulaApplicationSet,
+  getFormulaFamilyForQuestion,
+} from "../superCram/selector";
+import { formulaApplicationFamilies } from "../superCram/formulaFamilies";
 import type { NewReviewEvent, ReviewRating } from "../domain/progress";
 import { QuestionStimulus } from "../components/stimulus/QuestionStimulus";
 import { GeneratedCalculationLab } from "../components/calculations/GeneratedCalculationLab";
@@ -14,7 +19,8 @@ import { knowledgeConceptById } from "../knowledge/data";
 import { getEffectiveManualLearned } from "../study/manualLearned";
 import { ManualLearnedAction } from "../components/ManualLearnedAction";
 
-type PracticeMode = "mcq" | "stimulus" | "written" | "calculations";
+type PracticeMode =
+  "mcq" | "stimulus" | "written" | "calculations" | "formula-application";
 type CalculationPracticeSubmode = "generated" | "authored";
 type StimulusFilter = "all" | "econ_graph" | "table" | "text";
 type PracticeSavePhase = "answering" | "revealed" | "pending_save" | "completed";
@@ -53,6 +59,16 @@ export function PracticePage({
         }}
       />
     );
+  if (mode === "formula-application") {
+    return (
+      <FormulaApplicationSession
+        onBack={() => {
+          setMode(null);
+          window.location.hash = "#/practice";
+        }}
+      />
+    );
+  }
   return (
     <PracticeSession
       mode={mode}
@@ -101,7 +117,7 @@ function PracticeOverview({
       <div className="practice-mode-grid">
         <PracticeModeCard
           title="Question Bank Drill"
-          description="Filter the 168-question bank by chapter, style, and stimulus. Immediate feedback is saved to Exam-SRS."
+          description="Filter the 197-question bank by chapter, style, and stimulus. Immediate feedback is saved to Exam-SRS."
           onClick={() => onChoose("mcq")}
         />
         <PracticeModeCard
@@ -118,6 +134,11 @@ function PracticeOverview({
           title="Calculations"
           description="Practise fresh generated numbers or switch to the unchanged authored calculation MCQs."
           onClick={() => onChoose("calculations")}
+        />
+        <PracticeModeCard
+          title="Formula Application"
+          description="Practice-test-style MCQs for choosing, rearranging and applying the formulas on your cheat sheet."
+          onClick={() => onChoose("formula-application")}
         />
       </div>
       <section className="callout">
@@ -636,6 +657,258 @@ function isEditablePracticeTarget(target: EventTarget | null): boolean {
   );
 }
 
+function FormulaApplicationSession({ onBack }: { readonly onBack: () => void }) {
+  const { snapshot, recordReview } = useProgress();
+  const [chapter, setChapter] = useState<number | null>(null);
+  const [familyId, setFamilyId] = useState<string | null>(null);
+  const [size, setSize] = useState<5 | 10 | 20>(10);
+  const [seed, setSeed] = useState(() => Date.now());
+  const [index, setIndex] = useState(0);
+  const [presentationOrdinal, setPresentationOrdinal] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [phase, setPhase] = useState<PracticeSavePhase>("answering");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const pendingPayload = useRef<NewReviewEvent | null>(null);
+  const startedAt = useRef(0);
+  const manualLearned = useMemo(
+    () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
+    [snapshot?.manualLearnedOverrides],
+  );
+  const excludedQuestionIds = useMemo(() => {
+    const excluded = new Set(manualLearned.questionIds);
+    for (const question of examQuestions) {
+      if (manualLearned.cardIds.has(question.reviewCardId)) excluded.add(question.id);
+    }
+    return excluded;
+  }, [manualLearned.cardIds, manualLearned.questionIds]);
+  const questions = useMemo(
+    () =>
+      buildFormulaApplicationSet({
+        chapter,
+        familyId,
+        size,
+        seed,
+        excludedQuestionIds,
+      }),
+    [chapter, excludedQuestionIds, familyId, seed, size],
+  );
+  const question = questions[index];
+  const family =
+    question === undefined ? undefined : getFormulaFamilyForQuestion(question.id);
+  const compatibleFamilies = useMemo(
+    () =>
+      formulaApplicationFamilies.filter(
+        (item) => chapter === null || item.chapters.includes(chapter),
+      ),
+    [chapter],
+  );
+  const practiceContextKey = [chapter ?? "all", familyId ?? "all", size, seed].join(
+    "|",
+  );
+
+  useEffect(() => {
+    setIndex(0);
+    setSelected(null);
+    setPhase("answering");
+    setPresentationOrdinal((current) => current + 1);
+    pendingPayload.current = null;
+    setSaveError(null);
+  }, [chapter, familyId, seed, size]);
+
+  useEffect(() => {
+    if (
+      familyId !== null &&
+      chapter !== null &&
+      !formulaApplicationFamilies.some(
+        (item) => item.id === familyId && item.chapters.includes(chapter),
+      )
+    ) {
+      setFamilyId(null);
+    }
+  }, [chapter, familyId]);
+
+  useEffect(() => {
+    startedAt.current =
+      typeof performance === "undefined" ? Date.now() : performance.now();
+  }, [practiceContextKey, presentationOrdinal, question?.id]);
+
+  const submit = useCallback(async () => {
+    if (question === undefined || selected === null || phase !== "answering") return;
+    const now = typeof performance === "undefined" ? Date.now() : performance.now();
+    const payload: NewReviewEvent = {
+      cardId: question.reviewCardId,
+      mode: "mcq",
+      rating: null,
+      correct: selected === question.correctChoice,
+      selectedChoice: selected,
+      responseTimeMs: Math.max(0, now - startedAt.current),
+    };
+    pendingPayload.current = payload;
+    setPhase("pending_save");
+    setSaveError(null);
+    try {
+      await recordReview(payload);
+      setPhase("completed");
+    } catch (error: unknown) {
+      setSaveError(
+        error instanceof Error ? error.message : "Formula review could not be saved.",
+      );
+    }
+  }, [phase, question, recordReview, selected]);
+
+  const retry = useCallback(async () => {
+    if (pendingPayload.current === null || phase !== "pending_save") return;
+    setSaveError(null);
+    try {
+      await recordReview(pendingPayload.current);
+      setPhase("completed");
+    } catch (error: unknown) {
+      setSaveError(
+        error instanceof Error ? error.message : "Formula review could not be saved.",
+      );
+    }
+  }, [phase, recordReview]);
+
+  const next = useCallback(() => {
+    if (phase !== "completed") return;
+    setIndex((current) => (current + 1 >= questions.length ? 0 : current + 1));
+    setSelected(null);
+    setPresentationOrdinal((current) => current + 1);
+    setPhase("answering");
+    pendingPayload.current = null;
+    setSaveError(null);
+  }, [phase, questions.length]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isEditablePracticeTarget(event.target)) return;
+      if (/^[1-4]$/.test(event.key) && phase === "answering") {
+        event.preventDefault();
+        setSelected(Number(event.key) - 1);
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (phase === "completed") next();
+        else if (phase === "answering") void submit();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [next, phase, submit]);
+
+  const locked = phase === "pending_save";
+  return (
+    <div className="page-stack practice-page">
+      <section className="page-heading">
+        <div>
+          <p className="eyebrow">Practice Lab · formula application</p>
+          <h1>Use the cheat sheet, then make the formula work.</h1>
+          <p className="lede">
+            Curated four-option analogues practise choosing, rearranging and applying
+            the supplied formulas. The first application is deliberately practised here,
+            not saved for the exam.
+          </p>
+        </div>
+        <button
+          className="secondary-button heading-action"
+          type="button"
+          onClick={onBack}
+          disabled={locked}
+        >
+          Change format
+        </button>
+      </section>
+      <section className="panel practice-controls">
+        <label className="field-label">
+          Chapter
+          <select
+            value={chapter === null ? "all" : chapter}
+            onChange={(event) =>
+              setChapter(
+                event.target.value === "all" ? null : Number(event.target.value),
+              )
+            }
+            disabled={locked}
+          >
+            <option value="all">All chapters</option>
+            {Array.from({ length: 10 }, (_, index) => index + 1).map(
+              (chapterNumber) => (
+                <option value={chapterNumber} key={chapterNumber}>
+                  Chapter {chapterNumber}
+                </option>
+              ),
+            )}
+          </select>
+        </label>
+        <label className="field-label">
+          Formula family
+          <select
+            value={familyId ?? "all"}
+            onChange={(event) =>
+              setFamilyId(event.target.value === "all" ? null : event.target.value)
+            }
+            disabled={locked}
+          >
+            <option value="all">All formula forms</option>
+            {compatibleFamilies.map((item) => (
+              <option value={item.id} key={item.id}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field-label">
+          Set size
+          <select
+            value={size}
+            onChange={(event) => setSize(Number(event.target.value) as 5 | 10 | 20)}
+            disabled={locked}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
+        </label>
+        <button
+          className="secondary-button"
+          type="button"
+          onClick={() => setSeed((previous) => previous + 1)}
+          disabled={locked}
+        >
+          New set
+        </button>
+      </section>
+      {question === undefined ? (
+        <section className="callout">
+          <h2>No formula applications match.</h2>
+          <p>Try a broader chapter or family filter.</p>
+        </section>
+      ) : (
+        <PracticeMcq
+          question={question}
+          testedConceptIds={cardConceptMap[question.reviewCardId] ?? []}
+          index={index}
+          total={questions.length}
+          selected={selected}
+          saved={phase === "completed"}
+          saving={locked}
+          pending={locked}
+          error={saveError}
+          feedbackNote={
+            family === undefined
+              ? undefined
+              : `Formula Application · ${family.label} · cheat sheet may be used.`
+          }
+          revealAllRationales
+          onSelect={setSelected}
+          onSubmit={() => void submit()}
+          onRetry={() => void retry()}
+          onNext={next}
+        />
+      )}
+    </div>
+  );
+}
+
 export function PracticeMcq({
   question,
   testedConceptIds,
@@ -651,6 +924,8 @@ export function PracticeMcq({
   onRetry,
   onNext,
   onMarkLearned,
+  feedbackNote,
+  revealAllRationales = false,
 }: {
   readonly question: ExamQuestion;
   readonly testedConceptIds: readonly string[];
@@ -666,6 +941,8 @@ export function PracticeMcq({
   readonly onRetry: () => void;
   readonly onNext: () => void;
   readonly onMarkLearned?: () => Promise<void>;
+  readonly feedbackNote?: string;
+  readonly revealAllRationales?: boolean;
 }) {
   const correct = selected === question.correctChoice;
   return (
@@ -736,21 +1013,38 @@ export function PracticeMcq({
           <p>
             <strong>Explanation:</strong> <KnowledgeText text={question.explanation} />
           </p>
+          {feedbackNote !== undefined && (
+            <p>
+              <strong>Why this appeared:</strong> {feedbackNote}
+            </p>
+          )}
           <p>
             <strong>Common trap:</strong>{" "}
             <MathText
               text={question.choiceRationales[selected ?? question.correctChoice]}
             />
           </p>
-          <details>
-            <summary>Show all choice rationales</summary>
-            {question.choiceRationales.map((rationale, rationaleIndex) => (
-              <p key={rationaleIndex}>
-                <strong>{String.fromCharCode(65 + rationaleIndex)}.</strong>{" "}
-                <KnowledgeText text={rationale} />
-              </p>
-            ))}
-          </details>
+          {revealAllRationales ? (
+            <div className="choice-rationales">
+              <strong>Choice rationales</strong>
+              {question.choiceRationales.map((rationale, rationaleIndex) => (
+                <p key={rationaleIndex}>
+                  <strong>{String.fromCharCode(65 + rationaleIndex)}.</strong>{" "}
+                  <KnowledgeText text={rationale} />
+                </p>
+              ))}
+            </div>
+          ) : (
+            <details>
+              <summary>Show all choice rationales</summary>
+              {question.choiceRationales.map((rationale, rationaleIndex) => (
+                <p key={rationaleIndex}>
+                  <strong>{String.fromCharCode(65 + rationaleIndex)}.</strong>{" "}
+                  <KnowledgeText text={rationale} />
+                </p>
+              ))}
+            </details>
+          )}
           <button className="primary-button" type="button" onClick={onNext}>
             Next
           </button>

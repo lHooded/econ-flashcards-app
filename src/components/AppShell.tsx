@@ -12,6 +12,7 @@ const navigation = [
   { href: "#/study", route: "/study" as const, label: "Study" },
   { href: "#/guided", route: "/guided" as const, label: "Guided Cram" },
   { href: "#/high-yield", route: "/high-yield" as const, label: "High-Yield Cram" },
+  { href: "#/super-cram", route: "/super-cram" as const, label: "Super Cram" },
   { href: "#/mock", route: "/mock" as const, label: "Mock exam" },
   { href: "#/practice", route: "/practice" as const, label: "Practice Lab" },
   { href: "#/knowledge", route: "/knowledge" as const, label: "Knowledge" },

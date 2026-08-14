@@ -713,6 +713,47 @@ export const courseRecordsD = [
     ],
   }),
   c({
+    id: "anchored-inflation-expectations",
+    name: "Anchored inflation expectations",
+    aliases: [
+      "anchored expectations",
+      "credible inflation expectations",
+      "inflation-expectations anchor",
+    ],
+    searchTerms: [
+      "temporary supply shock and anchored expectations",
+      "credible inflation target expectations",
+      "expectations remain near target",
+    ],
+    chapters: [8],
+    tags: ["chapter-8", "AD-AS", "expectations", "policy", "high-yield"],
+    summary:
+      "Anchored inflation expectations keep medium- and long-run expected inflation near a credible target even when current inflation temporarily moves after a shock.",
+    intuition:
+      "A temporary adverse supply shock can raise current inflation without changing where people expect inflation to settle when the central bank’s target remains credible.",
+    explanation: [
+      "An anchor helps prevent a one-off supply shock from becoming self-perpetuating through wage and price setting. Refusing to accommodate persistent excess inflation supports the credibility of the target.",
+      "Anchoring does not mean current inflation cannot rise temporarily, and flexible inflation targeting does not require mechanically eliminating every supply-shock deviation immediately.",
+      "The expectation anchor is a medium- and long-run belief about the target, not a claim that every household or firm forecasts identically or that the short-run AS curve becomes vertical.",
+    ],
+    whyItMatters:
+      "It connects supply shocks, inflation dynamics, the inflation target and the policy trade-off without teaching accommodation as a permanent response.",
+    prerequisites: ["inflation-expectations", "inflation-target", "supply-shock"],
+    relatedConcepts: [
+      "policy-reaction-function",
+      "central-bank",
+      "accommodating-inflation",
+      "adaptive-expectations",
+      "inflation-dynamics",
+    ],
+    sourceRefs: [
+      L("lecture-w7-l2", 15, "Expected and actual inflation."),
+      L("lecture-w7-l2", 37, "Policy responses to supply shocks."),
+      L("lecture-w7-l2", 41, "Inflation-target credibility discussion."),
+      T(225, "Expectations and temporary supply shocks."),
+    ],
+  }),
+  c({
     id: "demand-shock",
     name: "Demand shock",
     aliases: ["aggregate-demand shock", "AD shock"],

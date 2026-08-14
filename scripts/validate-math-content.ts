@@ -380,7 +380,7 @@ function inspectStimulus(
 }
 
 function inspectAuthoredSourceParity(issues: string[]): void {
-  if (rawAuthoredQuestions.length !== 107) {
+  if (rawAuthoredQuestions.length !== 112) {
     issues.push(
       "authored exam registry unexpectedly contains " +
         rawAuthoredQuestions.length +

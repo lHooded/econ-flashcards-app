@@ -6,7 +6,7 @@ calculation registry and its validation evidence remain easy to review.
 
 ## Coverage
 
-- Canonical deck: 352 cards.
+- Canonical deck: 354 cards.
 - Canonical `kind === "calculation"` cards: 26.
 - Generated-enabled cards: 26 / 26.
 - Templates: 26, one per canonical calculation card.
