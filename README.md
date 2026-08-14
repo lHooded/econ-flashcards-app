@@ -1,6 +1,6 @@
 # Econ Cram Cards
 
-Econ Cram Cards is an installable, offline-first React PWA for the 352-card
+Econ Cram Cards is an installable, offline-first React PWA for the 354-card
 macroeconomics deck covering Chapters 1–10. Its default study mode is **Exam-SRS**, a
 transparent deadline-aware heuristic for retrieval practice, corrective feedback,
 successive relearning, and full-deck coverage.
@@ -268,6 +268,6 @@ local to their starting device until terminal finalisation. See
 [docs/SYNC.md](docs/SYNC.md) for owner setup, protocol, pairing, merge, privacy, and
 local-development details.
 
-No malformed economics records were found in the supplied 352-card JSON. The 31
-authored MCQs have valid zero-based correct-choice indexes, and the 321 non-MCQ cards
+No malformed economics records were found in the supplied 354-card JSON. The 31
+authored MCQs have valid zero-based correct-choice indexes, and the 323 non-MCQ cards
 validate without choices.

@@ -7,7 +7,7 @@ report deliberately does not repeat all question text or graph specifications.
 ## Authoring principles
 
 - The exam bank is a separate immutable content domain. Its questions review the
-  current 352-card canonical deck without creating a second mastery system.
+  current 354-card canonical deck without creating a second mastery system.
 - Every question has exactly four directly comparable choices, one best answer, a
   general explanation, and a specific rationale for every choice.
 - New questions use the supplied course deck, its notation and its model closures.
@@ -40,9 +40,10 @@ content directly from the canonical deck. It preserves the canonical front, choi
 correct index, explanation, topic, difficulty and tags. A small static map supplies
 the style and four choice rationales without modifying the canonical JSON.
 
-The original authored questions and the seven new high-yield analogues remain in
+The original authored questions and the five targeted 2026 practice-test analogues remain in
 `exam_questions/MACRO1_exam_questions.json`. The 30 additional stimulus questions are
-in `exam_questions/MACRO1_exam_stimulus_questions.json`. All 137 authored questions
+in `exam_questions/MACRO1_exam_stimulus_questions.json`; the full bank has 31
+stimulus-bearing questions because `auth-ch09-013` carries the new inline table. All 142 authored questions
 have `provenance: "authored_from_flashcards"`; each maps one primary
 `reviewCardId`—the canonical concept most directly tested by a miss—and includes it
 in `sourceCardIds`. Multiple representations of one concept are allowed and are
@@ -50,7 +51,7 @@ controlled at a maximum of two questions per review card. The future mock select
 which is deliberately not implemented here, must select at most one question for a
 given `reviewCardId` in a single attempt.
 
-## Canonical 352-card inventory
+## Canonical 354-card inventory
 
 The inventory below was generated programmatically from
 `flashcards/MACRO1_master_flashcards.json`, not inferred from the question prompt.
@@ -67,45 +68,45 @@ The inventory below was generated programmatically from
 | 5 | 33 | 0 | 1 | 0 |
 | 6 | 32 | 0 | 3 | 1 |
 | 7 | 29 | 0 | 4 | 3 |
-| 8 | 32 | 0 | 2 | 1 |
+| 8 | 33 | 0 | 2 | 2 |
 | 9 | 41 | 0 | 4 | 3 |
-| 10 | 30 | 0 | 3 | 0 |
-| **Total** | **352** | **31** | **26** | **10** |
+| 10 | 31 | 0 | 3 | 1 |
+| **Total** | **354** | **31** | **26** | **12** |
 
 The 31 valid authored MCQs are the 30 existing mixed Chapter 0 cards plus
-`ch01-002`. The other 321 canonical cards have no authored four-choice MCQ.
+`ch01-002`. The other 323 canonical cards have no authored four-choice MCQ.
 
 ### Cards by canonical kind
 
 | Kind | Count |
 | --- | ---: |
 | recall | 117 |
-| formula | 79 |
+| formula | 80 |
 | scenario | 59 |
 | mcq | 31 |
 | calculation | 26 |
-| contrast | 16 |
+| contrast | 17 |
 | relationship | 14 |
 | classification | 3 |
 | sequence | 6 |
 | exam-trap | 1 |
-| **Total** | **352** |
+| **Total** | **354** |
 
 ## Final unified bank
 
 | Measure | Result |
 | --- | ---: |
-| Total questions | 168 |
+| Total questions | 173 |
 | Canonical MCQs | 31 |
-| New authored questions | 137 |
-| Additional stimulus questions | 30 |
+| New authored questions | 142 |
+| Stimulus-bearing questions | 31 |
 | Mixed questions (Chapter 0) | 30 |
-| Unique `reviewCardId` values | 164 |
-| Review cards with multiple questions | 4 |
+| Unique `reviewCardId` values | 167 |
+| Review cards with multiple questions | 6 |
 | Maximum questions per `reviewCardId` | 2 |
-| Calculation-style questions | 38 |
+| Calculation-style questions | 42 |
 | Graph stimuli | 20 |
-| Table stimuli | 10 |
+| Table stimuli | 11 |
 
 ### Chapter and topic/stimulus matrix
 
@@ -115,15 +116,15 @@ The 31 valid authored MCQs are the 30 existing mixed Chapter 0 cards plus
 | 2 | 14 | 2 graphs, 1 table | Wage floor, labour-demand shift, unemployment rate |
 | 3 | 13 | 2 graphs, 1 table | Saving-investment equilibrium, investment demand, expected real rate |
 | 4 | 13 | 2 graphs, 1 table | PAE/45-degree equilibrium, inventory pressure, open-economy multiplier |
-| 5 | 13 | 2 graphs, 1 table | Fiscal PAE shift, debt-to-GDP dynamics, debt ratio |
+| 5 | 14 | 2 graphs, 1 table | Fiscal PAE shift, primary/overall budget balance, debt-to-GDP dynamics |
 | 6 | 15 | 2 graphs, 1 table | Bond price/yield, money demand, bank reserves, money destruction |
 | 7 | 15 | 2 graphs, 1 table | ES-balance demand/corridor, PRF shift, cash-rate security transmission |
-| 8 | 13 | 2 graphs, 1 table | AD shift, favourable supply shock, output gap |
-| 9 | 15 | 2 graphs, 1 table | AUD FX demand, TWI, overvalued peg, cross-rate conversion |
-| 10 | 13 | 2 graphs, 1 table | Production function, capital deepening, growth accounting |
+| 8 | 14 | 2 graphs, 1 table | AD/PRF derivation, anchored expectations, supply shock, output gap |
+| 9 | 16 | 2 graphs, 3 tables | AUD FX demand, BOP current-account table, TWI, overvalued peg |
+| 10 | 15 | 2 graphs, 1 table | Cobb-Douglas marginal products, living-standards decomposition, growth accounting |
 | 0 | 30 | 0 | Existing canonical cross-model and cross-chapter questions retained unchanged |
 
-Every Chapter 1–10 has three stimulus questions, exceeding the minimum of two per
+Every Chapter 1–10 has at least three stimulus questions, exceeding the minimum of two per
 chapter. The graphs demonstrate labour supply/demand, saving/investment, PAE, bond
 and money markets, ES balances, PRF, AD-AS, foreign exchange and production
 functions. Tables cover GDP deflators, labour statistics, Fisher calculations,
@@ -133,7 +134,7 @@ existing text question when that is the concept actually tested.
 
 ### Stimulus mapping audit
 
-This table is the semantic provenance audit for all 30 stimulus questions. Supporting
+This table is the semantic provenance audit for all 31 stimulus questions. Supporting
 cards remain in each JSON record where the graph, table, convention or calculation
 genuinely uses them.
 
@@ -166,6 +167,7 @@ genuinely uses them.
 | `auth-stim-ch09-001` | `ch09-031` | FX shift |
 | `auth-stim-ch09-002` | `ch09-036` | Overvalued peg |
 | `auth-stim-ch09-003` | `ch09-021` | Cross rate |
+| `auth-ch09-013` | `ch09-002` | Current-account composition table |
 | `auth-stim-ch10-001` | `ch10-011` | Diminishing marginal product |
 | `auth-stim-ch10-002` | `ch10-015` | Capital deepening |
 | `auth-stim-ch10-003` | `ch10-025` | Growth accounting |
@@ -174,12 +176,12 @@ genuinely uses them.
 
 | Style | Unified | New authored | Unified share |
 | --- | ---: | ---: | ---: |
-| concept | 41 | 35 | 24.4% |
-| scenario | 45 | 37 | 26.8% |
-| calculation | 38 | 31 | 22.6% |
+| concept | 41 | 35 | 23.7% |
+| scenario | 46 | 38 | 26.6% |
+| calculation | 42 | 35 | 24.3% |
 | model discrimination | 31 | 25 | 18.5% |
 | sequence | 13 | 9 | 7.7% |
-| **Total** | **168** | **137** | **100%** |
+| **Total** | **173** | **142** | **100%** |
 
 The chapter-specific pool therefore stays close to the intended concept/scenario/
 calculation/model mix. The sequence remainder is used for mechanism and debt-path
@@ -189,21 +191,21 @@ questions where ordering is the examinable skill.
 
 | Difficulty | Count | Share |
 | ---: | ---: | ---: |
-| 1 | 53 | 31.5% |
-| 2 | 83 | 49.4% |
-| 3 | 32 | 19.0% |
-| **Total** | **168** | **100%** |
+| 1 | 54 | 31.2% |
+| 2 | 87 | 50.3% |
+| 3 | 32 | 18.5% |
+| **Total** | **173** | **100%** |
 
 The unified shares remain inside the configured 25–35%, 45–55% and 15–25% target
-ranges. The 30 stimulus questions contribute 10 / 15 / 5 at difficulties 1 / 2 / 3;
+ranges. The 31 stimulus questions contribute 10 / 16 / 5 at difficulties 1 / 2 / 3;
 graph reading is not automatically treated as advanced.
 
 | Correct position | Unified | Additional stimuli |
 | --- | ---: | ---: |
-| A | 43 | 7 |
-| B | 43 | 9 |
-| C | 42 | 7 |
-| D | 40 | 7 |
+| A | 44 | 7 |
+| B | 44 | 9 |
+| C | 43 | 7 |
+| D | 42 | 8 |
 
 The unified maximum-minus-minimum position count is 2. Positions remain static and
 are not randomised at runtime.
@@ -252,21 +254,21 @@ The final validator output is:
 
 ```text
 Exam question bank valid
-Total: 168
+Total: 173
 Canonical MCQ: 31
-New authored: 137
+New authored: 142
 Mixed: 30
 Chapter 1: 14
 Chapter 2: 14
 Chapter 3: 13
 Chapter 4: 13
-Chapter 5: 13
+Chapter 5: 14
 Chapter 6: 15
 Chapter 7: 15
-Chapter 8: 13
-Chapter 9: 15
-Chapter 10: 13
-Stimuli: 30 (graphs 20 / tables 10)
+Chapter 8: 14
+Chapter 9: 16
+Chapter 10: 15
+Stimuli: 31 (graphs 20 / tables 11)
 Chapter 1 stimuli: 3
 Chapter 2 stimuli: 3
 Chapter 3 stimuli: 3
@@ -275,21 +277,21 @@ Chapter 5 stimuli: 3
 Chapter 6 stimuli: 3
 Chapter 7 stimuli: 3
 Chapter 8 stimuli: 3
-Chapter 9 stimuli: 3
+Chapter 9 stimuli: 4
 Chapter 10 stimuli: 3
-Styles: concept 41 / scenario 45 / calculation 38 / model 31 / sequence 13
-Difficulty: 1 53 / 2 83 / 3 32
-Correct positions: A 43 / B 43 / C 42 / D 40
-Calculation questions: 38
-Unique reviewCardId: 164
-Review cards with multiple questions: 4
+Styles: concept 41 / scenario 46 / calculation 42 / model 31 / sequence 13
+Difficulty: 1 54 / 2 87 / 3 32
+Correct positions: A 44 / B 44 / C 43 / D 42
+Calculation questions: 42
+Unique reviewCardId: 167
+Review cards with multiple questions: 6
 Maximum questions per reviewCardId: 2
 Warnings: none
 ```
 
 ## Content and stimulus review pass
 
-I performed a separate second pass over the 30 new stimulus questions in addition to
+I performed a separate second pass over the 31 stimulus questions in addition to
 the original 100-question audit. It checked economic correctness, one-best-answer
 quality, distractor plausibility, source-card consistency, model closure, signs and
 units, arithmetic, wording cues, semantic duplication, graph scale and table units.
@@ -306,10 +308,10 @@ Particular scrutiny was given to:
 - production-function concavity, capital-deepening interpretation and growth-accounting
   weights.
 
-A stimulus-aware blind-answer pass was performed after this hardening pass for all 30
+A stimulus-aware blind-answer pass was performed after this hardening pass for all 31
 stimulus questions using the stem, declarative graph/table data (including rendered
 labels/captions) and choices without consulting `correctChoice`. The independently
-selected answers matched all 30 keys. The pass also checked that titles, captions,
+selected answers matched all 31 keys. The pass also checked that titles, captions,
 notes and accessible descriptions did not add the economic inference being tested.
 The earlier PR #4 blind pass over the original 100 authored questions also remains
 documented in this audit history.

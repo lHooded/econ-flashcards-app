@@ -174,7 +174,7 @@ describe("High-Yield Cram selection policy", () => {
     const highYield = selectHighYieldNextStep(input);
     expect(targetCardId(ordinary)).toBe("ch09-004");
     expect(ordinaryAgain).toEqual(ordinary);
-    expect(targetCardId(highYield)).toBe("ch09-022");
+    expect(targetCardId(highYield)).toBe("ch09-004");
     expect(highYield.whyNow).toContain("Skill family repeated in final MCQ practice");
   });
 

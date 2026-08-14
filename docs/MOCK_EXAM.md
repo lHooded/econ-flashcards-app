@@ -59,7 +59,7 @@ Repeating finalisation is idempotent and cannot increment card states twice.
 
 Practice Lab is untimed and user-directed. Question Bank Drill exposes chapter, style,
 stimulus (`All questions`, `Graphs only`, `Tables only`, or `Text only`), and small
-set-size filters. Graphs & Tables is always limited to the 30 audited stimulus
+set-size filters. Graphs & Tables is always limited to the 31 audited stimulus
 questions and offers `All graphs & tables`, `Graphs only`, or `Tables only`.
 Calculations is always limited to authored calculation MCQs and honours any displayed
 stimulus filter. These modes give immediate feedback only after their normal MCQ

@@ -3,7 +3,7 @@
 Exam-SRS is the default study mode in Econ Cram Cards. It is a transparent,
 finite-horizon engineering heuristic for a nearby exam. It applies retrieval practice,
 corrective feedback, successive relearning, shorter spacing near the study target, and
-explicit coverage protection to the immutable current canonical deck (352 cards
+explicit coverage protection to the immutable current canonical deck (354 cards
 at the high-yield release).
 
 It is not SM-2 or FSRS. It is not a validated memory model, a probability model, or a

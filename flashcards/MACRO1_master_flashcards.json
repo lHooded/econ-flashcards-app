@@ -24,7 +24,7 @@
       "9": "International Macroeconomics and Exchange Rates",
       "10": "Economic Growth"
     },
-    "card_count": 352,
+    "card_count": 354,
     "schema": {
       "id": "stable card id",
       "chapter": "0 for mixed, otherwise 1–10",
@@ -7672,6 +7672,56 @@
       "sources": [
         "Week8_Lecture2",
         "Playconomics Textbook Ch 9"
+      ]
+    },
+    {
+      "id": "ch08-033",
+      "chapter": 8,
+      "topic": "Anchored inflation expectations",
+      "kind": "contrast",
+      "front": "Following a temporary adverse supply shock, what do anchored inflation expectations imply?",
+      "answer": "Medium- and long-run expected inflation remains near the credible target even if current inflation rises temporarily. Credibility and refusing to accommodate persistent excess inflation help prevent a one-off shock from becoming self-perpetuating.",
+      "explanation": "An anchored expectation is a medium- or long-run belief that remains close to the central bank’s credible inflation target. It can stop a temporary adverse supply shock from feeding into wage and price setting indefinitely. Anchoring does not mean current inflation cannot rise, and flexible inflation targeting does not require mechanically eliminating every supply-shock deviation immediately.",
+      "common_trap": "Do not confuse an anchored expectation with unchanged current inflation or with immediate, mechanical policy elimination of every supply shock. The credibility channel is strengthened when the central bank does not indefinitely accommodate persistent excess inflation.",
+      "difficulty": 2,
+      "tags": [
+        "chapter-8",
+        "AD-AS",
+        "expectations",
+        "inflation-target",
+        "policy-credibility",
+        "supply-shock",
+        "high-yield"
+      ],
+      "sources": [
+        "Textbook Ch 8",
+        "Week7_Lecture2",
+        "Current-course practice test 3"
+      ]
+    },
+    {
+      "id": "ch10-031",
+      "chapter": 10,
+      "topic": "Cobb-Douglas marginal products",
+      "kind": "formula",
+      "front": "For \\(Y=AK^\\alpha L^{1-\\alpha}\\), what are the Cobb-Douglas formulas for MPK and MPL?",
+      "answer": "\\(MPK=\\alpha\\frac{Y}{K}\\) and \\(MPL=(1-\\alpha)\\frac{Y}{L}\\).",
+      "explanation": "Differentiate output with respect to one input while holding the other input fixed. The marginal product of another unit of K is \\(\\alpha Y/K\\), while the marginal product of another unit of L is \\((1-\\alpha)Y/L\\). These are marginal products, not average products; in this constant-returns specification the exponents also represent the relevant output elasticities and factor shares.",
+      "common_trap": "Do not swap K and L, omit the exponent, or invert output and the input. MPK and MPL describe the extra output from one more input unit with the other input held fixed.",
+      "difficulty": 2,
+      "tags": [
+        "chapter-10",
+        "Cobb-Douglas",
+        "marginal-product",
+        "MPK",
+        "MPL",
+        "calculation",
+        "high-yield"
+      ],
+      "sources": [
+        "Textbook Ch 10",
+        "Week9_Lecture1",
+        "Current-course practice test 3"
       ]
     }
   ]

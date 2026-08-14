@@ -116,7 +116,7 @@
     "kind": "canonical-deck",
     "label": "MACRO1 canonical flashcard deck",
     "path": "flashcards/MACRO1_master_flashcards.json",
-    "description": "The current canonical course deck used for card-level coverage and review links (352 cards at the audited high-yield release)."
+    "description": "The current canonical course deck used for card-level coverage and review links (354 cards at the 2026 practice-test recalibration release)."
   },
   {
     "id": "question-bank",

@@ -215,9 +215,11 @@ describe("Guided Cram interaction safeguards", () => {
 
     view.rerender(<GuidedPageHarness mode="high-yield" showPage={false} />);
     view.rerender(<GuidedPageHarness mode="high-yield" showPage />);
-    await waitFor(() =>
-      expect(document.getElementById("guided-lesson-title")).not.toBeInTheDocument(),
-    );
+    await waitFor(() => {
+      const remountedTitle =
+        document.getElementById("guided-lesson-title")?.textContent;
+      expect(remountedTitle).not.toBe(lessonTitle);
+    });
     expect(seen).toHaveLength(1);
   });
 });

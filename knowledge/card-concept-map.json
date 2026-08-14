@@ -1546,7 +1546,12 @@
   },
   {
     "cardId": "ch10-028",
-    "conceptIds": ["labour-productivity", "output-per-worker", "productivity"]
+    "conceptIds": [
+      "labour-productivity",
+      "output-per-worker",
+      "employment-population-ratio",
+      "productivity"
+    ]
   },
   {
     "cardId": "ch10-029",
@@ -1591,6 +1596,26 @@
       "real-appreciation",
       "purchasing-power-parity",
       "net-exports"
+    ]
+  },
+  {
+    "cardId": "ch08-033",
+    "conceptIds": [
+      "anchored-inflation-expectations",
+      "inflation-expectations",
+      "inflation-target",
+      "supply-shock",
+      "accommodating-inflation"
+    ]
+  },
+  {
+    "cardId": "ch10-031",
+    "conceptIds": [
+      "cobb-douglas",
+      "production-function",
+      "marginal-product-capital",
+      "marginal-product-labour",
+      "diminishing-marginal-product"
     ]
   }
 ]

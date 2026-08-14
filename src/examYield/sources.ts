@@ -73,6 +73,33 @@ export const examEvidenceSources: readonly ExamEvidenceSource[] = Object.freeze(
       "Current local lecture/tutorial/data-exercise bundle; lower final-frequency weight, higher current-truth value.",
   },
   {
+    id: "practice-test-1-2026",
+    year: 2026,
+    kind: "recent-assessment",
+    authenticityWeight: 0.95,
+    formatFitWeight: 1,
+    notes:
+      "Supplied official/current-course MCQ practice set, restricted to Chapters 1–4. Its raw question total is not comparable with the other chapter-restricted sets as a final-exam chapter probability; repeated questions within this block signal active practice/testing of a skill, not a calibrated final appearance rate. The final remains comprehensive across Chapters 1–10.",
+  },
+  {
+    id: "practice-test-2-2026",
+    year: 2026,
+    kind: "recent-assessment",
+    authenticityWeight: 0.95,
+    formatFitWeight: 1,
+    notes:
+      "Supplied official/current-course MCQ practice set, restricted to Chapters 5–7. Its raw question total is not comparable with the other chapter-restricted sets as a final-exam chapter probability; repeated questions within this block signal active practice/testing of a skill, not a calibrated final appearance rate. The final remains comprehensive across Chapters 1–10.",
+  },
+  {
+    id: "practice-test-3-2026",
+    year: 2026,
+    kind: "recent-assessment",
+    authenticityWeight: 0.95,
+    formatFitWeight: 1,
+    notes:
+      "Supplied official/current-course MCQ practice set, restricted to Chapters 8–10. Its raw question total is not comparable with the other chapter-restricted sets as a final-exam chapter probability; repeated questions within this block signal active practice/testing of a skill, not a calibrated final appearance rate. The final remains comprehensive across Chapters 1–10.",
+  },
+  {
     id: "historical-final-2004",
     year: 2004,
     kind: "historical-final",

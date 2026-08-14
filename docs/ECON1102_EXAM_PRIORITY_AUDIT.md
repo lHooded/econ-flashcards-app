@@ -95,3 +95,100 @@ material remains support material, not disposable material.
 
 The exact before/after IDs, ratings and actions are in
 [`ECON1102_EXTERNAL_EXAM_COVERAGE.md`](./ECON1102_EXTERNAL_EXAM_COVERAGE.md).
+
+## 2026 current-course practice-test audit addendum
+
+The repository now records three newly supplied official/current-course practice
+sets from `practice_tests/cleaned_practice_tests/`:
+
+| Registry source        | Supplied scope | De-duplicated source material |
+| ---------------------- | -------------- | ----------------------------: |
+| `practice-test-1-2026` | Chapters 1–4   |                  20 questions |
+| `practice-test-2-2026` | Chapters 5–7   |                  38 questions |
+| `practice-test-3-2026` | Chapters 8–10  |                  58 questions |
+
+The saved material has no answer key, and the registry stores provenance and
+paraphrased skill signals rather than copied question sets. Each source uses the
+existing `recent-assessment` evidence kind with strong authenticity and exact-MCQ
+format-fit heuristics. The sets are chapter-restricted. Therefore raw totals across
+Test 1, Test 2 and Test 3 are not comparable as comprehensive-final chapter
+appearance probabilities. Repeated questions within one chapter block indicate a
+skill being actively practised/tested, not a calibrated probability that it will
+appear on the final. The final remains comprehensive across Chapters 1–10, and no
+learner-visible numerical probability was introduced.
+
+### Bounded priors
+
+The exact prior change is:
+
+```text
+Before: Ch0 1.25  Ch1 0.85  Ch2 0.80  Ch3 0.85  Ch4 0.80  Ch5 0.90
+        Ch6 1.10  Ch7 1.15  Ch8 1.30  Ch9 1.40  Ch10 1.25
+After:  Ch0 1.25  Ch1 0.85  Ch2 0.80  Ch3 0.85  Ch4 0.80  Ch5 1.05
+        Ch6 1.10  Ch7 1.15  Ch8 1.40  Ch9 1.40  Ch10 1.40
+```
+
+The maximum chapter-prior contribution remains 8 points. Priors remain a bounded
+secondary signal around the larger tier signal; no scheduler, SRS, forecast, sync,
+manual-learned, mock, censoring or persistence semantics changed.
+
+### Content gaps and deliberately non-gaps
+
+The audit found only two justified retrieval additions: `ch08-033` for anchored
+inflation expectations after temporary supply shocks, and `ch10-031` for the direct
+Cobb-Douglas MPK/MPL formulas. Existing coverage was already strong for the Ch8
+PAE/PRF derivation, fiscal multipliers and debt mechanics, BOP definitions, growth
+accounting, productivity, capital deepening and living-standards decomposition.
+Those areas received evidence/priority recalibration rather than bulk card creation.
+
+The five new authored questions are:
+
+1. `auth-ch08-011`: anchored expectations and credibility after a supply shock;
+2. `auth-ch10-011`: Cobb-Douglas MPK/MPL formula discrimination;
+3. `auth-ch10-012`: numerical GDP-per-capita = output-per-worker × employment intensity;
+4. `auth-ch09-013`: full current-account component table with an explicit sign convention;
+5. `auth-ch05-011`: primary versus overall government budget balance.
+
+The current bank is 354 canonical cards, 301 knowledge concepts and 173 unified
+exam questions. All five questions use four static choices, specific rationales,
+canonical review-card/source-card mappings and remain within the maximum two
+variants per `reviewCardId`.
+
+### Exam-yield changes
+
+- Added critical `critical-ad-prf-quantitative-chain`, targeting only the
+  interest-sensitive C/I → PAE equilibrium → Y(r) → PRF substitution → negative
+  inflation coefficient of AD chain. It has direct current-course and strong
+  Practice Test 3 evidence.
+- Expanded critical supply-shock policy trade-offs with
+  `anchored-inflation-expectations`; expanded critical BOP/current-account with
+  primary income, secondary income and composition; and expanded critical
+  Cobb-Douglas with direct MPK/MPL retrieval.
+- Added very-high `very-high-growth-living-standards` for GDP per capita,
+  output per worker, employment intensity, productivity/TFP, capital and the
+  decomposition identity. Natural capital remains supporting, not a direct target.
+- Replaced core `core-fiscal-multipliers-debt` with very-high
+  `very-high-fiscal-multipliers-stabilisers` and
+  `very-high-budget-debt-sustainability`, supported directly by Practice Test 2.
+  Peripheral fiscal-rule material was not promoted.
+- Added core `core-investment-user-cost` for real rate → user cost → marginal
+  profitability → desired investment, supported directly by Practice Test 1.
+  It is intentionally not critical.
+
+After the change the registry has 11 evidence sources and 33 skills: 13 critical,
+13 very-high, 7 core and 0 support. Practice-test strengths are stored on the
+affected skill evidence entries; they are not a pseudo-probability field.
+
+### Source-verification decisions
+
+The apparent wealth-effect reason for a downward AD slope was rejected as a new
+canonical Chapter 8 explanation. The current local lecture/textbook model derives
+the course AD curve through inflation → PRF real rate → interest-sensitive C/I →
+PAE → equilibrium output. A generic textbook wealth-effect story would not be
+encoded where it conflicts with that course-specific derivation.
+
+The land/physical-capital item was also not used to flatten the ontology. Current
+course records distinguish produced physical capital from natural capital (which
+includes land and natural resources), while financial assets are not physical
+capital. The practice item’s broad option set is therefore treated as imprecise;
+the cleaner current-course distinction remains canonical.

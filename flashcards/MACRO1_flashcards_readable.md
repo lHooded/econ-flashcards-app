@@ -1,6 +1,6 @@
 # Macroeconomics Chapters 1–10 — Master Flashcards
 
-**352 cards.** Built from the uploaded e-book, lecture slides, worksheets and tutorial/homework solutions.
+**354 cards.** Built from the uploaded e-book, lecture slides, worksheets and tutorial/homework solutions.
 
 Each card separates the **exam-ready answer** from the deeper **why**, and calls out a **common trap** that corresponds to likely MCQ distractors. Difficulty: 1 = direct, 2 = applied, 3 = synthesis.
 
@@ -3285,7 +3285,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 *Tags: inflation-target, policy-tradeoff*
 
 
-## Chapter 8: Aggregate Demand and Aggregate Supply (32 cards)
+## Chapter 8: Aggregate Demand and Aggregate Supply (33 cards)
 
 
 ### ch08-001 — AD model building blocks · recall · D2
@@ -4371,7 +4371,7 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 *Tags: monetary-policy, exchange-rate, net-exports*
 
 
-## Chapter 10: Economic Growth (30 cards)
+## Chapter 10: Economic Growth (31 cards)
 
 
 ### ch10-001 — Economic growth · recall · D1
@@ -5434,3 +5434,28 @@ Each card separates the **exam-ready answer** from the deeper **why**, and calls
 **Common trap:** Do not read a TWI as a simple nominal AUD/USD quote or as a direct measure of export volume. Check whether the index is nominal or real before interpreting inflation effects.
 
 **Tags:** chapter9, exchange-rate, real-exchange-rate, trade-weighted-index, PPP
+
+### ch08-033 — Anchored inflation expectations · contrast · D2
+
+**Q:** Following a temporary adverse supply shock, what do anchored inflation expectations imply?
+
+**Answer:** Medium- and long-run expected inflation remains near the credible target even if current inflation rises temporarily. Credibility and refusing to accommodate persistent excess inflation help prevent a one-off shock from becoming self-perpetuating.
+
+**Explanation:** An anchor is a medium- or long-run belief that remains close to the central bank’s credible inflation target. It can stop a temporary adverse supply shock from feeding into wage and price setting indefinitely. Anchoring does not mean current inflation cannot rise, and flexible inflation targeting does not require mechanically eliminating every supply-shock deviation immediately.
+
+**Common trap:** Do not confuse an anchored expectation with unchanged current inflation or with immediate, mechanical policy elimination of every supply shock. The credibility channel is strengthened when the central bank does not indefinitely accommodate persistent excess inflation.
+
+**Tags:** chapter8, AD-AS, expectations, inflation-target, policy-credibility, supply-shock, high-yield
+
+
+### ch10-031 — Cobb-Douglas marginal products · formula · D2
+
+**Q:** For \(Y=AK^\alpha L^{1-\alpha}\), what are the Cobb-Douglas formulas for MPK and MPL?
+
+**Answer:** \(MPK=\alpha\frac{Y}{K}\) and \(MPL=(1-\alpha)\frac{Y}{L}\).
+
+**Explanation:** Differentiate output with respect to one input while holding the other input fixed. MPK is the extra output from another unit of K, \(\alpha Y/K\); MPL is the extra output from another unit of L, \((1-\alpha)Y/L\). These are marginal products, not average products; in this constant-returns specification the exponents also represent the relevant output elasticities and factor shares.
+
+**Common trap:** Do not swap K and L, omit the exponent, or invert output and the input. MPK and MPL describe the extra output from one more input unit with the other input held fixed.
+
+**Tags:** chapter10, Cobb-Douglas, marginal-product, MPK, MPL, calculation, high-yield
