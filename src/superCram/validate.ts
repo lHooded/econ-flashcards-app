@@ -11,6 +11,7 @@ import {
   assertFormulaApplicationFamiliesUseCurrentData,
   formulaApplicationFamilies,
   formulaApplicationFamilyById,
+  formulaApplicationCoverageUnitByQuestionId,
   formulaApplicationMetaByQuestionId,
   formulaApplicationQuestionMeta,
 } from "./formulaFamilies";
@@ -22,6 +23,7 @@ export interface SuperCramValidationStats {
   readonly examSkillCount: number;
   readonly cheatSheetProfileCount: number;
   readonly formulaFamilyCount: number;
+  readonly formulaCoverageUnitCount: number;
   readonly formulaApplicationQuestionCount: number;
   readonly newFormulaApplicationQuestionCount: number;
   readonly byChapter: Readonly<Record<string, number>>;
@@ -107,6 +109,7 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
   }
 
   const familyQuestionIds = new Set<string>();
+  const coverageUnitIds = new Set<string>();
   const byChapter: Record<string, number> = {};
   let stimulusCount = 0;
   for (const family of formulaApplicationFamilies) {
@@ -224,6 +227,13 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
         `Formula Application metadata for "${meta.questionId}" is incomplete.`,
       );
     }
+    if (meta.coverageUnitId.trim().length === 0) {
+      issues.push(
+        `Formula Application metadata for "${meta.questionId}" has no coverage unit.`,
+      );
+    } else {
+      coverageUnitIds.add(meta.coverageUnitId);
+    }
     for (const sourceId of meta.practiceEvidenceSourceIds) {
       if (!sourceIds.has(sourceId)) {
         issues.push(
@@ -276,6 +286,28 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
   ) {
     issues.push("Formula Application question metadata IDs are not unique.");
   }
+  const coverageMapQuestionIds = new Set(
+    Object.keys(formulaApplicationCoverageUnitByQuestionId),
+  );
+  if (coverageMapQuestionIds.size !== formulaApplicationQuestionMeta.length) {
+    issues.push("Formula Application coverage-unit metadata is not total.");
+  }
+  for (const meta of formulaApplicationQuestionMeta) {
+    if (!coverageMapQuestionIds.has(meta.questionId)) {
+      issues.push(
+        "Formula Application coverage-unit metadata is missing question " +
+          meta.questionId,
+      );
+    }
+  }
+  for (const questionId of coverageMapQuestionIds) {
+    if (!familyQuestionIds.has(questionId)) {
+      issues.push(
+        "Formula Application coverage-unit metadata references unknown question " +
+          questionId,
+      );
+    }
+  }
   if (issues.length > 0) {
     throw new Error(`Super Cram validation failed:\n- ${issues.join("\n- ")}`);
   }
@@ -284,6 +316,7 @@ export function validateSuperCramRegistry(): SuperCramValidationStats {
     examSkillCount: examSkillEvidence.length,
     cheatSheetProfileCount: cheatSheetSkillProfiles.length,
     formulaFamilyCount: formulaApplicationFamilies.length,
+    formulaCoverageUnitCount: coverageUnitIds.size,
     formulaApplicationQuestionCount: familyQuestionIds.size,
     newFormulaApplicationQuestionCount: newQuestionCount,
     byChapter,

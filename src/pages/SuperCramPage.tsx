@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProgress } from "../app/progressContext";
+import type { Flashcard } from "../domain/content";
 import type { NewReviewEvent } from "../domain/progress";
 import { cards } from "../data/deck";
 import { examQuestions } from "../exam/questionBank";
@@ -14,18 +15,24 @@ import {
   buildSuperCramCandidates,
   createEmptySuperCramSession,
   findUrgentCanonicalFallback,
+  isFallbackSnapshotStale,
   selectSuperCramQuestion,
 } from "../superCram/selector";
 import {
   formulaApplicationMetaByQuestionId,
   getFormulaFamilyForQuestion,
 } from "../superCram/formulaFamilies";
+import type { PendingFallbackAcknowledgement } from "../superCram/selector";
 import type {
   SuperCramQuestionCandidate,
   SuperCramSessionState,
 } from "../superCram/model";
 
 type SuperCramSavePhase = "answering" | "pending_save" | "completed";
+
+type PresentedSuperCramTarget =
+  | { readonly kind: "mcq"; readonly candidate: SuperCramQuestionCandidate }
+  | { readonly kind: "fallback"; readonly card: Flashcard };
 
 const WORTHINESS_LABELS = {
   1: "Lookup-skippable",
@@ -44,16 +51,15 @@ export function SuperCramPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const [revealedCandidate, setRevealedCandidate] =
     useState<SuperCramQuestionCandidate | null>(null);
-  const [presentedCandidate, setPresentedCandidate] =
-    useState<SuperCramQuestionCandidate | null>(null);
+  const [presentedTarget, setPresentedTarget] =
+    useState<PresentedSuperCramTarget | null>(null);
   const [phase, setPhase] = useState<SuperCramSavePhase>("answering");
   const [saveError, setSaveError] = useState<string | null>(null);
   const pendingPayload = useRef<NewReviewEvent | null>(null);
   const pendingCandidate = useRef<SuperCramQuestionCandidate | null>(null);
   const startedAt = useRef(0);
-  const [completedFallbackCardIds, setCompletedFallbackCardIds] = useState<
-    ReadonlySet<string>
-  >(() => new Set<string>());
+  const [pendingFallbackAcknowledgement, setPendingFallbackAcknowledgement] =
+    useState<PendingFallbackAcknowledgement | null>(null);
   const manualLearned = useMemo(
     () => getEffectiveManualLearned(snapshot?.manualLearnedOverrides),
     [snapshot?.manualLearnedOverrides],
@@ -83,6 +89,21 @@ export function SuperCramPage() {
       }),
     [candidates, session, sessionNowMs],
   );
+  const fallbackReviewCount = useMemo(
+    () =>
+      pendingFallbackAcknowledgement === null || snapshot === null
+        ? 0
+        : snapshot.reviewEvents.filter(
+            (event) => event.cardId === pendingFallbackAcknowledgement.cardId,
+          ).length,
+    [pendingFallbackAcknowledgement, snapshot],
+  );
+  const suppressedFallbackCardId = isFallbackSnapshotStale(
+    fallbackReviewCount,
+    pendingFallbackAcknowledgement,
+  )
+    ? pendingFallbackAcknowledgement?.cardId
+    : undefined;
   const fallbackCard = useMemo(
     () =>
       snapshot === null
@@ -95,29 +116,78 @@ export function SuperCramPage() {
             nowMs: sessionNowMs,
             manuallyLearnedQuestionIds: manualLearned.questionIds,
             manuallyLearnedCardIds: manualLearned.cardIds,
-            excludedCardIds: completedFallbackCardIds,
+            excludedCardIds:
+              suppressedFallbackCardId === undefined
+                ? undefined
+                : new Set([suppressedFallbackCardId]),
           }),
     [
-      completedFallbackCardIds,
       manualLearned.cardIds,
       manualLearned.questionIds,
+      suppressedFallbackCardId,
       sessionNowMs,
       snapshot,
     ],
   );
 
-  const activeCandidate = presentedCandidate ?? candidate;
+  const nextTarget = useMemo<PresentedSuperCramTarget | null>(
+    () =>
+      fallbackCard !== null
+        ? { kind: "fallback", card: fallbackCard }
+        : candidate === null
+          ? null
+          : { kind: "mcq", candidate },
+    [candidate, fallbackCard],
+  );
+  const activeTarget = presentedTarget ?? nextTarget;
+  const activeCandidate = activeTarget?.kind === "mcq" ? activeTarget.candidate : null;
+  const activeFallback = activeTarget?.kind === "fallback" ? activeTarget.card : null;
+  const activeCandidateId = activeCandidate?.question.id;
 
   useEffect(() => {
-    if (phase === "answering" && presentedCandidate === null && candidate !== null) {
-      setPresentedCandidate(candidate);
+    if (phase === "answering" && presentedTarget === null && nextTarget !== null) {
+      setPresentedTarget(nextTarget);
     }
-  }, [candidate, phase, presentedCandidate]);
+  }, [nextTarget, phase, presentedTarget]);
 
   useEffect(() => {
-    startedAt.current =
-      typeof performance === "undefined" ? Date.now() : performance.now();
-  }, [activeCandidate?.question.id]);
+    if (
+      pendingFallbackAcknowledgement !== null &&
+      !isFallbackSnapshotStale(fallbackReviewCount, pendingFallbackAcknowledgement)
+    ) {
+      setPendingFallbackAcknowledgement(null);
+    }
+  }, [fallbackReviewCount, pendingFallbackAcknowledgement]);
+
+  useEffect(() => {
+    if (activeCandidateId !== undefined) {
+      startedAt.current =
+        typeof performance === "undefined" ? Date.now() : performance.now();
+    }
+  }, [activeCandidateId]);
+
+  const submitFallback = useCallback(
+    async (payload: Omit<NewReviewEvent, "cardId">) => {
+      if (activeFallback === null || snapshot === null) {
+        throw new Error("The canonical fallback is no longer available.");
+      }
+      setPendingFallbackAcknowledgement({
+        cardId: activeFallback.id,
+        reviewCountBefore: snapshot.reviewEvents.filter(
+          (event) => event.cardId === activeFallback.id,
+        ).length,
+      });
+      await recordReview({ ...payload, cardId: activeFallback.id });
+    },
+    [activeFallback, recordReview, snapshot],
+  );
+
+  const finishFallback = useCallback(() => {
+    if (activeTarget?.kind !== "fallback") return;
+    setPresentedTarget(null);
+    setSelected(null);
+    setSaveError(null);
+  }, [activeTarget]);
 
   const submit = useCallback(async () => {
     if (activeCandidate === null || selected === null || phase !== "answering") return;
@@ -178,7 +248,7 @@ export function SuperCramPage() {
     if (phase !== "completed") return;
     setSelected(null);
     setRevealedCandidate(null);
-    setPresentedCandidate(null);
+    setPresentedTarget(null);
     setPhase("answering");
     setSaveError(null);
     pendingPayload.current = null;
@@ -238,8 +308,8 @@ export function SuperCramPage() {
         <SessionStat label="Correct" value={correctPercent} />
         <SessionStat label="Reasoning gaps" value={String(session.reasoningGaps)} />
         <SessionStat
-          label="Formula families applied"
-          value={String(session.formulaFamiliesCovered.size)}
+          label="Formula forms applied"
+          value={String(session.formulaCoverageUnitsCovered.size)}
         />
         <SessionStat
           label="Chapters touched"
@@ -247,7 +317,7 @@ export function SuperCramPage() {
         />
       </section>
 
-      {fallbackCard !== null ? (
+      {activeFallback !== null ? (
         <section className="panel">
           <p className="section-kicker">Urgent canonical fallback</p>
           <p className="muted-text">
@@ -255,19 +325,10 @@ export function SuperCramPage() {
             returning to the existing canonical retrieval surface.
           </p>
           <StudyCard
-            card={fallbackCard}
-            testedConceptIds={cardConceptMap[fallbackCard.id] ?? []}
-            onSubmitReview={async (payload) => {
-              await recordReview({ ...payload, cardId: fallbackCard.id });
-            }}
-            onFinish={() => {
-              const completedCardId = fallbackCard.id;
-              setCompletedFallbackCardIds((current) => {
-                const next = new Set(current);
-                next.add(completedCardId);
-                return next;
-              });
-            }}
+            card={activeFallback}
+            testedConceptIds={cardConceptMap[activeFallback.id] ?? []}
+            onSubmitReview={submitFallback}
+            onFinish={finishFallback}
           />
         </section>
       ) : shownCandidate === null ? (

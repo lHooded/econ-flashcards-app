@@ -168,8 +168,8 @@ semantics.
 
 `#/super-cram` is intentionally a separate policy. It is question-first and
 cheat-sheet-aware: it discounts lookup-skippable exam content, applies explicit
-question-level form metadata, and tracks cold formula-family application only for
-the current session. It does not change this page's prerequisite-aware Guided-based
+question-level form metadata, and tracks cold formula-coverage-unit application only
+for the current session. It does not change this page's prerequisite-aware Guided-based
 `#/high-yield` behaviour, and it does not add a second scheduler or learner model.
 See [`SUPER_CRAM.md`](./SUPER_CRAM.md) for its selector and Formula Application
 registry.

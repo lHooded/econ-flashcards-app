@@ -5,6 +5,7 @@ import type {
   FormulaApplicationFamily,
   FormulaApplicationOperation,
   FormulaApplicationQuestionMeta,
+  FormulaCoverageUnitId,
 } from "./model";
 
 const test1 = ["practice-test-1-2026"] as const;
@@ -343,20 +344,82 @@ const formulaApplicationOperationsByQuestionId: Readonly<
   "auth-form-ch10-016": ["select-formula", "extract-inputs", "substitute", "calculate"],
 });
 
+/**
+ * Fine-grained application forms used by Super Cram session coverage. Broad
+ * families remain the Practice Lab grouping/filter surface; these units only
+ * share state when a successful application genuinely transfers.
+ */
+export const formulaApplicationCoverageUnitByQuestionId: Readonly<
+  Record<string, FormulaCoverageUnitId>
+> = Object.freeze({
+  "auth-form-ch01-011": "value-added-chain",
+  "auth-ch01-005": "real-gdp-base-year",
+  "auth-form-ch01-012": "real-gdp-base-year",
+  "auth-form-ch02-012": "okun-output-gap",
+  "auth-ch03-001": "fisher-real-rate",
+  "auth-stim-ch03-003": "fisher-real-rate",
+  "auth-form-ch03-011": "fisher-real-rate",
+  "auth-form-ch03-012": "investment-user-cost",
+  "auth-ch03-008": "national-saving-identity",
+  "auth-form-ch03-013": "national-saving-identity",
+  "auth-ch04-004": "linear-pae-equilibrium",
+  "auth-ch04-007": "open-pae-equilibrium",
+  "auth-stim-ch04-003": "open-economy-multiplier",
+  "auth-form-ch04-011": "linear-pae-equilibrium",
+  "auth-ch05-001": "tax-disposable-income",
+  "auth-form-ch05-012": "mpc",
+  "auth-form-ch05-013": "four-sector-multiplier",
+  "auth-form-ch05-014": "progressive-tax-schedule",
+  "auth-form-ch05-015": "fiscal-gap-closure",
+  "auth-ch05-009": "debt-sustainability",
+  "auth-ch05-011": "primary-overall-budget-balance",
+  "auth-stim-ch05-003": "debt-to-gdp",
+  "auth-form-ch05-016": "government-borrowing-constraint",
+  "auth-form-ch06-013": "quantity-theory-velocity",
+  "auth-ch06-001": "share-return",
+  "auth-ch06-002": "bond-present-value",
+  "auth-ch07-004": "cash-rate-corridor",
+  "auth-form-ch07-013": "esa-transaction-chain",
+  "auth-ch08-001": "interest-sensitive-pae",
+  "auth-ch08-003": "ad-equation",
+  "auth-form-ch08-012": "pae-prf-equilibrium",
+  "auth-form-ch08-013": "reverse-pae-rate",
+  "auth-form-ch08-014": "ad-long-run-inflation",
+  "auth-ch09-005": "currency-conversion",
+  "auth-ch09-006": "cross-rate",
+  "auth-form-ch09-016": "real-exchange-rate",
+  "auth-ch09-013": "bop-current-account",
+  "auth-form-ch09-014": "fixed-peg-intervention",
+  "auth-form-ch09-015": "small-open-accounting",
+  "auth-ch10-006": "cobb-douglas-output",
+  "auth-form-ch10-015": "cobb-douglas-output",
+  "auth-form-ch10-013": "cobb-douglas-mpl",
+  "auth-form-ch10-014": "cobb-douglas-mpk",
+  "auth-stim-ch10-003": "growth-accounting",
+  "auth-form-ch10-016": "capital-deepening-tfp",
+});
+
 const meta = (
   familyId: string,
   questionId: string,
   form: string,
   practiceEvidenceSourceIds: readonly string[],
   analogueNote: string,
-): FormulaApplicationQuestionMeta => ({
-  familyId,
-  questionId,
-  form,
-  practiceEvidenceSourceIds,
-  analogueNote,
-  operations: formulaApplicationOperationsByQuestionId[questionId] ?? [],
-});
+): FormulaApplicationQuestionMeta => {
+  const coverageUnitId = formulaApplicationCoverageUnitByQuestionId[questionId];
+  if (coverageUnitId === undefined) {
+    throw new Error(`Missing Formula Application coverage unit for ${questionId}.`);
+  }
+  return {
+    familyId,
+    questionId,
+    coverageUnitId,
+    form,
+    practiceEvidenceSourceIds,
+    analogueNote,
+    operations: formulaApplicationOperationsByQuestionId[questionId] ?? [],
+  };
+};
 
 export const formulaApplicationQuestionMeta: readonly FormulaApplicationQuestionMeta[] =
   Object.freeze([

@@ -2,7 +2,8 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { ProgressContext, type ProgressContextValue } from "../app/progressContext";
-import type { NewReviewEvent } from "../domain/progress";
+import { cards } from "../data/deck";
+import { createReviewEvent, type NewReviewEvent } from "../domain/progress";
 import { KnowledgeProvider } from "../knowledge/KnowledgeProvider";
 import { PracticePage } from "../pages/PracticePage";
 import { SuperCramPage } from "../pages/SuperCramPage";
@@ -10,13 +11,14 @@ import { SuperCramPage } from "../pages/SuperCramPage";
 function renderWithProgress(
   recordReview: ProgressContextValue["recordReview"],
   page: ReactNode,
+  snapshot: Exclude<ProgressContextValue["snapshot"], null> = {
+    settings: { examAt: null, studyBufferHours: 24 },
+    cardStates: {},
+    reviewEvents: [],
+  },
 ) {
   const value: ProgressContextValue = {
-    snapshot: {
-      settings: { examAt: null, studyBufferHours: 24 },
-      cardStates: {},
-      reviewEvents: [],
-    },
+    snapshot,
     isLoading: false,
     error: null,
     clearError: vi.fn(),
@@ -76,6 +78,7 @@ describe("Super Cram and Formula Application practice surfaces", () => {
       screen.getByText(/Use the cheat sheet, then make the formula work/i),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Formula family")).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Chapter 0" })).not.toBeInTheDocument();
     answerCurrentQuestion();
     await waitFor(() => expect(recordReviewMock).toHaveBeenCalledTimes(1));
     expect(recordReviewMock.mock.calls[0][0].mode).toBe("mcq");
@@ -106,6 +109,122 @@ describe("Super Cram and Formula Application practice surfaces", () => {
       expect(view.container.querySelector(".mock-stem")?.textContent).toBe(stem);
     } finally {
       vi.useRealTimers();
+    }
+  });
+
+  it("keeps an active MCQ atomic across a due-fallback clock transition", async () => {
+    vi.useFakeTimers();
+    const now = new Date("2026-08-14T00:00:00.000Z");
+    vi.setSystemTime(now);
+    try {
+      const fallbackId = "ch01-001";
+      const fallbackCard = cards.find((card) => card.id === fallbackId)!;
+      const reviewedAt = new Date(now.getTime() - 9 * 60 * 1000 - 45 * 1000);
+      const fallbackReview = createReviewEvent({
+        id: "fallback-clock-transition",
+        cardId: fallbackId,
+        reviewedAt: reviewedAt.toISOString(),
+        mode: "mcq",
+        correct: false,
+        rating: "forgot",
+        responseTimeMs: 900,
+        selectedChoice: 0,
+      });
+      const recordReviewMock = vi.fn().mockResolvedValue({});
+      const view = renderWithProgress(recordReviewMock, <SuperCramPage />, {
+        settings: { examAt: null, studyBufferHours: 24 },
+        cardStates: {},
+        reviewEvents: [fallbackReview],
+      });
+      const stem = view.container.querySelector(".mock-stem")?.textContent;
+      expect(stem).toBeTruthy();
+      fireEvent.click(screen.getAllByRole("radio")[0]);
+
+      act(() => {
+        vi.advanceTimersByTime(30 * 1000);
+      });
+      expect(view.container.querySelector(".mock-stem")?.textContent).toBe(stem);
+      expect(screen.getAllByRole("radio")[0]).toBeChecked();
+      expect(screen.queryByText("Urgent canonical fallback")).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(recordReviewMock).toHaveBeenCalledTimes(1);
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+      expect(screen.getByText("Urgent canonical fallback")).toBeInTheDocument();
+      expect(screen.getByText(fallbackCard.id)).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("moves from one stale-snapshot fallback to the next due fallback", async () => {
+    const firstId = "ch01-001";
+    const secondId = "ch01-003";
+    const reviewedAt = new Date(Date.now() - 10 * 60 * 1000);
+    const reviews = [firstId, secondId].map((cardId) =>
+      createReviewEvent({
+        id: `fallback-${cardId}`,
+        cardId,
+        reviewedAt: reviewedAt.toISOString(),
+        mode: "recall",
+        correct: false,
+        rating: "forgot",
+        responseTimeMs: 900,
+        selectedChoice: null,
+      }),
+    );
+    const recordReviewMock = vi.fn().mockResolvedValue({});
+    renderWithProgress(recordReviewMock, <SuperCramPage />, {
+      settings: { examAt: null, studyBufferHours: 24 },
+      cardStates: {},
+      reviewEvents: reviews,
+    });
+    expect(screen.getByText(firstId)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Show answer" }));
+    fireEvent.click(screen.getByRole("button", { name: "Forgot" }));
+    await waitFor(() => expect(recordReviewMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByText(secondId)).toBeInTheDocument());
+    expect(screen.queryByText(firstId)).not.toBeInTheDocument();
+  });
+
+  it("resets Formula Application response timing for a wrapped one-question set", async () => {
+    let monotonicNow = 1_000;
+    const performanceSpy = vi
+      .spyOn(performance, "now")
+      .mockImplementation(() => monotonicNow);
+    try {
+      const recordReviewMock = vi.fn().mockResolvedValue({});
+      renderWithProgress(
+        recordReviewMock,
+        <PracticePage initialMode="formula-application" initialConceptId={null} />,
+      );
+      fireEvent.change(screen.getByLabelText("Formula family"), {
+        target: { value: "formula-quantity-theory" },
+      });
+      expect(
+        screen.getByRole("heading", { name: /Using MV = PY/i }),
+      ).toBeInTheDocument();
+      monotonicNow = 1_100;
+      answerCurrentQuestion();
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(recordReviewMock).toHaveBeenCalledTimes(1);
+      monotonicNow = 100_000;
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+      expect(screen.getByRole("button", { name: "Submit answer" })).toBeInTheDocument();
+      monotonicNow = 100_125;
+      answerCurrentQuestion();
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(recordReviewMock).toHaveBeenCalledTimes(2);
+      expect(recordReviewMock.mock.calls[1][0].responseTimeMs).toBe(125);
+    } finally {
+      performanceSpy.mockRestore();
     }
   });
 });

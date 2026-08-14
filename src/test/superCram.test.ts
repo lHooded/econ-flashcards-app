@@ -6,7 +6,9 @@ import { DEFAULT_APP_SETTINGS } from "../domain/progress";
 import {
   applySuperCramAnswer,
   buildSuperCramCandidates,
+  buildFormulaApplicationSet,
   createEmptySuperCramSession,
+  getFormulaFamilyForQuestion,
   getQuestionReasonKind,
   scoreSuperCramCandidate,
   selectSuperCramQuestion,
@@ -48,6 +50,7 @@ function candidate(
     cheatSheetClass: "mixed",
     cheatSheetSections: ["Q1"],
     formulaFamilyId: null,
+    formulaCoverageUnitId: null,
     reasonKind: "reasoning-heavy",
     isUrgent: false,
     hasWeakEvidence: false,
@@ -70,6 +73,8 @@ describe("Super Cram metadata and selector", () => {
     expect(stats.cheatSheetProfileCount).toBe(33);
     expect(stats.formulaApplicationQuestionCount).toBeGreaterThanOrEqual(32);
     expect(stats.newFormulaApplicationQuestionCount).toBeGreaterThanOrEqual(16);
+    expect(stats.formulaFamilyCount).toBe(26);
+    expect(stats.formulaCoverageUnitCount).toBe(39);
     expect(stats.byChapter["1"]).toBeGreaterThanOrEqual(1);
     expect(stats.byChapter["10"]).toBeGreaterThanOrEqual(1);
   });
@@ -126,12 +131,13 @@ describe("Super Cram metadata and selector", () => {
     expect(selected?.question.id).toBe("urgent");
   });
 
-  it("samples a cold formula family and lowers its bonus after success", () => {
+  it("samples a cold formula unit and lowers its bonus after success", () => {
     const formula = candidate({
       question: question("formula-one", "ch03-001", 3),
       examYieldScore: 70,
       studyWorthiness: 2,
       formulaFamilyId: "formula-test",
+      formulaCoverageUnitId: "coverage-test",
       reasonKind: "formula-application",
     });
     const state = session();
@@ -147,21 +153,32 @@ describe("Super Cram metadata and selector", () => {
       nowMs: NOW,
     });
     expect(coldScore).toBeGreaterThan(coveredScore);
-    expect(next.formulaFamiliesCovered.has("formula-test")).toBe(true);
+    expect(next.formulaCoverageUnitsCovered.has("coverage-test")).toBe(true);
   });
 
-  it("remediates a failed formula family with a different question after spacing", () => {
+  it("remediates a failed formula unit with a different question after spacing", () => {
     const first = candidate({
       question: question("formula-one", "ch03-001", 3),
       formulaFamilyId: "formula-test",
+      formulaCoverageUnitId: "coverage-test",
       reasonKind: "formula-application",
     });
     const second = candidate({
       question: question("formula-two", "ch03-002", 3),
       formulaFamilyId: "formula-test",
+      formulaCoverageUnitId: "other-coverage-test",
       reasonKind: "formula-application",
     });
     const failed = applySuperCramAnswer(session(), first, false);
+    const retryVariant = {
+      ...first,
+      question: question("formula-retry", "ch03-003", 3),
+    };
+    expect(
+      scoreSuperCramCandidate({ candidate: retryVariant, session: failed, nowMs: NOW }),
+    ).toBeGreaterThan(
+      scoreSuperCramCandidate({ candidate: second, session: failed, nowMs: NOW }),
+    );
     const selected = selectSuperCramQuestion({
       candidates: [first, second].map((item) => ({
         ...item,
@@ -174,8 +191,80 @@ describe("Super Cram metadata and selector", () => {
       session: failed,
       nowMs: NOW,
     });
-    expect(failed.formulaFamiliesFailed.has("formula-test")).toBe(true);
+    expect(failed.formulaCoverageUnitsFailed.has("coverage-test")).toBe(true);
     expect(selected?.question.id).toBe("formula-two");
+  });
+
+  it("keeps distinct forms independent inside a broad family", () => {
+    const bond = candidate({
+      formulaFamilyId: "formula-bond-return-and-corridor",
+      formulaCoverageUnitId: "bond-present-value",
+      reasonKind: "formula-application",
+    });
+    const share = candidate({
+      question: question("share", "ch06-001", 6),
+      formulaFamilyId: "formula-bond-return-and-corridor",
+      formulaCoverageUnitId: "share-return",
+      reasonKind: "formula-application",
+    });
+    const corridor = candidate({
+      question: question("corridor", "ch07-004", 7),
+      formulaFamilyId: "formula-bond-return-and-corridor",
+      formulaCoverageUnitId: "cash-rate-corridor",
+      reasonKind: "formula-application",
+    });
+    const next = applySuperCramAnswer(session(), bond, true);
+    expect(next.formulaCoverageUnitsCovered).toEqual(new Set(["bond-present-value"]));
+    expect(next.formulaCoverageUnitsCovered.has("share-return")).toBe(false);
+    expect(next.formulaCoverageUnitsCovered.has("cash-rate-corridor")).toBe(false);
+    expect(
+      scoreSuperCramCandidate({ candidate: share, session: next, nowMs: NOW }),
+    ).toBeGreaterThan(
+      scoreSuperCramCandidate({
+        candidate: { ...share, formulaCoverageUnitId: "bond-present-value" },
+        session: next,
+        nowMs: NOW,
+      }),
+    );
+    expect(corridor.formulaCoverageUnitId).toBe("cash-rate-corridor");
+  });
+
+  it("keeps MPC and four-sector multiplier coverage independent", () => {
+    const mpc = candidate({
+      formulaFamilyId: "formula-mpc-and-fiscal-multiplier",
+      formulaCoverageUnitId: "mpc",
+      reasonKind: "formula-application",
+    });
+    const multiplier = candidate({
+      question: question("multiplier", "ch05-013", 5),
+      formulaFamilyId: "formula-mpc-and-fiscal-multiplier",
+      formulaCoverageUnitId: "four-sector-multiplier",
+      reasonKind: "formula-application",
+    });
+    const next = applySuperCramAnswer(session(), mpc, true);
+    expect(next.formulaCoverageUnitsCovered.has("mpc")).toBe(true);
+    expect(next.formulaCoverageUnitsCovered.has("four-sector-multiplier")).toBe(false);
+    const failed = applySuperCramAnswer(session(), multiplier, false);
+    expect(failed.formulaCoverageUnitsFailed.has("four-sector-multiplier")).toBe(true);
+    expect(failed.formulaCoverageUnitsFailed.has("mpc")).toBe(false);
+  });
+
+  it("retains broad family filtering while selecting fine-grained forms", () => {
+    const set = buildFormulaApplicationSet({
+      chapter: 6,
+      familyId: "formula-bond-return-and-corridor",
+      size: 10,
+      seed: "coverage-filter",
+    });
+    expect(set.length).toBe(2);
+    expect(set.every((item) => item.chapter === 6)).toBe(true);
+    expect(
+      set.every(
+        (item) =>
+          getFormulaFamilyForQuestion(item.id)?.id ===
+          "formula-bond-return-and-corridor",
+      ),
+    ).toBe(true);
   });
 
   it("excludes manually learned question and card targets", () => {

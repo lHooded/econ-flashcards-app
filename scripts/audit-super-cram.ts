@@ -29,7 +29,7 @@ function simulate(reviewEvents: readonly ReturnType<typeof createReviewEvent>[])
     selected.push(next);
     session = applySuperCramAnswer(session, next, true);
   }
-  return summarizeSuperCramSelection(selected);
+  return summarizeSuperCramSelection(selected, session);
 }
 
 const weakCardId = "ch10-031";

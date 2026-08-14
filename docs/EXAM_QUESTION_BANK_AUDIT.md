@@ -396,7 +396,8 @@ existing calculation stimuli), and its chapter distribution is:
 | 5–7      |                14 |
 | 8–10     |                17 |
 
-The 26 formula families cover value added, base-year real GDP, Okun output gaps,
+The 26 broad formula families and 39 fine-grained formula coverage units cover value
+added, base-year real GDP, Okun output gaps,
 Fisher rates, investment user cost, national saving, PAE equilibrium, fiscal
 arithmetic, tax schedules, debt financing, quantity theory, bond/return/corridor
 arithmetic, ESA transactions, the course-specific AD/PRF chain, FX conversion and

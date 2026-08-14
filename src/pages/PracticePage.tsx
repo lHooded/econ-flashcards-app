@@ -664,6 +664,7 @@ function FormulaApplicationSession({ onBack }: { readonly onBack: () => void }) 
   const [size, setSize] = useState<5 | 10 | 20>(10);
   const [seed, setSeed] = useState(() => Date.now());
   const [index, setIndex] = useState(0);
+  const [presentationOrdinal, setPresentationOrdinal] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [phase, setPhase] = useState<PracticeSavePhase>("answering");
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -709,6 +710,7 @@ function FormulaApplicationSession({ onBack }: { readonly onBack: () => void }) 
     setIndex(0);
     setSelected(null);
     setPhase("answering");
+    setPresentationOrdinal((current) => current + 1);
     pendingPayload.current = null;
     setSaveError(null);
   }, [chapter, familyId, seed, size]);
@@ -728,7 +730,7 @@ function FormulaApplicationSession({ onBack }: { readonly onBack: () => void }) 
   useEffect(() => {
     startedAt.current =
       typeof performance === "undefined" ? Date.now() : performance.now();
-  }, [practiceContextKey, question?.id]);
+  }, [practiceContextKey, presentationOrdinal, question?.id]);
 
   const submit = useCallback(async () => {
     if (question === undefined || selected === null || phase !== "answering") return;
@@ -771,6 +773,7 @@ function FormulaApplicationSession({ onBack }: { readonly onBack: () => void }) 
     if (phase !== "completed") return;
     setIndex((current) => (current + 1 >= questions.length ? 0 : current + 1));
     setSelected(null);
+    setPresentationOrdinal((current) => current + 1);
     setPhase("answering");
     pendingPayload.current = null;
     setSaveError(null);
@@ -827,11 +830,13 @@ function FormulaApplicationSession({ onBack }: { readonly onBack: () => void }) 
             disabled={locked}
           >
             <option value="all">All chapters</option>
-            {Array.from({ length: 11 }, (_, chapterNumber) => (
-              <option value={chapterNumber} key={chapterNumber}>
-                Chapter {chapterNumber}
-              </option>
-            ))}
+            {Array.from({ length: 10 }, (_, index) => index + 1).map(
+              (chapterNumber) => (
+                <option value={chapterNumber} key={chapterNumber}>
+                  Chapter {chapterNumber}
+                </option>
+              ),
+            )}
           </select>
         </label>
         <label className="field-label">

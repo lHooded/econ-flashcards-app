@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { examQuestions } from "../exam/questionBank";
 import {
+  formulaApplicationCoverageUnitByQuestionId,
   formulaApplicationMetaByQuestionId,
   formulaApplicationQuestionIds,
 } from "../superCram/formulaFamilies";
@@ -22,6 +23,10 @@ describe("Formula Application semantic audit", () => {
     expect(auditFormulaApplicationAnswerKeys(examQuestions)).toEqual([]);
     expect(Object.keys(FORMULA_APPLICATION_AUDITED_EXPECTED_CHOICES)).toHaveLength(45);
     expect(formulaApplicationQuestionIds.size).toBe(45);
+    expect(Object.keys(formulaApplicationCoverageUnitByQuestionId)).toHaveLength(45);
+    expect(
+      new Set(Object.values(formulaApplicationCoverageUnitByQuestionId)).size,
+    ).toBe(39);
     expect([...formulaApplicationQuestionIds].sort()).toEqual(
       Object.keys(FORMULA_APPLICATION_AUDITED_EXPECTED_CHOICES).sort(),
     );
@@ -107,5 +112,32 @@ describe("Formula Application semantic audit", () => {
   it("does not admit formula recognition as Formula Application", () => {
     expect(formulaApplicationQuestionIds.has("auth-ch10-011")).toBe(false);
     expect(getQuestion("auth-ch10-011").style).toBe("concept");
+  });
+
+  it("keeps aggregated UI families separate at the application-unit level", () => {
+    expect(
+      formulaApplicationMetaByQuestionId.get("auth-ch06-001")?.coverageUnitId,
+    ).toBe("share-return");
+    expect(
+      formulaApplicationMetaByQuestionId.get("auth-ch06-002")?.coverageUnitId,
+    ).toBe("bond-present-value");
+    expect(
+      formulaApplicationMetaByQuestionId.get("auth-ch07-004")?.coverageUnitId,
+    ).toBe("cash-rate-corridor");
+    expect(
+      formulaApplicationMetaByQuestionId.get("auth-form-ch05-012")?.coverageUnitId,
+    ).toBe("mpc");
+    expect(
+      formulaApplicationMetaByQuestionId.get("auth-form-ch05-013")?.coverageUnitId,
+    ).toBe("four-sector-multiplier");
+    expect(
+      formulaApplicationMetaByQuestionId.get("auth-ch05-011")?.coverageUnitId,
+    ).toBe("primary-overall-budget-balance");
+    expect(
+      formulaApplicationMetaByQuestionId.get("auth-stim-ch05-003")?.coverageUnitId,
+    ).toBe("debt-to-gdp");
+    expect(
+      formulaApplicationMetaByQuestionId.get("auth-form-ch05-016")?.coverageUnitId,
+    ).toBe("government-borrowing-constraint");
   });
 });

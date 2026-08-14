@@ -12,10 +12,10 @@ Super Cram combines three distinct inputs:
 1. Exam yield: the existing bounded `examYield` skill evidence and tier.
 2. Study worthiness: how much extra value there is in understanding a skill without
    outsourcing it to the cheat sheet.
-3. Formula application need: whether a formula form has actually been applied in the
-   current Super Cram session.
+3. Formula application need: whether a fine-grained formula form has actually been
+   applied in the current Super Cram session.
 
-Study worthiness and formula-family state are not stored in `examYield`, do not change
+Study worthiness and formula-coverage-unit state are not stored in `examYield`, do not change
 Exam-SRS intervals, and are not learner-visible probabilities. No score shown in this
 mode means probability of exam appearance, expected marks, recall probability, or
 probability of passing.
@@ -59,7 +59,7 @@ authoritative. The effective ordering is:
 
 1. urgent attempted-and-due evidence;
 2. high-yield reasoning and model-discrimination questions;
-3. formula application, with a cold-family bonus until a family is successfully
+3. formula application, with a cold-coverage-unit bonus until that form is successfully
    applied in this session;
 4. lookup validation and breadth checks.
 
@@ -82,9 +82,9 @@ The current selector constants are:
 urgent override                 5000 + existing Exam-SRS state priority
 weak attempted evidence          300 bounded points; no due-state priority
 cheat resistance                 6 points per worthiness level above 1
-cold formula family              42
-failed formula family            60
-covered formula family            8
+cold formula coverage unit       42
+failed formula coverage unit     60
+covered formula coverage unit     8
 unfamiliar chapter               90
 model/scenario/sequence/stimulus 22 / 14 / 10 / 8
 underrepresented lookup mix      70
@@ -95,7 +95,7 @@ These are bounded policy constants, not calibration parameters. The cheap lookup
 pressure is a soft cold-validation push, not a quota, and never competes with the
 5,000-point due override. A short recent
 question/card memory avoids immediate repetition and encourages a different variant
-when a formula family is remediated. The selector retains the existing late-course
+when a formula coverage unit is remediated. The selector retains the existing late-course
 evidence uplift but applies a strong finite chapter-breadth push for a chapter not yet
 touched in the session.
 
@@ -103,19 +103,37 @@ Non-due weak or relearning labels do not receive the urgent override. They have 
 separate bounded weak-evidence bonus and are not labelled urgent.
 
 The page samples the scheduler clock every 30 seconds with useNow. A clock refresh
-can expose a newly due target or phase transition, but the unanswered question is
-held stable until it is answered or advanced. Canonical fallbacks keep a
-session-local set of completed card IDs, so the next due fallback can appear
-without looping back to the just-completed card from a stale snapshot.
+can expose a newly due target or phase transition, but the exact presented target is
+held stable until it is answered or advanced. This is an atomic MCQ/fallback target
+state: a newly due fallback cannot interrupt an unanswered MCQ. After a fallback is
+saved, a transient acknowledgement records its pre-review count and suppresses only
+that card while the React snapshot is stale. Once the review is visible, ordinary
+Exam-SRS dueAt is authoritative again; the card can return at a later legitimate
+due time, and another due fallback can be offered immediately.
 
-## Session-only formula coverage
+## Session-only formula coverage units
 
-Formula coverage is held in React session state only. A successful Formula Application
-question marks its family covered, reducing its cold bonus. A wrong application keeps
-the family uncovered and raises a short-term remediation bonus; the identical question
-is not immediately repeated, but a different family question can return after the
+Formula coverage is held in React session state only. The 26 broad Formula Application
+families remain the Practice Lab grouping/filter surface, while the 45 questions map to
+39 fine-grained formula coverage units. A successful application marks only its unit
+covered, reducing that unit's cold bonus. A wrong application marks only that unit
+failed and raises its short-term remediation bonus; the identical question is not
+immediately repeated, but another question from the same unit can return after the
 short review-card cooldown. No new IndexedDB field, sync field, backup field, SRS, or
 mastery model is created.
+
+Representative independent units are:
+
+| Broad Practice Lab family                       | Coverage units                                                                     |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Bond, share return and cash-rate arithmetic     | `share-return`, `bond-present-value`, `cash-rate-corridor`                         |
+| MPC and tax-adjusted fiscal multipliers         | `tax-disposable-income`, `mpc`, `four-sector-multiplier`                           |
+| Government budget constraint and debt financing | `primary-overall-budget-balance`, `debt-to-gdp`, `government-borrowing-constraint` |
+
+Thus a correct bond-PV application does not mark share return or corridor arithmetic
+covered, and a correct MPC application does not mark the four-sector multiplier
+covered. The session statistic is labelled **Formula forms applied**, not Formula
+families applied. Coverage units are deliberately not persisted or synced.
 
 Super Cram answers use the existing `ReviewEvent` with `mode: "mcq"`, the canonical
 `reviewCardId`, and an actual `responseTimeMs` measured from question presentation to
@@ -150,7 +168,8 @@ The curated set has 45 questions:
 | Chapters 5–7  |        14 |
 | Chapters 8–10 |        17 |
 
-There are 26 formula families and 13 stimulus questions in the curated set. New
+There are 26 broad formula families, 39 fine-grained formula coverage units and 13
+stimulus questions in the curated set. New
 tables cover value-added chains, real GDP, investment/user cost, tax brackets,
 government borrowing, ESA transactions, fixed-peg intervention and capital-versus-
 TFP comparison. No screenshot or raw scrape is committed.
@@ -223,14 +242,14 @@ Empty/new learner
   mix: reasoning 18, formula 9, lookup 3, urgent 0
   tiers: critical 23, very-high 4, core 3, support 0
   worthiness: 1=2, 2=1, 3=3, 4=1, 5=23
-  unique review cards: 18; formula families: 6
+  unique review cards: 18; broad formula families encountered: 6; formula coverage units applied: 6
 
 Weak learner (failed ch10-031)
   chapters: 0=3, 1=1, 2=1, 3=1, 4=1, 5=1, 6=1, 7=1, 8=5, 9=5, 10=10
   mix: reasoning 15, formula 8, lookup 2, urgent 5
   tiers: critical 23, very-high 4, core 3, support 0
   worthiness: 1=4, 2=4, 3=1, 4=1, 5=20
-  unique review cards: 17; formula families: 6
+  unique review cards: 17; broad formula families encountered: 6; formula coverage units applied: 6
 ```
 
 This is a deterministic pathology check, not an optimality claim. It catches a

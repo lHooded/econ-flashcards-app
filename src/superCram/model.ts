@@ -37,12 +37,16 @@ export interface FormulaApplicationFamily {
 export interface FormulaApplicationQuestionMeta {
   readonly questionId: string;
   readonly familyId: string;
+  readonly coverageUnitId: FormulaCoverageUnitId;
   readonly form: string;
   readonly practiceEvidenceSourceIds: readonly string[];
   /** Describes the observed form without asserting that this question is official. */
   readonly analogueNote: string;
   readonly operations: readonly FormulaApplicationOperation[];
 }
+
+/** A session-only formula form that transfers across genuinely equivalent variants. */
+export type FormulaCoverageUnitId = string;
 
 export type FormulaApplicationOperation =
   | "select-formula"
@@ -63,6 +67,7 @@ export interface SuperCramQuestionCandidate {
   readonly cheatSheetClass: CheatSheetClass;
   readonly cheatSheetSections: readonly CheatSheetSectionId[];
   readonly formulaFamilyId: string | null;
+  readonly formulaCoverageUnitId: FormulaCoverageUnitId | null;
   readonly reasonKind: SuperCramReasonKind;
   readonly isUrgent: boolean;
   /** Non-due evidence is useful context, but never an urgent override. */
@@ -75,8 +80,8 @@ export interface SuperCramSessionState {
   readonly recentQuestionIds: readonly string[];
   readonly recentReviewCardIds: readonly string[];
   readonly chaptersTouched: readonly number[];
-  readonly formulaFamiliesCovered: ReadonlySet<string>;
-  readonly formulaFamiliesFailed: ReadonlySet<string>;
+  readonly formulaCoverageUnitsCovered: ReadonlySet<FormulaCoverageUnitId>;
+  readonly formulaCoverageUnitsFailed: ReadonlySet<FormulaCoverageUnitId>;
   readonly answeredCount: number;
   readonly correctCount: number;
   readonly reasoningGaps: number;

@@ -26,6 +26,7 @@ import {
 import type {
   CheatSheetSkillProfile,
   FormulaApplicationFamily,
+  FormulaCoverageUnitId,
   StudyWorthiness,
   SuperCramQuestionCandidate,
   SuperCramReasonKind,
@@ -50,9 +51,9 @@ export const SUPER_CRAM_CONSTANTS = Object.freeze({
   urgentBase: 5000,
   weakEvidenceBonus: 300,
   cheatResistancePerLevel: 6,
-  coldFormulaBonus: 42,
-  failedFormulaBonus: 60,
-  coveredFormulaBonus: 8,
+  coldFormulaUnitBonus: 42,
+  failedFormulaUnitBonus: 60,
+  coveredFormulaUnitBonus: 8,
   // An unfamiliar chapter gets a bounded breadth push. It is intentionally
   // smaller than an urgent override but large enough to keep a new session
   // from collapsing into only the late critical branches.
@@ -105,6 +106,18 @@ export interface UrgentCanonicalFallbackInput {
   readonly excludedCardIds?: ReadonlySet<string>;
 }
 
+export interface PendingFallbackAcknowledgement {
+  readonly cardId: string;
+  readonly reviewCountBefore: number;
+}
+
+export function isFallbackSnapshotStale(
+  reviewCount: number,
+  acknowledgement: PendingFallbackAcknowledgement | null,
+): boolean {
+  return acknowledgement !== null && reviewCount <= acknowledgement.reviewCountBefore;
+}
+
 export interface SuperCramSimulationSummary {
   readonly questionsSelected: number;
   readonly byChapter: Readonly<Record<string, number>>;
@@ -114,7 +127,8 @@ export interface SuperCramSimulationSummary {
   >;
   readonly byStudyWorthiness: Readonly<Record<StudyWorthiness, number>>;
   readonly uniqueReviewCardIds: number;
-  readonly formulaFamiliesCovered: number;
+  readonly formulaFamiliesEncountered: number;
+  readonly formulaCoverageUnitsApplied: number;
 }
 
 export function createEmptySuperCramSession(): SuperCramSessionState {
@@ -122,8 +136,8 @@ export function createEmptySuperCramSession(): SuperCramSessionState {
     recentQuestionIds: [],
     recentReviewCardIds: [],
     chaptersTouched: [],
-    formulaFamiliesCovered: new Set<string>(),
-    formulaFamiliesFailed: new Set<string>(),
+    formulaCoverageUnitsCovered: new Set<FormulaCoverageUnitId>(),
+    formulaCoverageUnitsFailed: new Set<FormulaCoverageUnitId>(),
     answeredCount: 0,
     correctCount: 0,
     reasoningGaps: 0,
@@ -170,6 +184,8 @@ export function buildSuperCramCandidates(
       const profile = getQuestionCheatSheetProfile(question);
       const family = getFormulaFamilyForQuestion(question.id);
       const formulaFamilyId = family?.id ?? null;
+      const formulaCoverageUnitId =
+        formulaApplicationMetaByQuestionId.get(question.id)?.coverageUnitId ?? null;
       const directYield = getExamYieldForCard(card.id);
       const isUrgent = isExamSrsAttemptedDueReview(state);
       const hasWeakEvidence =
@@ -184,6 +200,7 @@ export function buildSuperCramCandidates(
         cheatSheetClass: profile.class,
         cheatSheetSections: profile.cheatSheetSections,
         formulaFamilyId,
+        formulaCoverageUnitId,
         reasonKind,
         isUrgent,
         hasWeakEvidence,
@@ -251,7 +268,7 @@ export function scoreSuperCramCandidate(input: {
       : 0;
   const resistanceComponent =
     (candidate.studyWorthiness - 1) * SUPER_CRAM_CONSTANTS.cheatResistancePerLevel;
-  const formulaComponent = getFormulaComponent(candidate, session);
+  const formulaComponent = getFormulaCoverageUnitComponent(candidate, session);
   const breadthComponent = session.chaptersTouched.includes(candidate.question.chapter)
     ? 0
     : SUPER_CRAM_CONSTANTS.newChapterBonus;
@@ -288,15 +305,15 @@ export function applySuperCramAnswer(
   candidate: SuperCramQuestionCandidate,
   correct: boolean,
 ): SuperCramSessionState {
-  const familyCovered = new Set(session.formulaFamiliesCovered);
-  const familyFailed = new Set(session.formulaFamiliesFailed);
-  if (candidate.formulaFamilyId !== null) {
+  const coverageUnitsCovered = new Set(session.formulaCoverageUnitsCovered);
+  const coverageUnitsFailed = new Set(session.formulaCoverageUnitsFailed);
+  if (candidate.formulaCoverageUnitId !== null) {
     if (correct) {
-      familyCovered.add(candidate.formulaFamilyId);
-      familyFailed.delete(candidate.formulaFamilyId);
+      coverageUnitsCovered.add(candidate.formulaCoverageUnitId);
+      coverageUnitsFailed.delete(candidate.formulaCoverageUnitId);
     } else {
-      familyCovered.delete(candidate.formulaFamilyId);
-      familyFailed.add(candidate.formulaFamilyId);
+      coverageUnitsCovered.delete(candidate.formulaCoverageUnitId);
+      coverageUnitsFailed.add(candidate.formulaCoverageUnitId);
     }
   }
   const kindCounts = { ...session.kindCounts };
@@ -319,8 +336,8 @@ export function applySuperCramAnswer(
     recentQuestionIds,
     recentReviewCardIds,
     chaptersTouched,
-    formulaFamiliesCovered: familyCovered,
-    formulaFamiliesFailed: familyFailed,
+    formulaCoverageUnitsCovered: coverageUnitsCovered,
+    formulaCoverageUnitsFailed: coverageUnitsFailed,
     answeredCount: session.answeredCount + 1,
     correctCount: session.correctCount + (correct ? 1 : 0),
     reasoningGaps:
@@ -469,6 +486,7 @@ export function getQuestionReasonKind(
 
 export function summarizeSuperCramSelection(
   selections: readonly SuperCramQuestionCandidate[],
+  session?: SuperCramSessionState,
 ): SuperCramSimulationSummary {
   const byChapter: Record<string, number> = {};
   const byReasonKind: Record<SuperCramReasonKind, number> = {
@@ -487,6 +505,7 @@ export function summarizeSuperCramSelection(
   >;
   const cards = new Set<string>();
   const families = new Set<string>();
+  const coverageUnits = new Set<FormulaCoverageUnitId>();
   for (const candidate of selections) {
     byChapter[String(candidate.question.chapter)] =
       (byChapter[String(candidate.question.chapter)] ?? 0) + 1;
@@ -495,6 +514,9 @@ export function summarizeSuperCramSelection(
     byStudyWorthiness[candidate.studyWorthiness] += 1;
     cards.add(candidate.question.reviewCardId);
     if (candidate.formulaFamilyId !== null) families.add(candidate.formulaFamilyId);
+    if (candidate.formulaCoverageUnitId !== null) {
+      coverageUnits.add(candidate.formulaCoverageUnitId);
+    }
   }
   return {
     questionsSelected: selections.length,
@@ -503,22 +525,24 @@ export function summarizeSuperCramSelection(
     byTier,
     byStudyWorthiness,
     uniqueReviewCardIds: cards.size,
-    formulaFamiliesCovered: families.size,
+    formulaFamiliesEncountered: families.size,
+    formulaCoverageUnitsApplied:
+      session?.formulaCoverageUnitsCovered.size ?? coverageUnits.size,
   };
 }
 
-function getFormulaComponent(
+function getFormulaCoverageUnitComponent(
   candidate: SuperCramQuestionCandidate,
   session: SuperCramSessionState,
 ): number {
-  if (candidate.formulaFamilyId === null) return 0;
-  if (session.formulaFamiliesFailed.has(candidate.formulaFamilyId)) {
-    return SUPER_CRAM_CONSTANTS.failedFormulaBonus;
+  if (candidate.formulaCoverageUnitId === null) return 0;
+  if (session.formulaCoverageUnitsFailed.has(candidate.formulaCoverageUnitId)) {
+    return SUPER_CRAM_CONSTANTS.failedFormulaUnitBonus;
   }
-  if (!session.formulaFamiliesCovered.has(candidate.formulaFamilyId)) {
-    return SUPER_CRAM_CONSTANTS.coldFormulaBonus;
+  if (!session.formulaCoverageUnitsCovered.has(candidate.formulaCoverageUnitId)) {
+    return SUPER_CRAM_CONSTANTS.coldFormulaUnitBonus;
   }
-  return SUPER_CRAM_CONSTANTS.coveredFormulaBonus;
+  return SUPER_CRAM_CONSTANTS.coveredFormulaUnitBonus;
 }
 
 function getQuestionFormComponent(question: ExamQuestion): number {

@@ -5,6 +5,7 @@ import { examQuestions } from "../exam/questionBank";
 import {
   buildSuperCramCandidates,
   findUrgentCanonicalFallback,
+  isFallbackSnapshotStale,
 } from "../superCram/selector";
 import { deriveExamSrsSnapshot } from "../study/examSrs/deriveState";
 import {
@@ -116,5 +117,44 @@ describe("Super Cram scheduler invariants", () => {
     });
     expect(fallbackB).not.toBeNull();
     expect(fallbackB?.id).not.toBe(fallbackA?.id);
+  });
+
+  it("clears fallback suppression when the snapshot acknowledges the review", () => {
+    const acknowledgement = { cardId: "ch01-001", reviewCountBefore: 1 } as const;
+    expect(isFallbackSnapshotStale(1, acknowledgement)).toBe(true);
+    expect(isFallbackSnapshotStale(2, acknowledgement)).toBe(false);
+  });
+
+  it("lets the same fallback return only after its new Exam-SRS dueAt", () => {
+    const card = cards.find((item) => item.id === "ch01-001")!;
+    const first = review(card.id, NOW, { correct: false, rating: "forgot" });
+    const second = createReviewEvent({
+      id: "ch01-001-second-failure",
+      cardId: card.id,
+      reviewedAt: new Date(NOW + 10 * MINUTE_MS).toISOString(),
+      mode: "mcq",
+      correct: false,
+      rating: "forgot",
+      responseTimeMs: 900,
+      selectedChoice: 0,
+    });
+    const input = {
+      cards: [card],
+      questions: [],
+      reviewEvents: [first, second],
+      settings: DEFAULT_APP_SETTINGS,
+    };
+    expect(
+      findUrgentCanonicalFallback({
+        ...input,
+        nowMs: NOW + 10 * MINUTE_MS + 1,
+      }),
+    ).toBeNull();
+    expect(
+      findUrgentCanonicalFallback({
+        ...input,
+        nowMs: NOW + 20 * MINUTE_MS + 1,
+      })?.id,
+    ).toBe(card.id);
   });
 });
